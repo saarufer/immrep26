@@ -214,3 +214,72 @@ consistent with the signal being local neighbourhood density and nothing else.
 Current best: rank-average of SCEPTR `default` and `small` kernel density,
 **0.8415** mean per-epitope AUC (GILGFVFTL 0.870, GLCTLVAML 0.717, NLVPMVATV
 0.846, TTDPSFLGRY 0.846, YLQPRTFLL 0.928), against the 0.8247 baseline.
+
+## Structure: real, small, and not orthogonal
+
+All 2,636 complexes folded (Boltz-2, single-sequence, 14 s each, 7.4 h).
+
+As a standalone predictor the best structure feature reaches 0.759, below the
+organisers' AlphaFold3 min-PAE baseline of 0.787 and well below density. But
+the informative part is *which* features work. They all do, at about the same
+level, including ones that cannot carry TCR-peptide specificity:
+
+| feature | mean AUC |
+|---|---:|
+| `pae_a_mhc_min` (TCR alpha-MHC) | 0.759 |
+| `pae_tcr_pep_min` (the organisers' statistic) | 0.759 |
+| `complex_plddt` (global fold quality) | 0.694 |
+| `pae_ab_min` (TCR alpha-TCR beta) | 0.656 |
+| `iptm_mhc_pep` (**MHC-peptide**) | 0.647 |
+
+`iptm_mhc_pep` is the diagnostic: the MHC-peptide interface involves no TCR at
+all and is identical for every complex in a cohort, yet it still scores 0.647.
+Structure confidence here is largely reporting *how canonical the TCR is* --
+typical sequences fold confidently everywhere through the shared pair
+representation -- and canonical means convergent means likely to validate.
+Within-epitope Spearman correlation with density confirms it: `confidence_score`
++0.541, `pae_tcr_pep_min` +0.528, and even `iptm_mhc_pep` +0.262.
+
+So structure is not the orthogonal signal it was hoped to be. It does still add
+a little. Under nested LOEO with the blend weight chosen only on training
+epitopes, blending `pae_tcr_pep_min` at weight 0.2-0.3 lifts 0.8392 to 0.8461,
+an honest **+0.0070**, with the weight stably selected at 0.2-0.3 in every fold
+and a nested-versus-oracle cost of only 0.0024.
+
+Four of five epitopes improve (GLCTLVAML +0.026, NLVPMVATV +0.014, YLQPRTFLL
++0.006, GILGFVFTL +0.000). The single regression is TTDPSFLGRY at -0.011, and
+it is the only 10-mer in the competition as well as the only public A*01:01.
+Peptide length changes MHC-I groove geometry -- 10-mers bulge -- which is an
+a-priori reason to expect it to behave differently, and **all three private
+epitopes are 9-mers**. Restricted to the four 9-mers the gain is +0.0115.
+LTDEMIAQY, the private A*01:01, has a structure-confidence distribution
+(mean -1.40, sd 1.31) that looks like NLVPMVATV and YLQPRTFLL, where structure
+helped, not like TTDPSFLGRY. One caution the other way: LLWNGPMAV's structure
+confidence has sd 0.40 against 1.0-2.0 everywhere else, so structure has little
+to rank with on that epitope.
+
+## Selecting a configuration is itself overfitting
+
+Every number quoted above for a *chosen* configuration is optimistic, because
+sigma, which representations to average, and the structure weight were picked
+by looking at public-epitope results. Density is unsupervised, so no label
+touches the score -- but selection on five epitopes inflates an estimate just
+as fitting does. `scripts/13_strict_loeo.py` separates the three quantities
+over 323 candidate configurations:
+
+| | mean per-epitope AUC |
+|---|---:|
+| oracle: best config scored on all five epitopes | 0.8508 |
+| **nested LOEO: config re-chosen inside each fold** | **0.8460** |
+| best a priori config, plain LOEO | 0.8508 |
+
+Cross-validated selection is **0.0048 worse** than fixing the configuration in
+advance. The TTDPSFLGRY fold shows the mechanism: on the other four epitopes,
+`pae_a_mhc_min@0.3` looked best, and it returned 0.8328 on the held-out epitope
+where the fixed configuration gave 0.8504. With five folds the selection step
+has worse signal-to-noise than the thing being selected.
+
+**Therefore: fix the configuration a priori and make as few decisions as
+possible.** The defensible estimate of private performance is the nested
+number, **0.846**, since the a priori configuration was chosen by someone who
+had already seen the public results.
