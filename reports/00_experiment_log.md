@@ -341,26 +341,61 @@ by roughly this much. The defensible private estimate is **0.846**.
 
 ## E16 — Learning the metric that density lives in
 
-**Method.** Learn the kernel bandwidth alone (1 parameter) and a diagonal
-metric over the 64 SCEPTR dimensions (64 parameters, shrunk toward identity),
-by gradient descent on a within-epitope pairwise ranking surrogate. Strictly
-nested: fitted on four epitopes with an inner LOEO for shrinkage, applied to the
-fifth. `scripts/14_metric_learning.py`.
+**Method.** Learn the kernel bandwidth alone (1 parameter) and a diagonal metric
+over the 64 SCEPTR dimensions (64 parameters, shrunk toward identity) by gradient
+descent on a within-epitope pairwise ranking surrogate. Strictly nested: fitted
+on four epitopes with an inner LOEO for shrinkage, applied to the fifth.
+`scripts/14_metric_learning.py`.
 
-**Result.** Plain cosine σ=0.1 **0.8396**; scale-only **0.8142**; diagonal
-**0.8060**. Learned bandwidths came out at 0.22–0.40.
+**Result.** Plain cosine sigma=0.1 **0.8396**; scale-only **0.8199**; diagonal
+**0.8144**. Learned bandwidths came out at 0.20-0.26 in every fold, against a
+true optimum of 0.07.
 
-**Diagnosis, not a conclusion.** A bandwidth sweep shows the AUC-vs-σ curve
-peaks at σ≈0.07–0.10 (0.8397) and falls to 0.8167 at σ=0.25. So gradient
-descent moved σ the wrong way: **the surrogate loss is misaligned with AUC**
-(its fixed `margin × 50` scaling interacts with σ, which itself sets the scale
-of the density values). This is an implementation flaw, not evidence that
-learning cannot work here — recorded as such rather than as a negative result.
+**Diagnosis, in three steps, because the first two were wrong.**
+
+*First guess — scale coupling.* The original loss was
+`softplus(-margin x 50)`, whose fixed scaling interacts with sigma, since sigma
+also sets the scale of the density values. Standardising density within each
+epitope before the loss removes that coupling. It did not help: sigma still
+converged to 0.20-0.26.
+
+*Second guess — loss shape.* softplus penalises negative margins roughly
+linearly and is unbounded, so the loss is dominated by its worst-ordered pairs,
+whereas AUC counts every pair equally. A bounded sigmoid surrogate should be
+closer. Measuring both against AUC over a sigma grid killed this too: softplus
+minimises at sigma=0.20 and sigmoid at sigma=0.30, and **both are negatively
+correlated with AUC** across the grid (-0.39 and -0.51). The sigmoid was worse,
+not better.
+
+*What is actually going on.* Sweeping the sigmoid temperature shows the
+surrogate only aligns with AUC as it stops being smooth:
+
+| temperature | loss argmin (sigma) | corr(-loss, AUC) |
+|---|---|---:|
+| 1.0 | 0.30 | -0.51 |
+| 0.2 | 0.20 | -0.37 |
+| 0.05 | 0.15 | -0.12 |
+| 0.02 | 0.10 | **+0.03** |
+
+As the temperature goes to zero the sigmoid becomes exactly the 1-AUC step
+function, and only there does its optimum approach the real one at 0.07 -- by
+which point gradients have vanished almost everywhere.
+
+The reason this problem is unusually hostile to margin surrogates is that the
+score distribution is **heavy-tailed**: a minority of TCRs sit in dense clusters
+and take extreme density values. AUC gives full credit for ranking those at the
+very top; any smooth surrogate saturates there and is instead dominated by the
+ambiguous bulk. So the surrogate is least sensitive exactly where the metric
+gets most of its signal.
+
+**Settled.** Gradient descent on a margin-based ranking surrogate is
+structurally mismatched to this metric and this score distribution -- not an
+implementation flaw. Gradient-free direct search on AUC is viable for one
+parameter (that is the sigma grid, which gains nothing: nested CV 0.8353 against
+an oracle 0.8396) and would almost certainly overfit four epitopes at 64.
 
 **What the sweep did settle.** Per-epitope optimal bandwidth varies five-fold:
-GILGFVFTL 0.15, GLCTLVAML 0.10, NLVPMVATV 0.03, TTDPSFLGRY 0.05, YLQPRTFLL
-0.15. Honest grid CV over σ alone scores 0.8353 against the oracle's 0.8396,
-consistent with E15's selection cost.
+GILGFVFTL 0.15, GLCTLVAML 0.10, NLVPMVATV 0.03, TTDPSFLGRY 0.05, YLQPRTFLL 0.15.
 
 ---
 
@@ -420,7 +455,7 @@ table in `04_master_comparison.md`.
 
 ## Where this leaves things
 
-Seventeen experiments, one consistent picture: **the extractable signal is
+Eighteen experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
@@ -443,3 +478,7 @@ will be substantially luck.
    pooled score (E4, E13).
 4. Diagnose before concluding — E16 looked like "learning fails" and was
    actually a broken surrogate.
+
+5. Verify that a surrogate objective actually tracks the metric before
+   optimising it (E16). Two plausible fixes were both wrong, and the real
+   answer was that no smooth surrogate works here.
