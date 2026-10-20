@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+# --- competition + licensed data: NEVER commit ---
+data/raw/
+data/interim/
+data/processed/
+# TCRvdb redistribution is prohibited by its terms; VDJdb is large.
+data/external/*
+!data/external/README.md
+*.zip
+*:Zone.Identifier
+submissions/
+.ipynb_checkpoints/
