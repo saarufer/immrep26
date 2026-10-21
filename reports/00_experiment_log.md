@@ -1068,9 +1068,145 @@ But the comparison table in E6 should be read with that caveat.
 
 ---
 
+## E28 — Contact fingerprints and docking geometry (plan cards D07, C01, C02, C06)
+
+All four extracted in one pass over the 2,636 structures,
+`scripts/24_structure_contacts.py`. Peptide position is used as the common
+coordinate -- the peptide is identical within an epitope -- so no IMGT numbering
+is needed for the one thing that has to be exactly right.
+
+**C01 geometry QC passes.** Peptide-MHC contacts: median 334, minimum 260, so
+every peptide sits in the groove. CDR3 supplies 74-76% of all TCR-peptide
+contacts, which is the biologically expected share and independently validates
+the CDR3 localisation. 1,929 of 2,636 complexes carry at least one inter-chain
+heavy-atom pair under 2.2 A, but the median count is 1, which is ordinary for
+predicted structures. One complex, `1_6_B11_22_YLQPRTFLL`, has **no TCR-peptide
+contact at all** -- a genuine docking failure, in a public epitope.
+
+**D07 contact-fingerprint density: 0.7476**, below the confidence features and
+far below sequence density, and correlated +0.563 with density. Another
+re-encoding.
+
+**But the raw contact counts are the most orthogonal quantity measured in this
+project.** Within-epitope Spearman against density: `contacts_a_pep` **+0.088**,
+`contacts_b_pep` +0.103. Everything else ever measured sat between +0.26 and
++0.91. That makes sense: how many peptide atoms a TCR actually touches is
+constructionally unrelated to how crowded its neighbourhood is.
+
+They are also too weak to use. Standalone AUC 0.588 and 0.559; best geometry
+feature `tcr_height_over_peptide` (negated) 0.657; crossing angle 0.530. Under
+strict nested LOEO with component and weight both chosen on the training
+epitopes, the gain over the submitted blend is **+0.0008**. Rejected.
+
+**General lesson worth keeping: orthogonality is necessary but not sufficient.**
+A component at AUC 0.59 blended into a model at 0.85 contributes almost nothing
+however independent it is -- the achievable contribution scales with its margin
+over chance, and 0.09 does not buy anything. This closes the structural line
+completely: interface confidence (+0.007, correlated), docking consistency
+(+0.001, correlated), fingerprint density (worse, correlated), raw contact
+counts (+0.0008, orthogonal but weak), docking geometry (weak).
+
+---
+
+## E29 — Family holdout and chain discordance (plan cards S06, D03)
+
+**S06 -- leave-one-clonotype-family-out.** Each TCR scored against a cohort with
+its own single-linkage family removed, so no relative can supply its density:
+
+| epitope | in a family | standard | family-masked | delta |
+|---|---:|---:|---:|---:|
+| NLVPMVATV | 0.183 | 0.8436 | 0.7417 | **-0.1019** |
+| GILGFVFTL | 0.476 | 0.8678 | 0.8520 | -0.0158 |
+| GLCTLVAML | 0.552 | 0.7130 | 0.7000 | -0.0130 |
+| TTDPSFLGRY | 0.047 | 0.8449 | 0.8356 | -0.0093 |
+| YLQPRTFLL | 0.184 | 0.9285 | 0.9272 | -0.0012 |
+| mean | 0.288 | 0.8396 | **0.8113** | **-0.0282** |
+
+Family recurrence does carry part of the ranking, and once again the dependence
+is epitope-specific rather than structural: NLVPMVATV and YLQPRTFLL have
+near-identical family rates (0.183, 0.184) and lose 0.102 against 0.001.
+
+**D03 -- the alpha/beta asymmetry is not mispairing.** Alpha-only density 0.799
+against beta-only 0.751 (E6), and the mispairing hypothesis predicts that a
+mispaired TCR shows large single-chain rank disagreement. Measured, the signed
+disagreement scores 0.536 and the absolute disagreement **0.429 -- below
+chance**, meaning *larger* alpha/beta disagreement associates with validating,
+the opposite of what mispairing would produce. It has ample within-epitope
+variance on all three private epitopes (sd 0.33-0.36, so it passes E3's rule)
+and still adds only +0.0026 at weight 0.1, negative at 0.2. Rejected, and the
+mispairing explanation for the chain asymmetry gets no support.
+
+---
+
+## E30 — Why leave-one-epitope-out overestimates the private score
+
+S06 prompted a comparison of cohort structure rather than cohort size, and it
+revealed something LOEO cannot see.
+
+**The private epitopes have four times less family structure than the public
+ones**, 7.2% against 28.8% of TCRs sitting in a family of two or more:
+
+| epitope | split | in a family | implied cross-stratum pair share |
+|---|---|---:|---:|
+| CINGVCWTV | PRIVATE | 0.025 | ~0.048 |
+| LLWNGPMAV | PRIVATE | 0.044 | ~0.084 |
+| LTDEMIAQY | PRIVATE | 0.146 | ~0.250 |
+| TTDPSFLGRY | public | 0.047 | ~0.089 |
+| NLVPMVATV | public | 0.183 | ~0.299 |
+| YLQPRTFLL | public | 0.184 | ~0.300 |
+| GILGFVFTL | public | 0.476 | ~0.499 |
+| GLCTLVAML | public | 0.552 | ~0.495 |
+
+That matters because of E22: `pos_clu_neg_sing` -- clustered positive against
+isolated negative -- is 38.6% of public pairs at a **2% error rate**. Those easy
+pairs are what holds a public AUC up, and CINGVCWTV will have about 5.6% of them.
+
+**Decomposing and reprojecting.** Taking each class's measured within-class
+error rate for the submitted model and recombining with each epitope's own class
+composition reproduces every public epitope's actual AUC to within 0.0003, so
+the arithmetic is sound. Applying it to the private epitopes' label-free
+compositions:
+
+| epitope | both-singleton share | easy share | projected AUC |
+|---|---:|---:|---:|
+| CINGVCWTV | 92.6% | 5.6% | 0.795 |
+| LLWNGPMAV | 87.2% | 9.8% | 0.797 |
+| LTDEMIAQY | 60.7% | 29.2% | 0.806 |
+| **macro** | | | **0.799** |
+
+against the LOEO estimate of 0.846.
+
+**So LOEO holds out epitope identity but not cohort structure.** It is unbiased
+for "an epitope drawn like the public ones" and biased upward for an epitope
+with private-like family sparsity. That bias is about **-0.047**, and no amount
+of leave-one-epitope-out can detect it, because all five public epitopes are
+family-richer than the private three.
+
+**And the whole projection collapses to one unknown.** Since the private
+epitopes are 61-93% both-singleton pairs, the projected macro tracks the
+within-both-singleton AUC almost exactly. Substituting each public epitope's
+value for that quantity:
+
+| if private singletons separate like | both-singleton AUC | projected private macro |
+|---|---:|---:|
+| GLCTLVAML | 0.642 | **0.668** |
+| NLVPMVATV | 0.748 | 0.758 |
+| GILGFVFTL | 0.827 | 0.831 |
+| TTDPSFLGRY | 0.830 | 0.832 |
+| YLQPRTFLL | 0.915 | **0.907** |
+
+**Revised position: central estimate 0.80, plausible range 0.67-0.91**, in place
+of the single 0.846. The spread is not sampling noise -- it is one substantive
+unknown, how separable the private epitopes' isolated TCRs are, and E21 already
+showed that cannot be forecast from cohort geometry. This is the convergence
+point of E20 (54% of positives are singletons), E21 (sparsity does not predict
+AUC), E22 (62% of error is both-singleton) and this experiment.
+
+---
+
 ## Where this leaves things
 
-Twenty-seven experiments, one consistent picture: **the extractable signal is
+Thirty experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.

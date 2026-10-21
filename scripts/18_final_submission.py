@@ -41,8 +41,15 @@ Why these choices and no others, from reports/00_experiment_log.md:
   model and multi-sample docking consistency were each measured and each failed
   the +0.02 inclusion threshold, most of them scoring below chance.
 
-Expected private score: **0.846**, the nested-LOEO estimate, which already
-absorbs selection cost. Public-epitope score will read about 0.850 but that
+Expected private score: **0.80 central, 0.67-0.91 plausible** (E30), not the
+0.846 nested-LOEO figure. LOEO holds out epitope identity but not cohort
+structure, and the private epitopes have four times less clonotype-family
+structure than the public five (7.2% against 28.8% of TCRs in a family). They
+therefore lose most of the easy clustered-positive-against-isolated-negative
+pairs that are 38.6% of public comparisons at a 2% error rate, and are scored
+61-93% on both-singleton pairs instead. Reprojecting each class's measured error
+rate onto the private compositions gives 0.799, and the spread comes from one
+unknowable quantity: how separable those isolated TCRs are. Public-epitope score will read about 0.850 but that
 number is not evidence of anything -- the public labels are published.
 
 A matching public score also does not verify that the private rows are
