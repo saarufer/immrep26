@@ -501,9 +501,111 @@ a near-useless component from entering the submission.
 
 ---
 
+## E20 — Four questions from the PI about what density is actually doing
+
+### Does the method lean on density more than on the labels?
+
+It uses **no labels at all.** Density and structure are both unsupervised, and
+all 1,782 labels serve only to validate. That is a strength -- there is nothing
+to overfit, which is why the local estimate reproduced the leaderboard exactly
+-- and an unresolved gap: 1,782 labels are available and the predictor extracts
+nothing from them. Every supervised route tried (E10 fitted fusion, E13
+specificity, E16 metric learning) lost to variance or scored below chance.
+
+### Are clustered TCRs merely label-pure, or genuinely positive-leaning?
+
+Genuinely positive-leaning. Of 45 clusters with >=3 members (SCEPTR cosine
+<= 0.12):
+
+| cluster validation rate | clusters | TCRs |
+|---|---:|---:|
+| 100% (pure positive) | 26 | 205 |
+| 80-100% | 8 | 136 |
+| 60-80% | 8 | 31 |
+| 20-60% | **0** | **0** |
+| 0-20% | 0 | 0 |
+| 0% (pure negative) | 3 | 13 |
+
+The 20-60% band is **empty**, and only 13 of 385 clustered TCRs (3.4%) sit in a
+pure-negative cluster. So cluster membership is positive evidence in its own
+right, not a statement about homogeneity. Positives are 41-62% clustered
+against negatives at 0-30%.
+
+The ceiling is equally clear: only 487 of 1,782 TCRs are in any cluster, and
+**about 54% of positives are singletons**.
+
+### Is anything available for singletons?
+
+Density remains the best thing there -- mean AUC 0.758 within singletons,
+against structure 0.722, multi-sample confidence 0.729, consistency 0.692, Pgen
+0.497. "Singleton" at threshold 0.12 is not a binary state; the continuous
+nearest-neighbour distance still varies and still ranks (`nn1_dist` alone
+scores 0.757).
+
+One exception, and it is the weak epitope. On GLCTLVAML's 81 singletons density
+collapses to **0.551** while every structure-derived feature beats it:
+multi-sample confidence 0.676, docking consistency 0.668, min-PAE 0.659.
+
+**A hard ceiling found while looking.** Some negatives are single-residue
+variants of validated positives -- identical CDR3 on one chain with one or two
+substitutions on the other, sitting inside otherwise-pure positive clusters:
+
+| epitope | negatives | near-identical to a positive | % of that epitope's positives | AUC now | AUC if relabelled |
+|---|---:|---:|---:|---:|---:|
+| GILGFVFTL | 194 | 14 | 3.7% | 0.8708 | 0.9081 |
+| GLCTLVAML | 56 | 8 | 7.3% | 0.7018 | 0.7495 |
+| NLVPMVATV | 226 | 11 | 12.1% | 0.8384 | 0.8704 |
+| TTDPSFLGRY | 172 | 0 | 0.0% | 0.8420 | 0.8420 |
+| YLQPRTFLL | 224 | 1 | 0.6% | 0.9279 | 0.9310 |
+| total | 872 | 34 (**3.9%**) | | 0.8362 | **0.8602** |
+
+3.9% of negatives, which coincides with the pooled screen's own reported
+false-negative rate of 3.9%. Whether these are assay dropouts or genuine fine
+specificity -- one CDR3 residue can abolish recognition -- they are
+indistinguishable from positives by any sequence method, so **roughly 0.024 of
+the remaining gap is unreachable**. GLCTLVAML at 7.3% and NLVPMVATV at 12.1%
+exceed the assay's stated rate.
+
+### Why is GLCTLVAML the weak epitope, and does that threaten the private side?
+
+GLCTLVAML is the most clonally converged cohort in the competition. Density
+fails there because **everything is dense**:
+
+| epitope | split | median nn1 | fraction with nn1 <= 0.12 |
+|---|---|---:|---:|
+| GLCTLVAML | public | 0.096 | **0.552** |
+| GILGFVFTL | public | 0.131 | 0.476 |
+| YLQPRTFLL | public | 0.398 | 0.184 |
+| NLVPMVATV | public | 0.481 | 0.183 |
+| TTDPSFLGRY | public | 0.497 | 0.047 |
+| LTDEMIAQY | PRIVATE | 0.553 | 0.146 |
+| LLWNGPMAV | PRIVATE | 0.361 | 0.044 |
+| CINGVCWTV | PRIVATE | 0.404 | 0.025 |
+
+Half of GLCTLVAML's cohort has a neighbour inside the clustering radius, so the
+feature has almost no dynamic range left; its mixed clusters turn out to be 26:1
+and 15:2 positive, with the negatives being the single-residue variants above.
+
+**None of the three private epitopes share this pathology.** A first pass using
+top-V-gene share flagged LLWNGPMAV (0.61, higher than GLCTLVAML's 0.50) and
+CINGVCWTV (0.44), but that is a red herring: those cohorts share a V gene while
+their CDR3s stay diverse, and only 2.5-4.4% of their TCRs have a close
+neighbour. The right diagnostic is the close-neighbour fraction, on which
+GLCTLVAML and GILGFVFTL are the converged pair and all three private epitopes
+look instead like TTDPSFLGRY, NLVPMVATV and YLQPRTFLL -- where density scores
+0.84-0.93.
+
+**Two consequences.** Do not build a GLCTLVAML-specific adaptive weighting: the
+pathology does not transfer, so tuning for it is fitting on a single epitope.
+And the 0.846 private estimate is probably slightly **pessimistic**, because
+GLCTLVAML's 0.73 drags the five-epitope mean and nothing on the private side
+resembles it.
+
+---
+
 ## Where this leaves things
 
-Nineteen experiments, one consistent picture: **the extractable signal is
+Twenty experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
