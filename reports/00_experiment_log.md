@@ -937,9 +937,113 @@ biological attribution did.
 
 ---
 
+## E27 — Pool expansion, audited and quantified (plan cards Q02, R01, R04-adjacent)
+
+E12 rejected candidate-pool expansion without running it; E25 conceded that as a
+gap. This runs it, and the gap turns out to be procedural rather than
+substantive: the conclusion holds, but it is now measured instead of asserted,
+and the mechanism is different from what E12 assumed.
+
+### Q02 -- the query finds itself
+
+Every test TCR came from VDJdb, so expanding with VDJdb risks counting the query
+as its own neighbour. `scripts/23_pool_selfhit_audit.py`:
+
+| epitope | queries finding an exact self-hit | mean self-hits | records per distinct clonotype | top-study share of pool |
+|---|---:|---:|---:|---:|
+| LTDEMIAQY | **1.000** | 1.000 | 1.000 | **0.978** |
+| TTDPSFLGRY | 1.000 | 1.021 | 1.029 | 0.599 |
+| YLQPRTFLL | 0.998 | 1.038 | 1.042 | 0.413 |
+| GILGFVFTL | 0.990 | **2.193** | **1.650** | 0.349 |
+| GLCTLVAML | 0.958 | 1.151 | 1.585 | 0.508 |
+| NLVPMVATV | 0.945 | 1.383 | 1.249 | **0.948** |
+| CINGVCWTV | 0.942 | 0.942 | 1.000 | 0.625 |
+| LLWNGPMAV | 0.878 | 0.882 | 1.002 | 0.468 |
+
+96.4% of queries find themselves, and the count is **not constant** -- GILGFVFTL
+averages 2.19, so repeatedly curated clonotypes collect extra zero-distance
+"neighbours".
+
+**Curation multiplicity does track validation**, which is why that matters:
+
+| VDJdb records for the clonotype | n | validation rate |
+|---|---:|---:|
+| 1 | 1470 | 49.0% |
+| 2 | 195 | 43.6% |
+| 3 | 39 | **82.1%** |
+| 4+ | 77 | **93.5%** |
+
+As a feature it is the familiar failure shape -- mean AUC 0.534 with the sign
+flipping (GILGFVFTL 0.665, NLVPMVATV 0.433) -- and it is **constant on the
+private epitopes**: `n_records` takes one distinct value on CINGVCWTV and
+LTDEMIAQY. So it is both unusable and, left undeduplicated, a label proxy
+masquerading as density.
+
+Confirmed directly: raw expansion **loses** 0.0024 of mean AUC, while
+query-removed expansion gains 0.0048.
+
+### The aggregation operator decides whether expansion helps at all
+
+Our kernel-mean density barely benefits; top-k does. Mean over the five public
+epitopes, pool deduplicated:
+
+| operator | no pool | pooled | delta |
+|---|---:|---:|---:|
+| top-8 | 0.8414 | **0.8526** | **+0.0112** |
+| top-3 | 0.8334 | 0.8476 | +0.0142 |
+| top-16 | 0.8377 | 0.8488 | +0.0111 |
+| kernel sigma=0.1 | 0.8396 | 0.8432 | +0.0036 |
+
+The mechanism is visible per epitope. NLVPMVATV, whose pool is 94.8% a single
+dextramer study of ~10k records, goes **-0.0354 under kernel-mean and +0.0131
+under top-8**: a mean over the whole pool is drowned by one study's records,
+while top-k never looks at them. This explains the teammate's +0.0194 against
+our +0.0048 -- they used top-k, which is the right operator once a pool is
+involved, and our kernel is the right operator for a fixed cohort.
+
+### What the private side can actually realise: +0.0013
+
+Downsampling each public pool to the private epitopes' own *distinct-clonotype*
+multipliers, 30 repeats, top-8:
+
+| private epitope | multiplier | realisable gain |
+|---|---:|---:|
+| LTDEMIAQY | 1.038 | +0.0002 |
+| CINGVCWTV | 1.045 | +0.0002 |
+| LLWNGPMAV | 1.834 | +0.0036 |
+| **macro** | | **+0.0013** |
+
+against +0.0112 on the full public pools. **88% of the public gain cannot
+transfer**, because two of three private epitopes can add only about 4% more
+distinct clonotypes.
+
+This is nearly an order of magnitude below the teammate's +0.011 estimate. The
+likely cause is the matching unit: downsampling by *records* rather than
+*distinct clonotypes* lets a public subsample keep duplicate clonotypes, which
+supply near-zero distances that the private pools -- at a record:clonotype ratio
+of 1.000 -- have none of. Even allowing their targeted IEDB merge, which lifts
+LTDEMIAQY to 1.72x, the estimate reaches only about +0.0025.
+
+**Not adopted.** +0.0013 is a fifth of the structure gain and far below the
+inclusion threshold. E12's verdict stands, though its reasoning was incomplete:
+the problem is not only that few extra TCRs exist, but that the ones that do are
+duplicates from single studies.
+
+### A methodology slip this exposed
+
+E6's representation comparison computed density using only the *labelled* rows
+as the reference set, where inference uses the whole cohort. On the full cohort
+top-8 reads 0.8414 against kernel's 0.8396, rather than the reverse ordering E6
+reported. The conclusion is unaffected -- everything still lands in the same
+0.83-0.85 band, so operator and space still do not matter much -- and the
+submitted scripts always used the full cohort, so no submission was affected.
+But the comparison table in E6 should be read with that caveat.
+
+---
+
 ## Where this leaves things
 
-Twenty-six experiments, one consistent picture: **the extractable signal is
+Twenty-seven experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
