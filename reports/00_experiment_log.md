@@ -1357,9 +1357,89 @@ epitope.
 
 ---
 
+## E34 — Predicted contacts against crystallography (plan card D09)
+
+E28 built contact fingerprints from Boltz predictions and E31 used them to argue
+that discordant negatives differ at peptide-contacting positions. Both rest on
+predicted interfaces, which E31 flagged as its main limitation. This checks them
+against experiment: `scripts/28_real_structure_validation.py`, with
+`scripts/29_fold_real.sh` folding the crystal sequences through the *same*
+pipeline used for the competition.
+
+The PDB yields 14 solved TCR-pMHC complexes for four competition epitopes
+(GILGFVFTL 9, YLQPRTFLL 3, NLVPMVATV 2, GLCTLVAML 1), plus one out-of-training
+anchor described below. CINGVCWTV and LLWNGPMAV do have crystal structures
+(3mrg, 5n6b, 9sl0) but all are peptide-MHC only, with no TCR.
+
+**Result on the solved complexes: the fingerprints are faithful.**
+
+| statistic | median |
+|---|---:|
+| Spearman, contact counts per peptide position | 0.992 |
+| Spearman, restricted to contact-bearing positions | **0.953** |
+| Spearman, minimum distance per position | 0.983 |
+| Jaccard of touched positions | 1.000 |
+| total contacts, predicted against measured | 102 vs 99 |
+
+**Three self-checks, two of which cut the claim down.**
+
+*Zero inflation.* Of 20 fingerprint slots, 11.5 on average are zero in both
+vectors -- the buried anchor positions no TCR can reach. Restricting to
+contact-bearing positions drops the median from 0.992 to **0.953**. Still high,
+but the headline number was partly agreement on what is structurally
+impossible.
+
+*Memorisation.* Every one of the 14 complexes was released between 2003 and
+2022, so all of them predate Boltz-2. **This is a memorisation check, not a
+prediction test.** One post-training complex exists -- 9x7r, released
+2026-09-23, a TCR-pMHC complex on an unrelated peptide -- and on it accuracy
+drops materially: contact-count Spearman **0.840**, distance Spearman 0.848,
+Jaccard **0.700**, and total contacts overpredicted by 40% (146 against 104).
+n=1 is an anecdote, not evidence, but it is the only out-of-distribution point
+available and it points the expected way.
+
+*Between-complex discrimination -- the check that matters most.* Reproducing
+each structure individually would be useless if the model could not reproduce
+how they *differ*, which is the only thing a fingerprint feature uses. Over the
+36 pairs of GILGFVFTL complexes, Spearman between predicted and measured
+pairwise fingerprint distance is **+0.948**, with comparable magnitudes (real L1
+65.3 +/- 36.2, predicted 69.9 +/- 39.1). Within the memorised regime, the
+representation does carry real inter-TCR interface variation.
+
+**What this does and does not license.** The fingerprint machinery is validated
+as a representation of real interfaces for TCRs the model has seen. Accuracy on
+the competition's 2,636 TCRs, almost none of which are in the PDB, remains
+unestablished, and the single OOD point suggests degradation.
+
+The consequences are asymmetric:
+
+- **E28's negative result is safe, and strengthened.** Prediction noise can only
+  weaken a real signal, so "contact fingerprints add nothing" holds more firmly
+  if the predictions are noisier out of distribution than here.
+- **E31's positive result is exposed, but partly defended by its design.** It
+  compared discordant pairs against matched same-label controls drawn from the
+  *same* prediction pipeline, so a uniform prediction bias affects both arms
+  equally. Producing that effect from prediction error alone would require the
+  error to correlate with the mutation itself. That is a real defence, not
+  immunity.
+
+A code review of the comparison also caught one flaw of my own: the first
+version pooled contact counts and minimum distances into a single Spearman. The
+two blocks are inversely related and occupy different value ranges, so they
+separate in the rank order of both vectors regardless of whether the
+per-position pattern agrees, inflating the correlation. Fixed to report the
+blocks separately. Two further caveats recorded rather than hidden: chain "A" in
+these fingerprints is whichever TCR chain contacts the peptide more, not
+necessarily the alpha chain, so chain-specific claims are out of scope; and the
+RCSB search for recent entries returned computed-structure models despite
+requesting experimental content, so the out-of-distribution set was filtered
+against the sequence database rather than trusted from the query.
+
+---
+
 ## Where this leaves things
 
-Thirty-three experiments, one consistent picture: **the extractable signal is
+Thirty-four experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
