@@ -787,9 +787,108 @@ authors.
 
 ---
 
+## E25 — Cross-check against an independent pipeline (teammate's HeidAI-immrep26)
+
+A teammate ran a separate pipeline on the same competition. Recorded here for
+what it confirms, what it exposes as a gap, and where the two disagree. Nothing
+from it was adopted into the submission.
+
+### Independent replication, which is the most valuable part
+
+Two pipelines built without contact reached the same numbers on the scaffolding:
+
+| | theirs | ours |
+|---|---|---|
+| macro-AUC standard error | 0.0116 | 0.0110 |
+| per-epitope SE, GIL/YLQ/TTD/NLV/GLC | .016/.015/.022/.027/.041 | .014/.015/.021/.026/.039 |
+| baseline recomputation | 0.8245 | 0.8247 |
+
+And seven dead ends closed independently: annotation metadata (their S2, our
+E3-E4), OLGA Pgen (M40, E7), background normalisation (S1b, E8), graph topology
+(M70, E11), chain decomposition (M20), a learned representation failing to beat
+classical distances (their M60 with ESM-2 650M at 0.8182, ours with SCEPTR), and
+most importantly **inner hyperparameter search damaging cross-epitope transfer**
+-- their M10 went negative with a 400-point grid and positive when only one
+parameter was tuned, which is the same effect E15 measured at 0.0048.
+
+### Where they are ahead, and where E12's reasoning was wrong
+
+**Candidate-pool expansion.** E12 rejected padding cohorts with unscreened
+same-epitope TCRs on design grounds, *without running it*. They ran it and did
+two things we did not:
+
+- Quantified the private-realizable gain by downsampling: **+0.011, or +0.013
+  with IEDB**, rather than reporting the pool-inflated public number.
+- **Targeted** expansion -- merging IEDB only into epitopes whose VDJdb multiple
+  is below 2 -- which lifts the LTDEMIAQY pool from 1.04x to 1.72x at exactly
+  zero public cost.
+
+We never examined IEDB, McPAS or ITRAP at all. That is a real gap.
+
+E12's error was conflating "this will not help the private side much" (true,
+about +0.011) with "this is a trap" (overstated). It is only a trap for someone
+reading the public score, which they explicitly refuse to do.
+
+Their compact statistic for the same phenomenon: corr(cohort size, baseline
+AUC) = +0.706 across the five public epitopes, with clustering measures nearly
+uncorrelated. On five points that is weak evidence, but it points to the right
+action, and it agrees with E21's within-epitope thinning curves.
+
+### Where we are ahead
+
+**Structure.** They list a self-run structure branch as pending with negative
+expected value, reasoning that the AF3 baseline's 0.787 trails tcrdist3's 0.824.
+That is a *standalone* comparison, not a fusion test. E14 and E21 ran all 2,636
+complexes: +0.007 honest nested gain, and the gain **triples on the epitopes
+where density collapses** (+0.006 to +0.020) while staying flat on the robust
+ones. Their own diagnosis is that the private side is pool-limited, with
+LTDEMIAQY smallest and sparsest -- and pool-limited is exactly the condition
+under which density weakens and structure pays. So their diagnosis calls for the
+insurance their prior rules out.
+
+Also unique to this pipeline: the pairwise AUC error decomposition (E22) and the
+near-positive discordant clonotypes (E20).
+
+### Replicated and measured: whole-V-domain alignment distance (their M50)
+
+Worth replicating because it carries no private discount -- it changes how two
+TCRs are compared, not how many there are to compare against. Result in
+`scripts/22_fullseq_alignment_distance.py`: standalone 0.8379, the same band as
+SCEPTR's 0.8396 and tcrdist3's 0.8329, but the **most decorrelated** member
+available (within-epitope Spearman +0.867 against SCEPTR and +0.862 against
+tcrdist3, where those two correlate +0.909), and the best of the three on
+GLCTLVAML at 0.734.
+
+As a fourth density member the blend reads 0.8525 against the submitted 0.8498,
+and strict nested LOEO selects it in all five folds. **Not adopted**: +0.0026 is
+inside noise, so it is not a demonstrated improvement, and the candidate file
+`submissions/density4_struct03.csv` is kept unsubmitted.
+
+### A caution on comparing ledgers
+
+Their best public figure (0.8552) and ours (0.8498) are not comparable, because
+theirs is lifted by pool expansion that the private epitopes mostly cannot
+receive. On a private-realizable basis theirs is roughly 0.8245 + 0.011 + 0.0044
+= 0.840 and ours is the 0.846 nested estimate, which needs no discount. Mixed
+denominators inside a single ledger are easy to misread.
+
+### One framing of theirs that is better than ours
+
+They map the paper's causal taxonomy of non-validation onto similarity-space
+signatures: multimer background binding gives an isolated outlier that density
+catches; alpha-chain mispairing gives a typical beta with a random alpha;
+single-base sequencing error or V-gene misannotation puts the TCR *immediately
+adjacent to a true positive*; and genuine low affinity below the Jurkat
+threshold does the same. The last two are the same population as our
+near-positive discordant clonotypes, but their frame explains *why* that
+population must exist and why no sequence method can reach it, which is a better
+account than our "false cluster" language. Worth carrying forward.
+
+---
+
 ## Where this leaves things
 
-Twenty-four experiments, one consistent picture: **the extractable signal is
+Twenty-five experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
