@@ -1006,16 +1006,43 @@ involved, and our kernel is the right operator for a fixed cohort.
 Downsampling each public pool to the private epitopes' own *distinct-clonotype*
 multipliers, 30 repeats, top-8:
 
-| private epitope | multiplier | realisable gain |
-|---|---:|---:|
-| LTDEMIAQY | 1.038 | +0.0002 |
-| CINGVCWTV | 1.045 | +0.0002 |
-| LLWNGPMAV | 1.834 | +0.0036 |
-| **macro** | | **+0.0013** |
+| private epitope | multiplier | top-8 density | **submitted blend** |
+|---|---:|---:|---:|
+| LTDEMIAQY | 1.038 | +0.0002 | **-0.0003** |
+| CINGVCWTV | 1.045 | +0.0002 | **-0.0002** |
+| LLWNGPMAV | 1.834 | +0.0036 | **+0.0018** |
+| **macro** | | **+0.0013** | **+0.0004** |
 
 against +0.0112 on the full public pools. **88% of the public gain cannot
 transfer**, because two of three private epitopes can add only about 4% more
 distinct clonotypes.
+
+**How that estimate was made, and three reasons not to quote the point value
+alone.** For each private multiplier m, every public pool was topped up by
+(m-1) x its own cohort size, 30 random subsamples, and the five resulting gains
+averaged; the three private results were then averaged.
+
+1. *It was first computed on a model we do not submit.* Top-8 is the operator
+   where expansion works; our submission is kernel density blended 0.7/0.3 with
+   structure, where the dilution is compounded. Recomputed on the submitted
+   configuration the macro estimate falls to **+0.0004**, naive 95% interval
+   [-0.0022, +0.0030] -- indistinguishable from zero, and negative on two of the
+   three private epitopes.
+2. *The mean hides a 26-fold spread.* At LLWNGPMAV's multiplier the five public
+   estimates run GLCTLVAML +0.0158, GILGFVFTL +0.0038, YLQPRTFLL -0.0000,
+   TTDPSFLGRY -0.0030, NLVPMVATV -0.0076 (sd 0.0089, five times the mean). And
+   that interval is itself optimistic: averaging across public epitopes assumes
+   the gain depends only on the multiplier, which is exactly the exchangeability
+   E21 disproved. The defensible statement is that **five epitopes cannot
+   estimate this quantity**, only that the point estimate sits near zero with
+   the spread straddling both signs.
+3. *Random subsampling is optimistic.* A random draw from GILGFVFTL's 3,005
+   diverse clonotypes is not what LTDEMIAQY would get -- its 5 available extras
+   come from a pool that is 97.8% one reference. Repeating the exercise drawing
+   only from each pool's dominant study gives LTDEMIAQY **-0.0002**, also zero.
+
+So the verdict stands and strengthens: not "the gain is small" but "on our
+configuration there is no measurable gain".
 
 This is nearly an order of magnitude below the teammate's +0.011 estimate. The
 likely cause is the matching unit: downsampling by *records* rather than
