@@ -453,9 +453,57 @@ table in `04_master_comparison.md`.
 
 ---
 
+## E19 — Docking consistency across diffusion samples
+
+**Method.** Re-fold all 2,636 complexes with 5 diffusion samples (Boltz runs its
+trunk once and samples only the diffusion head, so 5 samples cost 1.36x one:
+18 s each, 13.2 h total). Superpose each pair of samples on the MHC and peptide
+C-alphas, then take TCR C-alpha RMSD. The question is whether a pair docks to
+the *same pose* when resampled, i.e. whether one binding mode exists.
+`scripts/16`, `scripts/17`.
+
+**The hypothesis, and why it was wrong.** E14 showed Boltz *confidence* largely
+reports how canonical a TCR sequence is. Consistency was expected to be immune
+to that, on the argument that all five samples share identical sequence input,
+so any difference between them must come from the docking solution itself.
+
+**That argument was wrong.** The five samples share more than the input: they
+share the single already-computed trunk representation. The diffusion head
+samples a distribution conditioned on it, so a confident trunk yields a narrow
+conditional and therefore consistent samples. Consistency is *downstream* of
+trunk confidence. The shared input is the reason it is not orthogonal, not a
+reason it would be.
+
+**Result.** Docking RMSD spans 0.32-42.7 A, so the dynamic range is real, but:
+
+| feature | mean | GLCTLVAML |
+|---|---:|---:|
+| density (reference) | 0.8396 | 0.713 |
+| `ms_iptm_mean` (5-sample mean confidence) | 0.7665 | 0.735 |
+| single-sample min-PAE | 0.7565 | 0.737 |
+| `consist_tcr_rmsd_mean` | 0.7405 | **0.775** |
+
+Within-epitope Spearman against density is **+0.530** — indistinguishable from
+the +0.528 of the confidence features it was supposed to improve on.
+
+Blended into the current best (3-space density + structure @0.2 = 0.8508), the
+best gain is **+0.0010**, against a pre-registered inclusion threshold of
++0.02. **Rejected.**
+
+One thing worth keeping: consistency scores 0.775 on GLCTLVAML, the highest of
+any single feature on the project's weakest epitope. But it buys nothing free --
+weighting it heavily enough to lift GLCTLVAML to 0.765 drops the overall mean to
+0.8128, because the gain is taken from the other four epitopes.
+
+**Settled.** 13.2 GPU-hours for +0.001. The pre-registered rule did its job:
+a mechanistic hypothesis was wrong, the data said so, and the threshold stopped
+a near-useless component from entering the submission.
+
+---
+
 ## Where this leaves things
 
-Eighteen experiments, one consistent picture: **the extractable signal is
+Nineteen experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
