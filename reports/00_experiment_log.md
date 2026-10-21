@@ -1204,9 +1204,64 @@ AUC), E22 (62% of error is both-singleton) and this experiment.
 
 ---
 
+## E31 — The discordant negatives look like fine specificity, not assay dropout
+
+Plan cards S03, C09, C03 and C04 on one pair set,
+`scripts/26_discordant_pair_anatomy.py`. E20 found negatives that are
+single-residue CDR3 variants of validated positives and E27 relocated their
+damage, but nothing had tested *why* they differ. The two candidates imply
+opposite things: a mutation abolishing a peptide contact is real fine
+specificity, so no sequence method can be blamed for missing it; a mutation at a
+solvent-facing position points at the assay or the annotation.
+
+**The test needs a null**, so each discordant mutation is compared against
+**matched same-label pairs** -- positive/positive neighbours sharing one CDR3
+exactly and differing by one or two residues on the other, within the same
+epitope. Without that control, "mutations tend to be peptide-facing" would just
+be a property of CDR3 mutation in general. 71 discordant pairs (103 mutated
+sites) against 522 control pairs (767 sites).
+
+| mutated-site property | discordant | control | stratified permutation p |
+|---|---:|---:|---:|
+| peptide contacts at that position | **6.53** | 2.90 | **0.0070** |
+| change in peptide contacts between members | **3.37** | 1.27 | **0.0010** |
+| position is peptide-facing at all | 0.340 | 0.231 | 0.0790 |
+| volume change | 53.7 | 41.9 | (Mann-Whitney 0.023) |
+| charge change | 0.27 | 0.23 | (Mann-Whitney 0.314) |
+
+Permutation is stratified by epitope over 2,000 draws, so an effect produced
+only by GILGFVFTL dominating the pool would wash out. Two things follow.
+
+**The continuous effect survives and the binary one does not.** It is not that
+discordant mutations are more often at a peptide-contacting position -- that
+drops to p=0.079 once epitope composition is held fixed. It is that they sit at
+positions carrying **2.3x more peptide contact** and produce **2.7x larger
+changes** in it. The more precise claim is the quantitative one.
+
+**Direction is consistent where there is data:** GILGFVFTL (65 sites),
+GLCTLVAML (10) and NLVPMVATV (26) all agree; YLQPRTFLL has 2 sites and goes the
+other way, TTDPSFLGRY has none. Non-independence is mild -- 71 discordant pairs
+come from 87 unique TCRs, so most appear once, though one TCR appears in 14.
+
+**Settled, with its limits.** This supports genuine fine specificity over assay
+dropout: if these were dropouts, the mutated position would be random with
+respect to the peptide interface and therefore indistinguishable from the
+control. It is not. So the near-positive discordance is at least partly real
+biology, which means sequence-neighbourhood methods have a **biologically
+grounded ceiling** rather than merely a noise ceiling -- and that it cannot be
+fixed by better sequence modelling, only by reading the interface, which E28
+showed is too weak to use here.
+
+Limits worth stating: these are predicted structures, so a predicted contact is
+not a measured one; charge change shows no effect, so the simple
+"salt-bridge lost" story is not supported; and this explains the ceiling without
+moving the competition score at all.
+
+---
+
 ## Where this leaves things
 
-Thirty experiments, one consistent picture: **the extractable signal is
+Thirty-one experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
