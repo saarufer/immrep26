@@ -1437,9 +1437,72 @@ against the sequence database rather than trusted from the query.
 
 ---
 
+## E35 — Reference-database version, source and leakage (plan card R06)
+
+Three VDJdb releases downloaded -- 2024-06-13 (32,183 paired human rows),
+2025-02-21 (35,672) and 2026-06-03 (86,221) -- and the pool measurement from
+E27/E33 rerun on each with the prediction function fixed.
+
+**Leakage audit, which had not been done and should have been.** If VDJdb had
+absorbed records from the Schumacher re-screening, the expansion pool would
+contain the answer key. It has not: searching every human reference for the
+Immunity 2026 DOI, the 2025 bioRxiv preprint, "TCRvdb", the Schumacher lab repo
+and "T-RAP" returns **zero records each**. The pool is independent of the
+labels.
+
+**The competition's screening set most resembles a ~2025-02 snapshot.** Over
+the five epitopes the organisers appear to have taken whole rather than
+subsampled, the median absolute difference between VDJdb clonotype count and
+test-set size is 4 for 2025-02-21, against 10 for 2024-06-13 and 25 for
+2026-06-03 -- and CINGVCWTV matches exactly, 243 against 243. Suggestive, not
+proof: VDJdb removes records between releases too, and the organisers applied
+their own QC for synthesis failure and ambiguous calls. It does explain
+GILGFVFTL (3,282 available, 670 screened) and GLCTLVAML (487, 192) as
+deliberate subsampling.
+
+**The pool gain is not resolvably version-dependent.**
+
+| reference pool | mean | gain |
+|---|---:|---:|
+| none | 0.8414 | -- |
+| VDJdb 2024-06-13 | 0.8466 | +0.0052 |
+| VDJdb 2025-02-21 | 0.8513 | +0.0099 |
+| VDJdb 2026-06-03 | 0.8526 | +0.0112 |
+
+The trend looks monotone, and the self-check says it is not interpretable. Paired
+across the same five epitopes: 2026 minus 2024 is +0.0060 (se 0.0048), 2026
+minus 2025 is +0.0012 (se 0.0023), 2025 minus 2024 is +0.0048 (se 0.0064). **No
+pairwise difference reaches two standard errors.** The per-epitope detail shows
+why: the spread is carried almost entirely by GLCTLVAML (+0.005, +0.035, +0.030)
+while GILGFVFTL, NLVPMVATV, TTDPSFLGRY and YLQPRTFLL are flat to within 0.003.
+A 2.7-fold increase in database size produces no resolvable change in the gain,
+which is itself the result.
+
+It also falsifies a claim I made in narration before measuring -- that the gain
+would be smaller with the snapshot the organisers actually used. It is 0.0012
+smaller, inside the noise.
+
+**The durable finding is a count, not an AUC, so noise does not apply.**
+Available pool multiplier per private epitope across the three releases:
+
+| epitope | 2024-06 | 2025-02 | 2026-06 |
+|---|---:|---:|---:|
+| CINGVCWTV | 1.01 | 1.00 | 1.05 |
+| LTDEMIAQY | 1.04 | 1.02 | 1.04 |
+| LLWNGPMAV | 1.08 | 1.03 | **1.83** |
+
+CINGVCWTV and LTDEMIAQY have gained essentially no new paired TCRs in eighteen
+months, so **their exhaustion is a durable property of the epitope rather than
+an artefact of which snapshot is compared against** -- which makes E27's and
+E33's conclusion version-robust for two of the three deciding epitopes.
+LLWNGPMAV is the exception and its surplus is recent, added after the
+organisers' snapshot.
+
+---
+
 ## Where this leaves things
 
-Thirty-four experiments, one consistent picture: **the extractable signal is
+Thirty-five experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
