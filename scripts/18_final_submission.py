@@ -24,10 +24,18 @@ Why these choices and no others, from reports/00_experiment_log.md:
   full coverage (-0.0002) and beats it when sparse (+0.0042 at 45% coverage,
   +0.0008 at 20%), so it is weakly dominant and the private cohorts are the
   sparse case. Weight 0.5 is better still at 20% coverage but loses 0.013 at
-  full coverage, so its risk is not symmetric.
+  full coverage, so its risk is not symmetric. Note what that -0.0002 is and is
+  not: it is the observed difference on the five tested epitopes, not a bound on
+  what 0.3 could cost on an unseen one.
 - No fitted weights anywhere. Logistic regression on top of density loses 0.006
   and gradient boosting 0.021 (E10), and cross-validated configuration
   selection loses 0.0048 against fixing it in advance (E15).
+
+  To be precise about what that buys: the scoring function has no fitted
+  parameters, but its architecture, features and blend weight were chosen in
+  light of labelled validation data. Having no fitted parameters is not the same
+  as having no selection exposure -- E15 measured that exposure at 0.0048 over
+  323 candidates.
 - Nothing else enters: metadata, generation probability, background
   normalisation, cluster shape, graph refinement, an unseen-epitope specificity
   model and multi-sample docking consistency were each measured and each failed
@@ -36,6 +44,14 @@ Why these choices and no others, from reports/00_experiment_log.md:
 Expected private score: **0.846**, the nested-LOEO estimate, which already
 absorbs selection cost. Public-epitope score will read about 0.850 but that
 number is not evidence of anything -- the public labels are published.
+
+A matching public score also does not verify that the private rows are
+correctly aligned: scoring covers only the 1,782 labelled public rows, so a
+misalignment confined to the 602 private rows would be invisible. That is
+checked separately, by asserting id uniqueness and order against test.csv, that
+every tcr_id carries its own structure row, and that each complex's input YAML
+contains that tcr_id's own chain sequences and the HLA platform matching its
+allele.
 
 Run: python scripts/18_final_submission.py
 """

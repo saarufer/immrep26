@@ -546,7 +546,7 @@ One exception, and it is the weak epitope. On GLCTLVAML's 81 singletons density
 collapses to **0.551** while every structure-derived feature beats it:
 multi-sample confidence 0.676, docking consistency 0.668, min-PAE 0.659.
 
-**A hard ceiling found while looking.** Some negatives are single-residue
+**Near-neighbour label discordance (not, on reflection, a proven ceiling).** Some negatives are single-residue
 variants of validated positives -- identical CDR3 on one chain with one or two
 substitutions on the other, sitting inside otherwise-pure positive clusters:
 
@@ -559,12 +559,24 @@ substitutions on the other, sitting inside otherwise-pure positive clusters:
 | YLQPRTFLL | 224 | 1 | 0.6% | 0.9279 | 0.9310 |
 | total | 872 | 34 (**3.9%**) | | 0.8362 | **0.8602** |
 
-3.9% of negatives, which coincides with the pooled screen's own reported
-false-negative rate of 3.9%. Whether these are assay dropouts or genuine fine
-specificity -- one CDR3 residue can abolish recognition -- they are
-indistinguishable from positives by any sequence method, so **roughly 0.024 of
-the remaining gap is unreachable**. GLCTLVAML at 7.3% and NLVPMVATV at 12.1%
-exceed the assay's stated rate.
+3.9% of negatives. The pooled screen's own reported false-negative rate is also
+3.9%, but that is expressed against positives, not negatives, so the agreement
+is a coincidence of denominators and carries no weight -- it should not have
+been leaned on.
+
+Two further cautions, both raised in review and both correct. The relabelling
+arithmetic is **selection-affected**: these rows were picked *because* they sit
+close to positives, which is the same property that makes the model rank them
+high, so of course relabelling them raises AUC. And the discordance has two
+possible causes that this analysis cannot separate -- assay dropout, or genuine
+fine specificity, since one CDR3 residue can abolish recognition. So 0.024 is
+not a demonstrated unreachable ceiling, and E22 shows the figure also does not
+arise where it appeared to: same-cluster pairs contribute only 0.5% of the total
+loss, and the damage from these rows is instead concentrated in
+`pos_sing_neg_clu`.
+
+The honest description is **near-positive discordant clonotypes**: negatives
+indistinguishable from validated positives by sequence, of unresolved cause.
 
 ### Why is GLCTLVAML the weak epitope, and does that threaten the private side?
 
@@ -673,9 +685,111 @@ expected small price for the insurance.
 
 ---
 
+## E22 — Pairwise AUC error decomposition (reviewer's P0)
+
+**Why.** Mean per-epitope AUC is exactly the probability a validated TCR
+outranks a non-validating one from the same cohort, so 1 - AUC is a set of
+specific inverted pairs. The inference this guards against: 54% of positives
+are singletons, which does **not** imply 54% of the error involves them.
+
+**Method.** Partition every positive-negative pair within an epitope by cluster
+state, mutually exclusive and complete, so the class losses sum to 1 - AUC.
+The script asserts that reconstruction; residual 1.4e-16.
+`scripts/20_auc_error_decomposition.py`.
+
+**Result.**
+
+| class | share of loss | share of pairs | error rate within class |
+|---|---:|---:|---:|
+| both_singleton | **62.0%** | 50.5% | 0.207 |
+| pos_sing_neg_clu | **21.2%** | **4.5%** | **0.673** |
+| diff_cluster | 10.0% | 6.2% | 0.231 |
+| pos_clu_neg_sing | 6.4% | 38.6% | 0.021 |
+| same_cluster | 0.5% | 0.3% | 0.309 |
+
+**The adversarial class is systematically inverted.** When the positive is
+isolated and the negative is clustered, the submitted model gets the order
+wrong 67% of the time -- worse than chance -- on GLCTLVAML 0.819 and NLVPMVATV
+0.825. It is 4.5% of pairs and 21.2% of the error.
+
+**This corrects E20's account of the 34 near-positive discordant negatives.**
+Same-cluster pairs -- the fine-specificity comparisons -- contribute only 0.5%
+of loss. So relabelling those negatives did not gain 0.024 by fixing
+within-cluster discrimination. It gained it because a relabelled negative stops
+being a negative in *every* comparison, and most of its damage was in
+`pos_sing_neg_clu`: a clustered negative collects a high density score and
+outranks isolated positives elsewhere in the cohort. The mechanism is
+over-scoring of clustered negatives, not failure to resolve a neighbour.
+
+---
+
+## E23 — Can the adversarial class be fixed? No, and the arithmetic says why
+
+**Per-class feature strength.** Structure is better than chance exactly where
+density is catastrophically worse:
+
+| feature | pos_sing_neg_clu | pos_clu_neg_sing |
+|---|---:|---:|
+| density | **0.697** | **0.013** |
+| blend w=0.3 | 0.602 | 0.023 |
+| structure min-PAE | **0.422** | 0.156 |
+| multi-sample confidence | 0.447 | 0.125 |
+
+Per epitope in the adversarial class, density against structure: YLQPRTFLL
+0.638/0.219, GLCTLVAML 0.931/0.405, NLVPMVATV 0.968/0.468.
+
+**Attempt 1 — cluster-conditional weighting.** Cluster state is label-free, so
+weighting structure differently for clustered and isolated TCRs is legitimate at
+inference. Strict nested LOEO over both weights: **0.8418 against 0.8486 for the
+flat weight, -0.0068.** And the oracle over the whole 8x8 grid peaks at 0.8486
+at (0.2, 0.3) -- *identical to flat w=0.3*. Even with perfect knowledge,
+conditioning buys nothing.
+
+**Why, quantitatively.** Scores are per TCR, not per pair, so a TCR cannot know
+which comparison it is in. Raising structure weight to help the adversarial
+class necessarily moves the same TCRs in the easy class:
+
+| structure weight 0.3 -> 0.6 | contribution |
+|---|---:|
+| pos_sing_neg_clu (4.5% of pairs) | **+0.0040** |
+| pos_clu_neg_sing (38.6%) | -0.0146 |
+| both_singleton (50.5%) | -0.0161 |
+| diff_cluster (6.2%) | -0.0029 |
+| **net** | **-0.0296** |
+
+Fixing the adversarial class completely, at w=1.0, is worth at most +0.0081
+while costing -0.107 elsewhere. The trade is about 13:1 against.
+
+**Settled.** The decomposition succeeded diagnostically and failed
+prescriptively. What would be needed is a feature informative *within* the
+clustered subset and roughly uninformative *between* subsets, so it can demote
+clustered negatives without disturbing the clustered-versus-singleton ordering
+that supplies 38.6% of correct pairs at a 2% error rate. Structure is not that:
+it is informative everywhere, merely worse than density in most places.
+
+---
+
+## E24 — Is probabilistic label modelling available? No
+
+The reviewer's GuanRank analogy suggests treating functional labels as evidence
+of varying strength, modelling `P(Y_true = 1 | Y_observed, assay evidence)`
+rather than a hard binary, and correctly flags that this depends on TCRvdb
+exposing per-TCR detail.
+
+**Checked.** The released TCRvdb file has 24 columns and the only label
+information is `pos` / `neg` / `ambiguous`, strictly one-hot integers. There is
+no enrichment value, read or UMI count, replicate, p-value, CD69 readout or any
+other continuous quantity; the sole numeric field is `vdjdb_score`, taking
+values 0-3, which is the *prior annotation* confidence and is already known to
+anti-correlate with validation (E4). So the route is closed with the data
+available, not merely unpromising. It would need a richer release from the
+authors.
+
+---
+
 ## Where this leaves things
 
-Twenty-one experiments, one consistent picture: **the extractable signal is
+Twenty-four experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
