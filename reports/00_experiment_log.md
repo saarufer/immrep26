@@ -1259,9 +1259,107 @@ moving the competition score at all.
 
 ---
 
+## E32 — Six remaining sequence cards, all rejected (D04, D05, D10, S01, S02, S07)
+
+`scripts/27_remaining_sequence_cards.py`, all judged by strict nested LOEO
+against the submitted blend at 0.8498.
+
+| card | result | verdict |
+|---|---|---|
+| D04 substitution cost on CDR3 | identity 0.8007, BLOSUM62 0.7999, BLOSUM45 0.8014 | the cost matrix does not matter |
+| D05 multi-scale neighbourhood | three-scale average 0.8378 against single sigma=0.1 at 0.8396; blended +0.0007 | worse than one scale |
+| S01 residual learnable information | best extra feature +0.0002, `iptm` **-0.0193** | third independent confirmation that the labels add nothing |
+| S02 singleton rescue model | global **-0.0186**; within-singleton 0.7704 against the frozen score's 0.793 | a fitted singleton model is worse than the frozen score even on singletons |
+| S07 abstention layer | close-neighbour group AUC 0.720, isolated group 0.778 | distance-based confidence does not map to ranking reliability |
+
+**D10 is the one with lasting value: it says plainly what the model is.**
+Binning by nearest-neighbour distance and scoring within each bin:
+
+| nn1 band | n | validation rate | **within-band AUC** |
+|---|---:|---:|---:|
+| <0.06 | 310 | 0.823 | 0.791 |
+| 0.06-0.12 | 189 | 0.921 | **0.553** |
+| 0.12-0.25 | 221 | 0.805 | **0.523** |
+| 0.25-0.5 | 526 | 0.432 | 0.690 |
+| >0.5 | 534 | 0.139 | 0.659 |
+
+Within-band discrimination is poor everywhere, 0.52 to 0.79, while the
+validation rate falls 0.92 to 0.14 across bands. **The model is essentially a
+monotone function of nearest-neighbour distance and barely discriminates inside
+any narrow band of it.**
+
+And the private epitopes sit in the far bands: 86.8% of CINGVCWTV, 75.1% of
+LLWNGPMAV and 80.0% of LTDEMIAQY are beyond 0.25, where within-band AUC is
+0.690 and 0.659. That is an independent and simpler confirmation of E30's
+reprojection, reached without the pair-class decomposition.
+
+Also useful for S07's actual purpose: the group with close neighbours has a
+*lower* AUC (0.720) than the isolated group (0.778), because its validation rate
+is already 0.86 and there is little left to order. So a distance-based
+confidence layer would flag where the prior is extreme, not where the ranking is
+unreliable -- worth knowing before carrying such a layer into IRIS.
+
+---
+
+## E33 — Pool and provenance cards, with two results that correct each other (R02, I02, R08, S05)
+
+**I02 -- expansion does rescue positives preferentially, so it is not pure
+volume.** When the pool gives an isolated TCR a neighbour inside the clustering
+radius, that TCR is about three times more likely to be a validated positive:
+
+| epitope | P(rescued \| positive) | P(rescued \| negative) | ratio |
+|---|---:|---:|---:|
+| GILGFVFTL | 0.134 | 0.041 | **3.2x** |
+| GLCTLVAML | 0.055 | 0.036 | 1.5x |
+| pooled | 0.047 | 0.015 | ~3x |
+
+So expansion carries genuine evidence. But outside GILGFVFTL the absolute counts
+are negligible -- NLVPMVATV, TTDPSFLGRY and YLQPRTFLL rescue two TCRs each -- so
+this is entirely consistent with E27: the mechanism is real and there is nothing
+to rescue on the private side.
+
+**R02 -- and yet throttling kills the gain, so there is a volume component too.**
+
+| pool policy | mean |
+|---|---:|
+| no pool | 0.8414 |
+| all records | **0.8526** |
+| one share per reference | 0.8504 |
+| one per subject | 0.8428 |
+
+Deduplicating by subject nearly erases the benefit. The gain therefore has both
+an evidential component (I02) and a volume component (R02), which is why the
+raw-record version of expansion looked better than it deserved in E27.
+
+**R08 -- how much of "clustered" just means "easy to generate" is
+epitope-specific.** Matching on terciles of paired Pgen crossed with CDR3-beta
+length and re-measuring the clustering-to-validation gap:
+
+| epitope | raw gap | gap within matched strata |
+|---|---:|---:|
+| **GILGFVFTL** | 0.400 | **0.067** |
+| GLCTLVAML | 0.281 | 0.375 |
+| NLVPMVATV | 0.658 | **0.711** |
+| TTDPSFLGRY | 0.518 | 0.416 |
+| YLQPRTFLL | 0.576 | 0.412 |
+
+On GILGFVFTL the association nearly vanishes once generation probability and
+length are matched -- its clusters are largely high-Pgen, easy-to-generate
+motifs. On NLVPMVATV it is untouched. This is the fine-grained version of E7's
+finding that Pgen is not orthogonal: **the degree of Pgen confounding is itself
+epitope-specific**, which is one more reason a single global correction (E8)
+could only hurt. Caveat: few TCRs per stratum, so these are noisy.
+
+**S05 -- provenance weak supervision, dead for the third time.** Records per
+clonotype 0.534, distinct references 0.557, distinct assay classes 0.514, and
+every one of them takes only one or two distinct values within each private
+epitope.
+
+---
+
 ## Where this leaves things
 
-Thirty-one experiments, one consistent picture: **the extractable signal is
+Thirty-three experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
