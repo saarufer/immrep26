@@ -603,9 +603,79 @@ resembles it.
 
 ---
 
+## E21 — Cohort thinning: does density survive a sparser repertoire? (PI's proposal)
+
+**Why it mattered.** Density is computed within the epitope cohort, so its
+quality depends on how well that cohort covers the relevant TCR space. The
+private cohorts are sparser than anything validated on: the fraction of TCRs
+with a neighbour inside the clustering radius is 2.5% for CINGVCWTV and 4.4%
+for LLWNGPMAV, against 4.7-55% across the public five. CINGVCWTV is below every
+public epitope, so the LOEO estimate is an extrapolation.
+
+**Method.** Randomly thin each public cohort to fractions 1.0 down to 0.12,
+recompute density within the thinned cohort, score against the real labels,
+40 repeats. Two variants, because the naive design confounds a worse density
+estimate with a noisier AUC on fewer rows: `thin_both` drops TCRs and scores
+the survivors; `thin_reference` drops from the reference set only and still
+scores every labelled row. `scripts/19_cohort_thinning.py`.
+
+**Result 1 — density's robustness to sparsity is wildly epitope-dependent.**
+Within-epitope, AUC against the close-neighbour fraction thinning produced:
+
+| epitope | dense end | sparse end | change |
+|---|---:|---:|---:|
+| GILGFVFTL | 0.868 (cf 0.449) | 0.869 (cf 0.130) | **0.000** |
+| YLQPRTFLL | 0.928 (cf 0.194) | 0.920 (cf 0.013) | -0.008 |
+| GLCTLVAML | 0.713 (cf 0.542) | 0.688 (cf 0.081) | -0.025 |
+| TTDPSFLGRY | 0.845 (cf 0.041) | 0.724 (cf 0.002) | **-0.121** |
+| NLVPMVATV | 0.844 (cf 0.205) | 0.699 (cf 0.014) | **-0.145** |
+
+**Result 2 — and this corrects E20.** At essentially identical sparsity, cf
+about 0.013-0.014, YLQPRTFLL scores **0.920** and NLVPMVATV **0.699**. Sparsity
+does not determine performance; intrinsic separability does. So the claim in
+E20 that the private epitopes "look like TTDPSFLGRY, NLVPMVATV and YLQPRTFLL
+where density scores 0.84-0.93" **does not hold**: at private-like sparsity
+those same three epitopes span 0.70-0.93. Cohort geometry cannot forecast a
+private epitope's AUC, and the real uncertainty on the private score is wider
+than the +/-0.023 sampling error alone implies.
+
+**Result 3 — thinning is not strongly pessimistic.** The worry was that thinning
+manufactures false singletons by deleting a positive's true cluster-mates. The
+singleton-to-negative association barely moves: the gap between clustered and
+singleton validation rates goes 0.486 at full coverage to 0.454 at 20%. So the
+simulation is reasonably faithful rather than a loose bound.
+
+**Result 4 — structure is insurance, and it changed the submission.** The
+structure blend's gain concentrates exactly where density fails:
+
+| | full | 45% | 20% |
+|---|---:|---:|---:|
+| gain on the two fragile epitopes (NLVPMVATV, TTDPSFLGRY) | +0.0059 | +0.0120 | **+0.0202** |
+| gain on the three robust epitopes | +0.0112 | +0.0103 | +0.0099 |
+
+Sweeping the weight at each coverage level:
+
+| coverage | w=0.2 | w=0.3 | w=0.5 | best |
+|---|---:|---:|---:|---|
+| full | **0.8487** | 0.8485 | 0.8360 | 0.2 |
+| 45% | 0.8263 | **0.8305** | 0.8252 | 0.3 |
+| 20% | 0.8117 | 0.8125 | **0.8144** | 0.5 |
+
+**Decision: structure weight 0.2 -> 0.3**, on a dominance argument rather than
+by optimising a regime. w=0.3 ties w=0.2 at full coverage (-0.0002) and beats it
+at both sparse levels (+0.0042, +0.0008), and the private cohorts are the sparse
+case (cf 0.025-0.146, between the 20% and 45% thinning levels). w=0.5 wins at
+20% coverage but loses 0.013 at full coverage, so its risk is asymmetric. If the
+sparsity argument is simply wrong, the cost of 0.3 is bounded at 0.0002.
+
+Public-epitope score moves 0.8508 -> 0.8498 under the new weight, which is the
+expected small price for the insurance.
+
+---
+
 ## Where this leaves things
 
-Twenty experiments, one consistent picture: **the extractable signal is
+Twenty-one experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.

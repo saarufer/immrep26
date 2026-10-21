@@ -7,7 +7,7 @@ Configuration, fixed and not re-selected:
       SCEPTR `default`  (cosine, sigma=0.1)
       SCEPTR `small`    (cosine, sigma=0.1)
       tcrdist3 alpha+beta (sigma=20)
-  blended 0.8 / 0.2 with the TCR-peptide min-PAE from Boltz-2.
+  blended 0.7 / 0.3 with the TCR-peptide min-PAE from Boltz-2.
 
 Why these choices and no others, from reports/00_experiment_log.md:
 
@@ -16,6 +16,15 @@ Why these choices and no others, from reports/00_experiment_log.md:
 - Structure at a low weight: it reaches only 0.757 alone and correlates +0.53
   with density, so it is a minor correction, not a peer. Nested LOEO selects
   0.2-0.3 in every fold.
+- Weight 0.3 rather than 0.2 on a dominance argument, not by optimising any one
+  regime (E21). Thinning the public cohorts to private-like sparsity shows
+  structure's contribution concentrates exactly where density fails: on the two
+  epitopes that collapse under thinning its gain triples, from +0.006 to +0.020,
+  while on the robust three it stays flat. Sweeping the weight, 0.3 ties 0.2 at
+  full coverage (-0.0002) and beats it when sparse (+0.0042 at 45% coverage,
+  +0.0008 at 20%), so it is weakly dominant and the private cohorts are the
+  sparse case. Weight 0.5 is better still at 20% coverage but loses 0.013 at
+  full coverage, so its risk is not symmetric.
 - No fitted weights anywhere. Logistic regression on top of density loses 0.006
   and gradient boosting 0.021 (E10), and cross-validated configuration
   selection loses 0.0048 against fixing it in advance (E15).
@@ -25,7 +34,7 @@ Why these choices and no others, from reports/00_experiment_log.md:
   the +0.02 inclusion threshold, most of them scoring below chance.
 
 Expected private score: **0.846**, the nested-LOEO estimate, which already
-absorbs selection cost. Public-epitope score will read about 0.851 but that
+absorbs selection cost. Public-epitope score will read about 0.850 but that
 number is not evidence of anything -- the public labels are published.
 
 Run: python scripts/18_final_submission.py
@@ -48,8 +57,8 @@ from immrep.submission import build  # noqa: E402
 
 SCEPTR_SPACES = (("default", 0.1), ("small", 0.1))
 TCRDIST_SIGMA = 20.0
-STRUCTURE_WEIGHT = 0.2
-NAME = "density3_struct02"
+STRUCTURE_WEIGHT = 0.3
+NAME = "density3_struct03"
 
 
 def rank_within_epitope(values: pd.Series, test: pd.DataFrame) -> pd.Series:
