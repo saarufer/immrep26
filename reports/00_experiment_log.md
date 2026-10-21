@@ -886,9 +886,60 @@ account than our "false cluster" language. Worth carrying forward.
 
 ---
 
+## E26 — Where does the whole-V-domain alignment gain come from? (plan card D02)
+
+**Why.** E25 replicated a teammate's alignment distance over the assembled
+variable domains, found it the most decorrelated ensemble member, and left a
+candidate submission pending on a +0.0026 blend gain. A joint experiment plan
+asked the right follow-up: attribute that gain to a region of the domain, with
+the pre-declared criterion that if framework / V-gene explains all of it, the
+result is germline confounding rather than recognition signal.
+
+**Method.** CDR3 is found verbatim inside `full_seq` for all 2,636 rows, at a
+median 79% into the domain and occupying about 12% of it, so the split is clean:
+full domain, CDR3 masked out (framework + CDR1/2, the other 88%), and CDR3
+alone. Same alignment, same normalisation, same bandwidth.
+
+**Result.**
+
+| region | mean AUC | within-epitope Spearman with full |
+|---|---:|---:|
+| full V domain | 0.8379 | -- |
+| CDR3 masked out | 0.8287 | **+0.990** |
+| CDR3 only | 0.7999 | +0.730 |
+
+The full-domain ranking is the CDR3-masked ranking. CDR3 contributes almost
+nothing to the order, and the signal sits in the germline-encoded 88%.
+
+The decorrelation comes from the same place: `CDR3-masked` against tcrdist3 is
++0.812 while `CDR3-only` against tcrdist3 is +0.897. What made this distance the
+most independent ensemble member is framework and CDR1/2 similarity -- which is
+largely V-gene and allele identity, measured continuously.
+
+**Settled.** The pre-declared criterion is met, so the honest reading is
+germline confounding, not a new comparison of CDR3 chemistry. tcrdist3 already
+carries V-gene identity as a discrete term, and the teammate's own ledger closed
+a within-cohort V/J frequency feature at +0.0012 with the note that nndist
+already covers it. There is a second, less comfortable reading too: V-gene usage
+tracks study and donor, and correlates with convergent-recombination propensity,
+so this may be re-encoding "how typical is this TCR" for the third time, after
+density itself and after structure confidence (E14).
+
+**Decision: `submissions/density4_struct03.csv` is not adopted.** It was already
+below the +0.02 inclusion threshold at +0.0026; it now also has a mechanism that
+argues against it. The submitted file stays `density3_struct03.csv`.
+
+Worth noting what this says about the method, not just the feature: a result
+that looked like useful decorrelation survived a correlation check, a nested
+LOEO check and a 5-of-5 fold-selection check, and only failed when asked *which
+part of the molecule it came from*. Statistical screening did not catch it;
+biological attribution did.
+
+---
+
 ## Where this leaves things
 
-Twenty-five experiments, one consistent picture: **the extractable signal is
+Twenty-six experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
