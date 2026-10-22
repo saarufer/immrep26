@@ -1560,12 +1560,41 @@ AUCs scatter from 0.488 to 0.676 around chance.
 0.042; the observed 0.0061 is **14% of that**. So this is not a power problem
 that more decoys would fix -- the effect is roughly seven times too small.
 
-**Settled, and it saved seven GPU-hours.** The staged design -- public epitopes
-first, private extension only if justified -- meant phase 2 was never run. This
-closes the structural line with its mechanism identified: Boltz interface
-confidence contains no peptide-specific information in this setting, so every
-structural feature tried (E14, E19, E28, E36) was reading the same
-TCR-canonicality signal that density already reads.
+**Phase 2 was run after all, and it was worth the seven GPU-hours.** I had
+staged the private extension behind a positive phase-1 result and then skipped
+it, on the argument that a feature failing on all five labelled epitopes can
+never clear the pre-registered threshold -- since that threshold is only
+measurable where labels exist. The argument stands, but it answers a different
+question from the one phase 2 asks: *is the failure universal, or specific to
+the epitopes that happen to carry labels?* Without the data that could only be
+asserted. All 902 TCRs x 3 decoys = 2,706 folds completed.
+
+| | target ipTM | decoy ipTM | margin | sd | fraction positive |
+|---|---:|---:|---:|---:|---:|
+| GILGFVFTL | 0.9317 | 0.9174 | +0.0143 | 0.0512 | 0.650 |
+| GLCTLVAML | 0.9284 | 0.9183 | +0.0101 | 0.0543 | 0.617 |
+| NLVPMVATV | 0.9154 | 0.8988 | +0.0166 | 0.0499 | 0.750 |
+| TTDPSFLGRY | 0.9024 | 0.9062 | **-0.0038** | 0.0693 | 0.533 |
+| YLQPRTFLL | 0.8979 | 0.9048 | **-0.0069** | 0.0711 | 0.617 |
+| CINGVCWTV (private) | 0.9022 | 0.8973 | +0.0049 | 0.0609 | 0.617 |
+| LLWNGPMAV (private) | 0.9525 | 0.9238 | +0.0287 | 0.0242 | 0.939 |
+| LTDEMIAQY (private) | 0.9233 | 0.9035 | +0.0199 | 0.0700 | 0.731 |
+
+**The failure is universal.** Mean absolute margin is 0.0406 on the labelled
+epitopes and 0.0394 on the private ones -- indistinguishable -- so there is no
+reason to think the quantity behaves differently where it cannot be scored. It
+does have within-epitope variance everywhere, so it passes E3's formal
+requirement; the variance is simply noise, as the labelled-side AUC of 0.536
+establishes.
+
+Two public epitopes carry **negative** mean margins: on TTDPSFLGRY and
+YLQPRTFLL the model prefers the decoys on average. That is about as direct a
+statement of absent peptide specificity as this setup can produce.
+
+**Settled.** This closes the structural line with its mechanism identified:
+Boltz interface confidence contains no peptide-specific information in this
+setting, so every structural feature tried (E14, E19, E28, E36) was reading the
+same TCR-canonicality signal that density already reads.
 
 ---
 
