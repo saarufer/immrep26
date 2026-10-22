@@ -199,19 +199,50 @@ def md() -> None:
             compare(per_site, "frac", "fraction of frames in contact")]
 
     print("\n=== the test the plan requires: effect against replica spread ===")
+    # The effect is a difference of group means, so its replica-induced
+    # uncertainty is the spread of that difference when each replica is used on
+    # its own -- not the typical per-site replica sd. A first version compared
+    # the effect against the median per-site sd, which is near zero because most
+    # sites never touch the peptide in any replica, so sd is trivially 0 for
+    # them. That made every comparison "exceed the spread" by construction.
+    at_site_keyed = at_site.set_index(keys)
     guard = []
-    for column, spread, label in (("count_mean", "count_replica_sd", "contacts"),
-                                  ("dist_mean", "dist_replica_sd", "distance"),
-                                  ("frac", "frac_replica_sd", "contact fraction")):
-        disc = per_site.loc[per_site["group"] == "discordant", column].mean()
-        ctl = per_site.loc[per_site["group"] == "control", column].mean()
-        effect = abs(disc - ctl)
-        noise = per_site[spread].median()
-        verdict = "exceeds spread" if effect > noise else "WITHIN SPREAD -- no result"
+    for column, label in (("count_mean", "contacts"),
+                          ("dist_mean", "distance"),
+                          ("frac_in_contact", "contact fraction")):
+        per_replica = []
+        for replica, block in at_site.groupby("replica"):
+            disc = block.loc[block["group"] == "discordant", column].mean()
+            ctl = block.loc[block["group"] == "control", column].mean()
+            per_replica.append(disc - ctl)
+        per_replica = np.asarray(per_replica, dtype=float)
+        effect, noise = per_replica.mean(), per_replica.std(ddof=1)
+        agree = bool(np.all(np.sign(per_replica) == np.sign(per_replica[0])))
+        verdict = ("exceeds spread" if abs(effect) > noise
+                   else "WITHIN SPREAD -- no result")
+        if not agree:
+            verdict += "; sign flips between replicas"
         guard.append({"quantity": label, "effect": effect,
-                      "median_replica_sd": noise, "verdict": verdict})
-        print(f"  {label:<18} |effect| {effect:7.3f}   median replica sd {noise:7.3f}"
+                      "replica_sd_of_effect": noise,
+                      "per_replica": np.round(per_replica, 3).tolist(),
+                      "sign_consistent": agree, "verdict": verdict})
+        print(f"  {label:<18} effect {effect:+7.3f}   sd across replicas {noise:7.3f}"
               f"   {verdict}")
+        print(f"  {'':<18} per replica {np.round(per_replica, 3).tolist()}")
+
+    print("\n  Read this guard as necessary, never sufficient. It asks only whether"
+          "\n  the group difference is stable when each replica is used alone. A"
+          "\n  difference can clear it and still be null distributionally -- the"
+          "\n  significance tests above are what say whether the groups differ, and"
+          "\n  a small mean shift that every replica agrees on is still a small"
+          "\n  mean shift.")
+
+    touching = per_site[per_site["frac"] > 0]
+    print(f"\n  Descriptively, among the {len(touching)} sites that ever touch the"
+          f" peptide,\n  the median per-site replica sd of the contact fraction is "
+          f"{touching['frac_replica_sd'].median():.3f}"
+          f" (all sites: {per_site['frac_replica_sd'].median():.3f},"
+          f" which is near zero only because most sites never touch).")
 
     print("\n=== is the pose held, or lost? interface contact drift ===")
     if TRACE.exists():
