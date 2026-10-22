@@ -12,3 +12,6 @@ data/external/*
 *:Zone.Identifier
 submissions/
 .ipynb_checkpoints/
+
+# conda-forge env for the OpenMM CUDA plugin, which the PyPI wheel lacks
+.mmenv-openmm/

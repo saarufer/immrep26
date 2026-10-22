@@ -1654,6 +1654,68 @@ per complex are correctly excluded.
 
 ---
 
+### E37 revision — the three rows are one finding, and it is positional
+
+Found while preparing C11, which needed the same mutated-site residues. Measured
+on E37's own relaxed coordinates, 40 pairs and 126 mutated-site measurements,
+`scripts/35_md_analysis.py --static`.
+
+E37 read one descriptor, a 4.5 A contact count. Reading a second descriptor of
+the same physical quantity -- the minimum heavy-atom distance from the mutated
+site to the peptide -- splits the result apart:
+
+| descriptor | disc | ctl | p |
+|---|---:|---:|---:|
+| peptide contacts at the site (count) | **3.581** | 1.766 | **0.017** |
+| site-to-peptide minimum distance (A) | 6.412 | 6.354 | 0.899 |
+
+**This is not an outlier artefact, and the first version of this audit "checked"
+that wrongly.** It rank-transformed the count and re-ran, which returns the
+identical p-value by construction, because Mann-Whitney is already a rank test
+and is invariant to monotone transforms. The check verified nothing. The real
+reason the two disagree is that **77% of mutated sites have no peptide contact
+at all**, so the count is three quarters ties at zero and its rank test is in
+effect a binary comparison, while the distance uses all 126 sites.
+
+Testing that binary reading directly, and then conditioning on it:
+
+| quantity | disc | ctl | p |
+|---|---:|---:|---:|
+| **site touches the peptide at all** | **0.323** | **0.141** | **0.020** (Fisher) |
+| distance given the site touches (A) | 3.504 | 3.319 | 0.195 |
+| contacts given the site touches | 11.100 | 12.556 | 0.981 |
+
+**The whole effect is the binary one.** Discordant pairs differ at a
+peptide-facing position 2.29x as often -- which is numerically E31's headline
+"2.3x more peptide contact". Conditional on the site facing the peptide there is
+no difference at all: the discordant site is marginally *farther* and carries
+marginally *fewer* contacts, both far from significance.
+
+Two consequences.
+
+**E31 should be restated.** Not "discordant negatives mutate at positions
+carrying more peptide contact", which implies a graded energetic difference, but
+"discordant pairs are about twice as likely to differ at a peptide-facing
+position". The mechanism is positional -- which residue the pair differs at --
+not energetic. That is a sharper claim and the data support it better.
+
+**E37 overstated its own evidence.** Its three rows -- contact count, change in
+contacts between members, site is peptide-facing -- are not three independent
+confirmations. With 77% ties at zero the count row and the facing row are
+substantially the same test, and E37's "all three remain significant with
+direction unchanged" treated redundant tests as corroborating. The conclusion
+that E31 survives relaxation stands; the weight of evidence behind it is one
+test, not three.
+
+This also sets what C11 can add. The quantity that survived is binary facing, so
+the dynamic question is whether a site that faces the peptide keeps facing it --
+the fraction of frames in contact. Power is the limit: only 29 of 126 sites face
+the peptide at all, 20 discordant against 9 control, so a null MD result will be
+uninformative rather than evidence of absence, and that is stated before the run
+rather than after it.
+
+---
+
 ## E38 — Negative controls and the pool x structure factorial (plan cards R04, R05)
 
 Both cards I had skipped on my own judgement. Running them corrected me twice.
