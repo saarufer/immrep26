@@ -1500,9 +1500,78 @@ organisers' snapshot.
 
 ---
 
+## E36 — Target against anchor-matched decoy peptides (plan cards D08, C07)
+
+E14 inferred that Boltz confidence mostly reports how canonical a TCR is, from
+the fact that `iptm_mhc_pep` -- an interface containing no TCR at all -- scored
+0.647. This tests it directly. Folding the same TCR against its annotated
+peptide and against decoys and subtracting cancels everything that is a property
+of the TCR alone, leaving only what is peptide-specific.
+
+**Decoys are anchor-matched by class, not by identity.** HLA-A*02:01 constrains
+an aliphatic P2 and C-terminus; HLA-A*01:01 an acidic P3 and aromatic
+C-terminus. A first draft of the script asserted identical residues and failed
+immediately -- no reported A*02:01 nonamer shares GILGFVFTL's P2 isoleucine
+*and* its C-terminal leucine -- which also exposed two decoys I had chosen with
+a serine at P3, where A*01:01 needs acid. 300 TCRs (30 positive and 30 negative
+per public epitope) x 3 decoys = 900 folds; targets were already in the main run.
+`scripts/30_control_peptide_inputs.py`, `scripts/31_fold_decoys.sh`.
+
+**Result: the margin carries nothing.**
+
+| quantity | target only | target minus decoy |
+|---|---:|---:|
+| ipTM | **0.7387** | 0.5362 |
+| confidence score | 0.7189 | 0.5398 |
+| TCR alpha-peptide ipTM | **0.7429** | 0.5331 |
+| TCR beta-peptide ipTM | 0.7329 | 0.5251 |
+| MHC-peptide ipTM | 0.6500 | 0.5147 |
+| complex pLDDT | 0.6313 | 0.5247 |
+
+Target-only confidence predicts validation at 0.63-0.74. Remove the
+TCR-generic component by differencing against a matched decoy and **every
+margin collapses to chance**. The structural signal is a property of the TCR and
+its fold, not of the peptide it is paired with -- E14's inference, now
+demonstrated rather than deduced.
+
+**The raw magnitudes say the same thing more bluntly.** Mean target ipTM 0.9152
+against decoy 0.9091: a margin of **+0.0061**. Boltz assigns a TCR's true target
+and an unrelated anchor-matched epitope essentially the same interface
+confidence. The MHC-peptide margin is +0.0001, which is at least a good internal
+check -- both peptides occupy the groove equally, as anchor matching intended.
+
+**Self-checks, which turn this from "noisy" into "far too small".**
+
+*Are the decoy structures actually different?* Yes. The spread of decoy ipTM
+across the three decoys of one TCR is 0.036, comparable to the 0.062 spread
+across different TCRs. Boltz is responding to the peptide -- just not in a way
+that tracks the real target.
+
+*Signal to noise.* The margin's mean (+0.0061) is a tenth of its between-TCR
+spread (0.0602), and decoy-choice noise alone (0.036) is **5.9 times** the
+margin.
+
+*Is any one decoy carrying it?* No. Per-decoy margins run from **-0.0128 to
++0.0247** and two decoys are negative, both A*01:01 ten-mers -- so for
+TTDPSFLGRY, two of three decoys score *higher* than the true target. Per-decoy
+AUCs scatter from 0.488 to 0.676 around chance.
+
+*How big would it need to be?* Reaching AUC 0.70 would take a margin near
+0.042; the observed 0.0061 is **14% of that**. So this is not a power problem
+that more decoys would fix -- the effect is roughly seven times too small.
+
+**Settled, and it saved seven GPU-hours.** The staged design -- public epitopes
+first, private extension only if justified -- meant phase 2 was never run. This
+closes the structural line with its mechanism identified: Boltz interface
+confidence contains no peptide-specific information in this setting, so every
+structural feature tried (E14, E19, E28, E36) was reading the same
+TCR-canonicality signal that density already reads.
+
+---
+
 ## Where this leaves things
 
-Thirty-five experiments, one consistent picture: **the extractable signal is
+Thirty-six experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
