@@ -1569,9 +1569,117 @@ TCR-canonicality signal that density already reads.
 
 ---
 
+## E37 — Does the E31 interface result survive relaxation? (plan cards C10, C04)
+
+E31 is the project's one positive mechanistic finding and it was measured on raw
+Boltz coordinates, which carry clashes and unrelaxed side chains. The plan's own
+standard is that an effect unstable to pose or parameters warrants no
+conclusion. 69 complexes relaxed under one fixed protocol -- PDBFixer for
+terminal atoms and hydrogens at pH 7, Amber14 with GBn2 implicit solvent, L-BFGS
+minimisation at 200 and 1,000 iterations. `scripts/32_minimisation_robustness.py`.
+
+**Descriptor stability differs sharply, which matters for which ones to trust.**
+
+| descriptor | median relative change, 0 to 1,000 steps | Spearman(raw, relaxed) |
+|---|---:|---:|
+| buried interface area | **2.1%** | **+0.963** |
+| peptide contacts | 8.5% | +0.793 |
+| hydrogen bonds | **33.3%** | +0.748 |
+
+Buried area is robust; hydrogen-bond counts are not, and 16% of complexes move
+their contact count by more than 20%. So a conclusion resting on hydrogen-bond
+counts would not be safe, while one resting on contacts needed checking -- which
+is what E31's does.
+
+**The E31 effect survives.** Measured on the same 20 discordant and 20 control
+pairs (31 and 32 mutated sites), before and after relaxation:
+
+| quantity | raw | minimised |
+|---|---|---|
+| peptide contacts at the mutated site | disc **8.61** vs ctl 3.97, p=0.026 | disc **7.16** vs ctl 3.53, p=0.045 |
+| change in contacts between members | 4.61 vs 0.97, p=0.028 | 4.39 vs 1.34, p=0.041 |
+| site is peptide-facing | 0.419 vs 0.156, p=0.022 | 0.419 vs 0.188, p=0.048 |
+
+Effect sizes shrink modestly -- the contact ratio goes 2.17x to 2.03x -- and all
+three remain significant with direction unchanged. **E31 is not an artefact of
+unrelaxed coordinates.** The p-values here are weaker than E31's only because
+this subset has 31 sites against E31's 103; the comparison that matters is raw
+against minimised on identical pairs.
+
+What this deliberately does not produce is an interface binding energy. Doing
+that properly needs separated-state topologies whose termini and atom counts
+differ from the complex, so the subtraction would not be comparable, and a
+single-point interaction energy on an unrelaxed separated state is not a binding
+free energy whatever it is called.
+
+**Two code-review findings from my own work.** The first version of this script
+stored only whole-interface descriptors, which cannot test E31 at all: E31
+measures contact at the *mutated CDR3 position*, and both members of a pair are
+near-identical TCRs whose whole interfaces are bound to look alike -- duly
+giving p=0.971. It had to be rerun saving relaxed coordinates. And OpenMM
+renames chains on write, M and P becoming C and D, so the position-specific
+analysis found no peptide chain until it was changed to identify the peptide by
+residue count rather than by chain letter. The hydrogen filter was verified
+separately: OpenMM does write the element column, so the 3,192 added hydrogens
+per complex are correctly excluded.
+
+---
+
+## E38 — Negative controls and the pool x structure factorial (plan cards R04, R05)
+
+Both cards I had skipped on my own judgement. Running them corrected me twice.
+
+**R04: the pool gain is real information, not volume.** E27 audited whether the
+*query* finds itself in the pool, which is a different worry from whether adding
+any sizeable batch of sequences raises density regardless of content. Three
+size-matched controls, all 2,684 added sequences, the same count as the real
+pool:
+
+| reference added | mean | gain |
+|---|---:|---:|
+| none | 0.8414 | -- |
+| **real same-epitope** | **0.8526** | **+0.0112** |
+| other-epitope, shape-matched on CDR3-beta length | 0.8333 | **-0.0081** |
+| other-epitope, unmatched | 0.8350 | -0.0064 |
+| OLGA synthetic repertoire | 0.8381 | -0.0063 |
+
+**All three controls actively hurt.** Adding the same number of irrelevant
+sequences does not merely fail to help, it degrades the density estimate. So the
+expansion gain is antigen-specific information, which together with I02
+(positives rescued about three times as often) and R02 (subject-level throttling
+nearly erases it) completes the picture: a real mechanism, carried by multiple
+records from the same subjects, that the private epitopes cannot access because
+only ~4% more clonotypes exist for CINGVCWTV and LTDEMIAQY (E27).
+
+**R05: pool and structure are additive, and my reason for skipping it was
+wrong.** I had argued the factorial would be degenerate because the pool arm
+measures near zero -- but that was the *private-realizable* figure; on the
+public epitopes the pool gives +0.0112, so the design is informative.
+
+| | original pool | expanded pool |
+|---|---:|---:|
+| no structure | 0.8414 | 0.8526 |
+| structure @0.3 | 0.8487 | **0.8583** |
+
+| effect | value |
+|---|---:|
+| structure without pool (B-A) | +0.0073 |
+| structure with pool (D-C) | +0.0058 |
+| pool without structure (C-A) | +0.0112 |
+| pool with structure (D-B) | +0.0096 |
+| **interaction** | **-0.0015** |
+
+The interaction is essentially zero: the two contribute independently, neither
+redundant nor synergistic. One limit on reading that as good news -- the
+additivity is a public-side fact. The pool arm does not transfer to the private
+epitopes (+0.0004, E27) while the structure arm does (+0.0070 nested, E21), so
+on the deciding epitopes only one arm of this factorial survives.
+
+---
+
 ## Where this leaves things
 
-Thirty-six experiments, one consistent picture: **the extractable signal is
+Thirty-eight experiments, one consistent picture: **the extractable signal is
 local neighbourhood density inside the epitope cohort, and almost nothing
 survives being layered on top of it.** Structure adds a real but small amount
 because it partially re-encodes the same "is this TCR canonical" quantity.
