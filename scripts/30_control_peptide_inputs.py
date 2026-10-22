@@ -108,14 +108,29 @@ def main() -> int:
     rows = []
     OUTDIR.mkdir(parents=True, exist_ok=True)
 
-    # Phase 1: labelled epitopes only, balanced across the two classes.
-    for epitope, cohort in labels.groupby("epitope_aa"):
-        picks = []
-        for label in (0, 1):
-            pool = cohort[cohort["pos"] == label]
-            take = min(PER_EPITOPE // 2, len(pool))
-            picks.append(pool.sample(take, random_state=SEED))
-        sample = pd.concat(picks)
+    # Phase 1: labelled epitopes, balanced across the two classes. Phase 2 adds
+    # every private-epitope TCR. Phase 2 cannot change the submission -- a
+    # feature that fails on all five labelled epitopes can never clear the
+    # pre-registered inclusion threshold, since that threshold is only
+    # measurable where labels exist -- so it is run for the epitope-heterogeneity
+    # question instead: is the margin's failure universal, or specific to the
+    # epitopes that happen to carry labels?
+    groups = [(e, c.assign(pos=c["pos"])) for e, c in labels.groupby("epitope_aa")]
+    private = test[test["split"] == "private"].assign(pos=-1)
+    groups += [(e, c) for e, c in private.groupby("epitope_aa")]
+
+    for epitope, cohort in groups:
+        if (cohort["pos"] == -1).all():
+            sample = cohort                      # phase 2: the whole cohort
+            phase = 2
+        else:
+            picks = []
+            for label in (0, 1):
+                pool = cohort[cohort["pos"] == label]
+                take = min(PER_EPITOPE // 2, len(pool))
+                picks.append(pool.sample(take, random_state=SEED))
+            sample = pd.concat(picks)
+            phase = 1
         for row in sample.itertuples(index=False):
             for decoy in DECOYS[epitope]:
                 name = f"{row.tcr_id}__{decoy}"
@@ -129,14 +144,14 @@ def main() -> int:
                         f"  - protein:\n      id: P\n      sequence: {decoy}\n      msa: empty\n"
                     )
                 rows.append({"name": name, "tcr_id": row.tcr_id, "epitope": epitope,
-                             "decoy": decoy, "pos": row.pos, "phase": 1})
+                             "decoy": decoy, "pos": row.pos, "phase": phase})
 
     manifest = pd.DataFrame(rows)
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     manifest.to_csv(MANIFEST, index=False)
-    print(f"\nphase 1: {manifest.tcr_id.nunique()} TCRs x {len(DECOYS['GILGFVFTL'])} decoys "
+    print(f"\n{manifest.tcr_id.nunique()} TCRs x {len(DECOYS['GILGFVFTL'])} decoys "
           f"= {len(manifest)} folds")
-    print(manifest.groupby(["epitope", "pos"]).tcr_id.nunique().unstack().to_string())
+    print(manifest.groupby(["phase", "epitope"]).tcr_id.nunique().to_string())
     print(f"\nat ~14 s per fold that is about {len(manifest) * 14 / 3600:.1f} GPU-hours")
     print(f"wrote inputs to {OUTDIR.relative_to(ROOT)}")
     print("next: ./scripts/31_fold_decoys.sh")
