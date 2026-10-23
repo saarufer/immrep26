@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMMREP26 实验全录</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#f2f4f3; --surface:#fbfcfc; --surface-2:#eef1f0;
+    --ink:#11181b; --ink-2:#3c4a4e; --muted:#6b7a7d;
+    --rule:#d9e0de; --rule-2:#c3cdca;
+    --accent:#15635c; --accent-soft:#e2efec;
+    --found:#7a6420; --found-soft:#f3eedd;
+    --adopt:#15635c; --adopt-soft:#e2efec;
+    --reject:#8f4a3c; --reject-soft:#f6e8e4;
+    --diag:#53548a; --diag-soft:#e9e9f3;
+    --serif:"Noto Serif SC","Source Han Serif SC","Songti SC",STSong,serif;
+    --sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,"Noto Sans SC",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --paper:#101617; --surface:#161e20; --surface-2:#1c2527;
+      --ink:#e7edeb; --ink-2:#b6c3c1; --muted:#849391;
+      --rule:#273234; --rule-2:#364346;
+      --accent:#5fc2b4; --accent-soft:#15302c;
+      --found:#d9c177; --found-soft:#2e2915;
+      --adopt:#5fc2b4; --adopt-soft:#15302c;
+      --reject:#dd9583; --reject-soft:#351f1a;
+      --diag:#a8a9dd; --diag-soft:#212138;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --paper:#101617; --surface:#161e20; --surface-2:#1c2527;
+    --ink:#e7edeb; --ink-2:#b6c3c1; --muted:#849391;
+    --rule:#273234; --rule-2:#364346;
+    --accent:#5fc2b4; --accent-soft:#15302c;
+    --found:#d9c177; --found-soft:#2e2915;
+    --adopt:#5fc2b4; --adopt-soft:#15302c;
+    --reject:#dd9583; --reject-soft:#351f1a;
+    --diag:#a8a9dd; --diag-soft:#212138;
+  }
+
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:15.5px; line-height:1.82;
+    -webkit-font-smoothing:antialiased;
+    text-spacing-trim:space-first; line-break:strict;
+    word-break:normal; overflow-wrap:break-word;
+  }
+  img{max-width:100%} [hidden]{display:none!important}
+  .wrap{max-width:1020px; margin:0 auto; padding-inline:20px; padding-block:0 72px;}
+  /* A Chinese glyph is ~1em, so 66ch would be only ~33 characters. 38em keeps
+     the measure near 38 characters, which is the comfortable range. */
+  .prose{max-width:38em;}
+  .prose-wide{max-width:46em;}
+
+  a{color:var(--accent); text-decoration-color:var(--rule-2); text-underline-offset:3px;}
+  a:focus-visible, .chip:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;}
+
+  header.mast{border-bottom:1px solid var(--rule-2); padding-block:44px 26px; margin-bottom:34px;}
+  .eyebrow{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 14px; line-height:1.6;
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(28px,5.4vw,44px);
+    line-height:1.25; letter-spacing:.01em; margin:0 0 16px; text-wrap:balance;
+  }
+  .standfirst{
+    font-family:var(--serif); font-size:clamp(16px,2.2vw,18.5px); line-height:1.8;
+    color:var(--ink-2); margin:0; max-width:32em;
+  }
+  .mast-meta{
+    margin-top:22px; font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; flex-wrap:wrap; gap:6px 18px; line-height:1.6;
+  }
+
+  .figs{
+    display:grid; gap:1px; background:var(--rule);
+    grid-template-columns:repeat(auto-fit,minmax(172px,1fr));
+    border:1px solid var(--rule); margin:0 0 40px;
+  }
+  .fig{background:var(--surface); padding:16px 18px 18px;}
+  .fig dt{
+    font-family:var(--sans); font-weight:500; font-size:12px; letter-spacing:.04em;
+    color:var(--muted); margin:0 0 8px; line-height:1.5;
+  }
+  .fig dd{
+    margin:0; font-family:var(--mono); font-size:27px; font-weight:500;
+    line-height:1.1; font-variant-numeric:tabular-nums;
+  }
+  .fig .sub{
+    display:block; margin-top:8px; font-family:var(--sans); font-size:12.5px;
+    font-weight:400; color:var(--muted); line-height:1.65;
+  }
+  .fig.hi dd{color:var(--accent);}
+
+  h2{
+    font-family:var(--serif); font-weight:600; font-size:clamp(21px,3.2vw,27px);
+    line-height:1.4; margin:62px 0 6px; padding-top:22px;
+    border-top:1px solid var(--rule-2); text-wrap:balance;
+  }
+  h2 .count{
+    display:block; font-family:var(--mono); font-size:11.5px; font-weight:400;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+    margin-bottom:9px; line-height:1.6;
+  }
+  h3{font-family:var(--serif); font-weight:600; font-size:19px; line-height:1.5; margin:0 0 3px; text-wrap:balance;}
+  h4{font-family:var(--sans); font-weight:700; font-size:14.5px; margin:26px 0 6px; color:var(--ink); line-height:1.7;}
+  p{margin:0 0 15px;}
+  .lede{color:var(--ink-2);}
+
+  .exp{margin:36px 0 0; padding-top:22px; border-top:1px solid var(--rule);}
+  .exp:first-of-type{border-top:none; padding-top:6px;}
+  .exp-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; margin-bottom:14px;}
+  .exp-id{
+    font-family:var(--mono); font-size:12.5px; font-weight:500; color:var(--muted);
+    letter-spacing:.04em; flex:0 0 auto; padding-top:3px;
+  }
+  .exp-title{flex:1 1 300px; min-width:0;}
+  .exp-title h3{display:inline;}
+
+  .tag{
+    display:inline-block; font-family:var(--sans); font-size:11px; font-weight:500;
+    letter-spacing:.08em; padding:3px 9px 2px; border:1px solid currentColor;
+    flex:0 0 auto; white-space:nowrap; line-height:1.6;
+  }
+  .tag.found{color:var(--found); background:var(--found-soft);}
+  .tag.adopt{color:var(--adopt); background:var(--adopt-soft);}
+  .tag.reject{color:var(--reject); background:var(--reject-soft);}
+  .tag.diag{color:var(--diag); background:var(--diag-soft);}
+
+  .field{margin:0 0 13px; max-width:44em;}
+  .field .lbl{
+    font-family:var(--sans); font-weight:500; font-size:11.5px; letter-spacing:.08em;
+    color:var(--muted); margin-right:10px;
+  }
+  .field.concl{background:var(--surface); border-left:2px solid var(--accent); padding:13px 17px; margin-top:16px;}
+  .field.concl .lbl{color:var(--accent);}
+
+  .tw{overflow-x:auto; margin:16px 0 18px; border-top:1px solid var(--rule-2);}
+  table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:min(100%,340px);}
+  caption{
+    caption-side:top; text-align:left; font-family:var(--sans); font-size:12px;
+    color:var(--muted); padding:0 0 9px; line-height:1.7;
+  }
+  th,td{padding:8px 14px 8px 0; text-align:left; vertical-align:baseline; border-bottom:1px solid var(--rule); line-height:1.7;}
+  th{font-family:var(--sans); font-weight:500; font-size:11.5px; letter-spacing:.05em; color:var(--muted); white-space:nowrap;}
+  td.n,th.n{text-align:right; font-variant-numeric:tabular-nums; font-family:var(--mono); font-size:12.5px; padding-right:0;}
+  th.n{font-size:11.5px;}
+  tr.key td{font-weight:700; background:var(--surface);}
+  tr.key td.n{color:var(--accent); font-weight:500;}
+  .mono{font-family:var(--mono); font-size:.9em;}
+  .pep{font-family:var(--mono); font-size:.9em; letter-spacing:.02em;}
+
+  .idx{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(146px,1fr));
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule); margin:18px 0 10px;
+  }
+  .chip{
+    background:var(--surface); padding:9px 11px; text-decoration:none;
+    display:flex; align-items:center; gap:8px; color:var(--ink-2);
+    font-size:12.5px; line-height:1.5;
+    border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    overflow-wrap:anywhere;
+  }
+  .chip .num{font-family:var(--mono); font-size:11.5px; color:var(--muted); flex:0 0 auto;}
+  .chip:hover{background:var(--surface-2); color:var(--ink);}
+  .dot{width:7px; height:7px; flex:0 0 auto; border-radius:50%;}
+  .dot.found{background:var(--found);} .dot.adopt{background:var(--adopt);}
+  .dot.reject{background:var(--reject);} .dot.diag{background:var(--diag);}
+  .legend{display:flex; flex-wrap:wrap; gap:8px 22px; margin:0 0 30px; font-size:12.5px; color:var(--muted);}
+  .legend span{display:flex; align-items:center; gap:8px;}
+
+  blockquote{margin:18px 0; padding:13px 17px; background:var(--surface); border-left:2px solid var(--rule-2); color:var(--ink-2); max-width:44em;}
+  blockquote p:last-child{margin-bottom:0;}
+  pre{
+    font-family:var(--mono); font-size:12.5px; line-height:1.75;
+    background:var(--surface); border:1px solid var(--rule);
+    padding:13px 15px; overflow-x:auto; margin:16px 0;
+  }
+  ul{margin:0 0 15px; padding-left:22px; max-width:44em;}
+  li{margin-bottom:8px;}
+  footer{margin-top:58px; padding-top:22px; border-top:1px solid var(--rule-2); font-size:13px; color:var(--muted); max-width:44em;}
+  .note{font-size:13px; color:var(--muted);}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important; animation:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">IMMREP26 · 公开 TCR–pMHC 数据的功能验证</p>
+  <h1>实验全录</h1>
+  <p class="standfirst">三十九个实验，围绕一个问题：一条已发表的 TCR–表位注释，能否经受住功能性再筛选。每个实验问了什么、怎么测的、最后定下了什么。</p>
+  <div class="mast-meta">
+    <span>编纂于 2026-10-23</span>
+    <span>底稿：reports/00_experiment_log.md</span>
+    <span>数据审计：57 项检查全部通过</span>
+  </div>
+</header>
+
+<dl class="figs">
+  <div class="fig"><dt>已提交模型 · 公榜</dt><dd>0.8498<span class="sub">榜单显示 0.849</span></dd></div>
+  <div class="fig hi"><dt>私榜估计</dt><dd>0.80<span class="sub">区间 0.67–0.91，而非 LOEO 的 0.846</span></dd></div>
+  <div class="fig"><dt>主办方基线</dt><dd>0.8247<span class="sub">tcrdist3 最近邻</span></dd></div>
+  <div class="fig"><dt>实验数</dt><dd>39<span class="sub">19 个否决，3 个组件被采纳</span></dd></div>
+</dl>
+
+<section class="prose-wide">
+<h4 style="margin-top:0">如何读这些数字</h4>
+<p>竞赛度量是<strong>按表位计算 ROC AUC 后取非加权平均，歧义行剔除</strong>——在 E1 中反推得出，并三次与榜单核对确认。除非另有说明，下文每个数字都是这个量在五个公开表位上的值。</p>
+
+<div class="tw">
+<table>
+<tbody>
+<tr><td>主办方 tcrdist3 基线</td><td class="n"><b>0.8247</b></td></tr>
+<tr><td>主办方 AlphaFold3 min-PAE 基线</td><td class="n">0.787</td></tr>
+<tr><td>五表位估计的标准误</td><td class="n">≈ 0.011</td></tr>
+<tr><td>三个私有表位上的标准误</td><td class="n">≈ 0.023</td></tr>
+<tr class="key"><td>新组件纳入的预注册阈值</td><td class="n">&gt; +0.02</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>数据集是 <span class="mono">test.csv</span> 中的 2,636 行：2,034 行公开（其中 1,782 行带可用标签，252 行歧义），602 行私有、分属三个表位。<strong>只有这 602 行私有数据决定最终排名。</strong></p>
+
+<h4>已提交的模型</h4>
+<p><span class="mono">submissions/density3_struct03.csv</span>，由 <span class="mono">scripts/18_final_submission.py</span> 生成：三个表位内核密度的秩平均——SCEPTR <span class="mono">default</span> 与 <span class="mono">small</span>（余弦 σ=0.1）、tcrdist3 α+β（σ=20）——再与 Boltz-2 的 TCR–肽最小 PAE 按 0.7 / 0.3 融合。<strong>完全无监督，零拟合参数。</strong></p>
+
+<h4>诚实的私榜估计</h4>
+<p><strong>中心 0.80，合理区间 0.67–0.91。</strong>不是嵌套留一表位交叉验证（LOEO）报出的 0.846。<a href="#e30">E30</a> 是原因所在，也是本项目最有分量的结果。</p>
+</section>
+
+<h2><span class="count">索引 · 按结论状态</span>全部 39 个实验</h2>
+<div class="legend">
+  <span><i class="dot found"></i> 基础——定下了一条地基规则（3）</span>
+  <span><i class="dot adopt"></i> 采纳进提交模型（3）</span>
+  <span><i class="dot reject"></i> 否决（19）</span>
+  <span><i class="dot diag"></i> 诊断——改变了认识（14）</span>
+</div>
+<div class="idx">
+  <a class="chip" href="#e1"><i class="dot found"></i><span class="num">E1</span>度量</a>
+  <a class="chip" href="#e2"><i class="dot found"></i><span class="num">E2</span>标签泄漏</a>
+  <a class="chip" href="#e3"><i class="dot found"></i><span class="num">E3</span>来源元数据</a>
+  <a class="chip" href="#e4"><i class="dot reject"></i><span class="num">E4</span>元数据基线</a>
+  <a class="chip" href="#e5"><i class="dot diag"></i><span class="num">E5</span>信号本质</a>
+  <a class="chip" href="#e6"><i class="dot adopt"></i><span class="num">E6</span>表示空间</a>
+  <a class="chip" href="#e7"><i class="dot reject"></i><span class="num">E7</span>生成概率</a>
+  <a class="chip" href="#e8"><i class="dot reject"></i><span class="num">E8</span>背景归一化</a>
+  <a class="chip" href="#e9"><i class="dot reject"></i><span class="num">E9</span>簇形状</a>
+  <a class="chip" href="#e10"><i class="dot reject"></i><span class="num">E10</span>拟合融合</a>
+  <a class="chip" href="#e11"><i class="dot reject"></i><span class="num">E11</span>图精修</a>
+  <a class="chip" href="#e12"><i class="dot reject"></i><span class="num">E12</span>候选池初判</a>
+  <a class="chip" href="#e13"><i class="dot reject"></i><span class="num">E13</span>特异性模型</a>
+  <a class="chip" href="#e14"><i class="dot adopt"></i><span class="num">E14</span>结构预测</a>
+  <a class="chip" href="#e15"><i class="dot diag"></i><span class="num">E15</span>选择代价</a>
+  <a class="chip" href="#e16"><i class="dot reject"></i><span class="num">E16</span>度量学习</a>
+  <a class="chip" href="#e17"><i class="dot reject"></i><span class="num">E17</span>自适应带宽</a>
+  <a class="chip" href="#e18"><i class="dot diag"></i><span class="num">E18</span>总表</a>
+  <a class="chip" href="#e19"><i class="dot reject"></i><span class="num">E19</span>对接一致性</a>
+  <a class="chip" href="#e20"><i class="dot diag"></i><span class="num">E20</span>四个追问</a>
+  <a class="chip" href="#e21"><i class="dot adopt"></i><span class="num">E21</span>队列稀释</a>
+  <a class="chip" href="#e22"><i class="dot diag"></i><span class="num">E22</span>误差解剖</a>
+  <a class="chip" href="#e23"><i class="dot reject"></i><span class="num">E23</span>对抗类修复</a>
+  <a class="chip" href="#e24"><i class="dot reject"></i><span class="num">E24</span>软标签</a>
+  <a class="chip" href="#e25"><i class="dot diag"></i><span class="num">E25</span>交叉验证</a>
+  <a class="chip" href="#e26"><i class="dot reject"></i><span class="num">E26</span>V 区比对</a>
+  <a class="chip" href="#e27"><i class="dot reject"></i><span class="num">E27</span>候选池实测</a>
+  <a class="chip" href="#e28"><i class="dot reject"></i><span class="num">E28</span>接触指纹</a>
+  <a class="chip" href="#e29"><i class="dot diag"></i><span class="num">E29</span>家族留出</a>
+  <a class="chip" href="#e30"><i class="dot diag"></i><span class="num">E30</span>LOEO 偏差</a>
+  <a class="chip" href="#e31"><i class="dot diag"></i><span class="num">E31</span>精细特异性</a>
+  <a class="chip" href="#e32"><i class="dot reject"></i><span class="num">E32</span>序列卡六张</a>
+  <a class="chip" href="#e33"><i class="dot reject"></i><span class="num">E33</span>池与来源</a>
+  <a class="chip" href="#e34"><i class="dot diag"></i><span class="num">E34</span>晶体学核对</a>
+  <a class="chip" href="#e35"><i class="dot diag"></i><span class="num">E35</span>数据库版本</a>
+  <a class="chip" href="#e36"><i class="dot reject"></i><span class="num">E36</span>诱饵肽</a>
+  <a class="chip" href="#e37"><i class="dot diag"></i><span class="num">E37</span>能量最小化</a>
+  <a class="chip" href="#e38"><i class="dot diag"></i><span class="num">E38</span>池阴性对照</a>
+  <a class="chip" href="#e39"><i class="dot diag"></i><span class="num">E39</span>分子动力学</a>
+</div>
+
+<!-- ===== 一、基础 ===== -->
+<h2><span class="count">第一部分</span>基础</h2>
+
+<article class="exp" id="e1">
+  <div class="exp-head">
+    <span class="exp-id">E1</span>
+    <div class="exp-title"><h3>不看评测页，能否推断出竞赛的度量？</h3></div>
+    <span class="tag found">基础</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>确定确切的打分函数，从而用本地测量取代提交——每日提交上限只有 1 次。</p>
+  <p class="field"><span class="lbl">方法</span>拿主办方自己的 <span class="mono">tcrdist_predictions.csv</span>（公榜分 0.824），对照已发布的 TCRvdb 标签，在每一种说得通的度量下重新打分。<span class="mono">scripts/02_confirm_metric.py</span>。</p>
+  <div class="tw"><table><caption>结果——只有一个候选能对上</caption>
+  <thead><tr><th>候选度量</th><th class="n">数值</th></tr></thead><tbody>
+  <tr class="key"><td>按表位 ROC AUC 取平均，歧义行剔除</td><td class="n">0.824728</td></tr>
+  <tr><td>按表位平均精度取平均</td><td class="n">0.8338</td></tr>
+  <tr><td>按样本量加权的表位 ROC AUC</td><td class="n">0.8466</td></tr>
+  <tr><td>合并后的 ROC AUC</td><td class="n">0.8577</td></tr>
+  <tr><td>合并后的平均精度</td><td class="n">0.8602</td></tr>
+  <tr><td>按表位 AUC，歧义视为阳性</td><td class="n">0.7908</td></tr>
+  <tr><td>按表位 AUC，歧义视为阴性</td><td class="n">0.7769</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>度量只读取表位<strong>内部</strong>的排序，所以各表位 28.7–66.3% 的验证率差异无需任何校准。每个表位权重相同、与规模无关，因此 130 行的 <span class="pep">LTDEMIAQY</span> 和 243 行的 <span class="pep">CINGVCWTV</span> 一样重。端到端确认过两次——本地 0.8396 得 0.839，0.8498 得 0.849；Kaggle 是截断而非四舍五入。<strong>本地测量台就是榜单。</strong>这同时解开了竞赛说明里的自相矛盾："约 68%" 的公开占比是 1,782/2,636 = 67.6%，即 2,034 行公开减去 252 行歧义。</div>
+</article>
+
+<article class="exp" id="e2">
+  <div class="exp-head">
+    <span class="exp-id">E2</span>
+    <div class="exp-title"><h3>公开标签能否直接被还原出来？</h3></div>
+    <span class="tag found">基础</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>检验公榜到底有没有在衡量能力。</p>
+  <p class="field"><span class="lbl">方法</span>把 TCRvdb 与 <span class="mono">test.csv</span> 做连接，再给还原出的标签打分。</p>
+  <p class="field"><span class="lbl">结果</span><span class="mono">tcr_id</span> 是<strong>逐字共享</strong>的：2,034/2,034 行精确匹配，不需要任何模糊匹配。提交还原标签在<strong>每个公开表位上都得 1.000</strong>。即便模拟 5% 匹配失败，仍有 0.9988。</p>
+  <div class="field concl"><span class="lbl">定论</span>公榜衡量的是一次 <span class="mono">merge</span>，不是能力——榜首的 1.000 和 0.997 一行代码即可复现。自此公榜名次被完全排除在考虑之外。<strong>私有标签会不会也泄漏？不会。</strong>TCRvdb 的更新日志明确列出每个版本包含哪些表位：<span class="pep">YLQPRTFLL</span>+<span class="pep">GLCTLVAML</span>（2025-05-01），以及 <span class="pep">TTDPSFLGRY</span>、<span class="pep">GILGFVFTL</span>、<span class="pep">NLVPMVATV</span>（2026-10-01）。私有三个表位从未发布过，下载到的文件里也没有。<strong>私榜是可靠的</strong>，所以决定排名的是建模。</div>
+</article>
+
+<article class="exp" id="e3">
+  <div class="exp-head">
+    <span class="exp-id">E3</span>
+    <div class="exp-title"><h3>注释来源信息能否对私有表位做出任何排序？</h3></div>
+    <span class="tag found">基础</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>在相信任何交叉验证分数之前，先确认来源元数据在它必须起作用的地方到底有没有变化。</p>
+  <p class="field"><span class="lbl">方法</span>对 VDJdb 的每个元数据字段，统计它在各表位队列<em>内部</em>的不同取值数；若某字段在任一私有表位上恒定，或其主导取值占比超过 95%，就标记为不可用。<span class="mono">scripts/01_audit_metadata_viability.py</span>。</p>
+  <p class="field"><span class="lbl">结果</span><strong>没有一个字段幸存。</strong><span class="mono">vdjdb_score</span> 在 <span class="pep">LLWNGPMAV</span> 和 <span class="pep">LTDEMIAQY</span> 上恒为 0；<span class="mono">method.verification</span> 在全部 602 行私有数据上为空；<span class="pep">LTDEMIAQY</span> 有 97.8% 来自同一个 <span class="mono">reference.id</span> 和同一个 <span class="mono">method.identification</span>。</p>
+  <div class="field concl"><span class="lbl">定论</span>一个来源类特征完全可能在公开表位的交叉验证中表现亮眼——那里 <span class="pep">GILGFVFTL</span> 和 <span class="pep">NLVPMVATV</span> 的 <span class="mono">vdjdb_score</span> 横跨 0–3——而在私有侧贡献严格为零。<strong>这成了一条常设规则：任何新特征，在相信它的 LOEO 分数之前，必须先检查它在全部三个私有表位内部是否有方差。</strong></div>
+</article>
+
+<article class="exp" id="e4">
+  <div class="exp-head">
+    <span class="exp-id">E4</span>
+    <div class="exp-title"><h3>纯元数据基线：证据质量能解释多少？</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>量化 VDJdb 自己的置信分值多少钱。</p>
+  <p class="field"><span class="lbl">方法</span>直接用 <span class="mono">vdjdb_score</span> 打分，合并计算与表位内分别计算。</p>
+  <p class="field"><span class="lbl">结果</span>合并 AUC <strong>0.455</strong>——低于随机——而且<em>方向在表位之间翻转</em>：<span class="pep">GLCTLVAML</span> 0.581、<span class="pep">NLVPMVATV</span> 0.399、<span class="pep">YLQPRTFLL</span> 0.443、<span class="pep">TTDPSFLGRY</span> 未定义（恒定）。<span class="pep">NLVPMVATV</span> 队列中 158 条 score-3 记录的验证率是 15.8%，而同队列 score-0 是 23.5%。</p>
+  <div class="field concl"><span class="lbl">定论</span>VDJdb 的置信分与功能验证结果<strong>反相关</strong>。一个在某个表位上学到"置信度越高越可靠"的模型，到下一个表位就会被主动拖累。元数据只作为有记录的消融项保留，绝不进入提交。</div>
+</article>
+
+<!-- ===== 二、信号本质 ===== -->
+<h2><span class="count">第二部分</span>信号究竟是什么</h2>
+
+<article class="exp" id="e5">
+  <div class="exp-head">
+    <span class="exp-id">E5</span>
+    <div class="exp-title"><h3>从结构上看，信号是什么？</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>刻画究竟是什么把验证通过的 TCR 与未通过的区分开。</p>
+  <p class="field"><span class="lbl">方法</span>在每个表位内部，按标签分组比较每条 TCR 到其最近的"已验证邻居"的中位距离；在 tcrdist ≤ 90 处聚类，测量标签纯度与孤立点比例。</p>
+  <div class="tw"><table>
+  <thead><tr><th>表位</th><th class="n">阳性→最近已验证</th><th class="n">阴性→最近已验证</th><th class="n">孤立点占比</th><th>孤立点验证率 vs 队列</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">24</td><td class="n">169</td><td class="n">34%</td><td class="mono">0.31 vs 0.66</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="n">42</td><td class="n">198</td><td class="n">58%</td><td class="mono">0.10 vs 0.41</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="n">24</td><td class="n">212</td><td class="n">70%</td><td class="mono">0.13 vs 0.29</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">108</td><td class="n">183</td><td class="n">83%</td><td class="mono">0.39 vs 0.50</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="n">24</td><td class="n">144</td><td class="n">37%</td><td class="mono">0.48 vs 0.66</td></tr>
+  </tbody></table></div>
+  <p>成员数 ≥3 的簇，标签纯度中位数在 0.89–1.00 之间。</p>
+  <div class="field concl"><span class="lbl">定论</span>验证通过的 TCR 聚在紧密、标签纯净的簇里；未通过的则是孤立的。<strong>这场竞赛里的每一种方法，实际上都在回答同一个问题："这条 TCR 是否属于一个趋同的、抗原驱动的簇"。</strong><span class="pep">GLCTLVAML</span> 在哪儿都是弱表位，因为在那里"是否孤立"几乎不预测任何东西（0.48 对队列整体 0.66），密度在它的孤立点上 AUC 只有 0.482——完全没有信息。</div>
+</article>
+
+<article class="exp" id="e6">
+  <div class="exp-head">
+    <span class="exp-id">E6</span>
+    <div class="exp-title"><h3>表示空间重要吗？</h3></div>
+    <span class="tag adopt">采纳</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>搞清楚换一个更好的度量空间能不能换来收益。</p>
+  <p class="field"><span class="lbl">方法</span>在 tcrdist3 和七个 SCEPTR 变体上计算同一套密度归约（多种带宽的核密度、top-k 均值、邻居计数）。</p>
+  <div class="tw"><table>
+  <thead><tr><th>表示</th><th>最佳归约</th><th class="n">均值</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>SCEPTR <span class="mono">default</span></td><td>核 σ=0.1</td><td class="n">0.8396</td></tr>
+  <tr><td>SCEPTR <span class="mono">small</span></td><td>核 σ=0.1</td><td class="n">0.8354</td></tr>
+  <tr><td>tcrdist3 α+β</td><td>核 σ=20</td><td class="n">0.8329</td></tr>
+  <tr><td>SCEPTR <span class="mono">large</span></td><td>核 σ=0.1</td><td class="n">0.8260</td></tr>
+  <tr><td>SCEPTR 仅 α 链</td><td>top-11</td><td class="n">0.7986</td></tr>
+  <tr><td>SCEPTR <span class="mono">cdr3_only</span></td><td>核 σ=0.1</td><td class="n">0.8007</td></tr>
+  <tr><td>SCEPTR 仅 β 链</td><td>核 σ=0.2</td><td class="n">0.7505</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>一个学习得到的配对链表示比手工构造的距离只高 0.007，在一个标准误之内。<strong>度量空间并不重要。</strong>但掉出来两个经得起时间检验的事实：<strong>α 链承载的信号多于 β 链</strong>（0.799 对 0.751），与通常的预期相反；而且仅 α 的空间是唯一能帮到 <span class="pep">GLCTLVAML</span> 的。</div>
+  <blockquote><p><strong>E27 补充的告诫。</strong>这张表计算密度时只用了<em>有标签</em>的行作为参考集，而推理时用的是整个队列。在完整队列上 top-8 读数为 0.8414，高于核密度的 0.8396，与本表的排序相反。结论不受影响，也没有任何提交被波及，但本表的排序应当带着这条告诫来读。</p></blockquote>
+</article>
+
+<article class="exp" id="e9">
+  <div class="exp-head">
+    <span class="exp-id">E9</span>
+    <div class="exp-title"><h3>簇的形状：真实基序家族，还是共同注释的产物？</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>把趋同重组与"一堆一起被录入 VDJdb 的近似重复序列"区分开。</p>
+  <p class="field"><span class="lbl">方法</span>起因是一个诊断现象：<span class="pep">NLVPMVATV</span> 那 23 条高密度却未验证的 TCR 彼此聚得很紧（余弦中位数 0.148），却远离该表位已验证的 TCR（0.312）；而在其他表位上，高密度的错误恰好落在阳性样本上（0.050、0.088）。于是测量簇大小、内部紧密度、V/J 纯度、CDR3 逐位置熵、中心性。</p>
+  <p class="field"><span class="lbl">结果</span>限定在簇内的行上，CDR3β 逐位置熵得 <strong>0.773</strong>，高于密度的 0.768；内部紧密度得 <strong>0.275</strong>——意味着<strong>越紧密的簇验证率越低</strong>。但推广到完整队列后，熵塌缩到 0.5553。</p>
+  <div class="field concl"><span class="lbl">定论</span>这是一个有干净机制的真实信号——趋同重组产生松散、多样的基序家族，而共同注释形成的结节则紧密，朴素密度把两者都判为"稠密"——但它在很大程度上只是"是否属于某个簇"的重述，叠加上去没有额外收益。</div>
+</article>
+
+<article class="exp" id="e20">
+  <div class="exp-head">
+    <span class="exp-id">E20</span>
+    <div class="exp-title"><h3>关于密度究竟在做什么的四个追问</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <h4>（一）方法是更依赖密度还是更依赖标签？</h4>
+  <p>它<strong>完全不用标签。</strong>密度和结构都是无监督的，全部 1,782 个标签只用于验证。这既是优势——没有任何东西可以过拟合，这也正是本地估计能精确复现榜单的原因——也是一个未解的缺口：手上有 1,782 个标签，而预测器从中一点也没提取。尝试过的每条监督路线（<a href="#e10">E10</a>、<a href="#e13">E13</a>、<a href="#e16">E16</a>）要么输给方差，要么低于随机。</p>
+
+  <h4>（二）成簇的 TCR 只是标签纯净，还是本身就偏阳性？</h4>
+  <div class="tw"><table><caption>45 个成员数 ≥3 的簇，SCEPTR 余弦 ≤ 0.12</caption>
+  <thead><tr><th>簇的验证率</th><th class="n">簇数</th><th class="n">TCR 数</th></tr></thead>
+  <tbody>
+  <tr><td>100%（纯阳性）</td><td class="n">26</td><td class="n">205</td></tr>
+  <tr><td>80–100%</td><td class="n">8</td><td class="n">136</td></tr>
+  <tr><td>60–80%</td><td class="n">8</td><td class="n">31</td></tr>
+  <tr class="key"><td>20–60%</td><td class="n">0</td><td class="n">0</td></tr>
+  <tr><td>0–20%</td><td class="n">0</td><td class="n">0</td></tr>
+  <tr><td>0%（纯阴性）</td><td class="n">3</td><td class="n">13</td></tr>
+  </tbody></table></div>
+  <p>20–60% 这一档<strong>是空的</strong>，而 385 条成簇 TCR 中只有 13 条（3.4%）落在纯阴性簇里。所以"属于某个簇"本身就是阳性证据，而不只是一个关于同质性的陈述。天花板同样清楚：1,782 条 TCR 中只有 487 条属于任何簇，而且<strong>约 54% 的阳性是孤立点</strong>。</p>
+
+  <h4>（三）对孤立点有什么可用的信息吗？</h4>
+  <p>密度仍是那里最好的东西——孤立点内部平均 AUC 0.758，而结构 0.722、多样本置信度 0.729、对接一致性 0.692、Pgen 0.497。有一个例外，正是那个弱表位：在 <span class="pep">GLCTLVAML</span> 的 81 个孤立点上密度塌缩到 <strong>0.551</strong>，而所有结构衍生特征都胜过它（置信度 0.676、一致性 0.668、min-PAE 0.659）。</p>
+
+  <h4>（四）近邻标签不一致</h4>
+  <p>有些阴性样本是已验证阳性的单残基变体，而且就坐落在本来纯阳性的簇里：872 条阴性中有 34 条（<strong>3.9%</strong>），若把它们重新标注，分数会从 0.8362 移到 0.8602。</p>
+  <div class="field concl"><span class="lbl">定论</span>评审提出的两条告诫都成立。重标注的算术是<strong>受选择效应影响的</strong>——这些行之所以被挑出来，正是因为它们靠近阳性，而这恰恰也是模型把它们排得高的原因。而且这种不一致有两种本分析无法区分的成因：实验漏检，或真实的精细特异性。所以 0.024 不是一个已证明的天花板。诚实的描述是<strong>近阳性标签不一致克隆型</strong>：从序列上与已验证阳性无法区分的阴性，成因未定。<a href="#e22">E22</a> 后来重新定位了它们造成的损失，<a href="#e31">E31</a> 则查明了成因。</div>
+
+  <h4>（五）为什么 GLCTLVAML 是弱表位，这会威胁私有侧吗？</h4>
+  <p>密度在那里失效是因为<strong>到处都稠密</strong>——它有 55.2% 的队列在聚类半径内有邻居，而私有三个表位只有 2.5–14.6%。私有表位没有一个共享这种病理。<span class="note">（<a href="#e21">E21</a> 后来纠正了由此得出的推论：队列几何无法预测 AUC。）</span></p>
+</article>
+
+<article class="exp" id="e32b">
+  <div class="exp-head">
+    <span class="exp-id">E32 · 卡片 D10</span>
+    <div class="exp-title"><h3>这个模型实际上是什么</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">方法</span>按最近邻距离分档，在每档内部单独打分。</p>
+  <div class="tw"><table>
+  <thead><tr><th>nn1 区间</th><th class="n">n</th><th class="n">验证率</th><th class="n">档内 AUC</th></tr></thead>
+  <tbody>
+  <tr><td class="mono">&lt;0.06</td><td class="n">310</td><td class="n">0.823</td><td class="n">0.791</td></tr>
+  <tr class="key"><td class="mono">0.06–0.12</td><td class="n">189</td><td class="n">0.921</td><td class="n">0.553</td></tr>
+  <tr class="key"><td class="mono">0.12–0.25</td><td class="n">221</td><td class="n">0.805</td><td class="n">0.523</td></tr>
+  <tr><td class="mono">0.25–0.5</td><td class="n">526</td><td class="n">0.432</td><td class="n">0.690</td></tr>
+  <tr><td class="mono">&gt;0.5</td><td class="n">534</td><td class="n">0.139</td><td class="n">0.659</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>档内区分力到处都很差（0.52–0.79），而验证率跨档从 0.92 掉到 0.14。<strong>这个模型本质上是最近邻距离的一个单调函数，在任何一个窄档内部几乎没有区分能力。</strong>而私有表位恰好都落在远端档位——<span class="pep">CINGVCWTV</span> 的 86.8%、<span class="pep">LLWNGPMAV</span> 的 75.1%、<span class="pep">LTDEMIAQY</span> 的 80.0% 都在 0.25 以外——这是对 <a href="#e30">E30</a> 重投影的一个独立且更简单的印证。</div>
+</article>
+
+<!-- ===== 三、被否决的序列方法 ===== -->
+<h2><span class="count">第三部分</span>被否决的序列方法</h2>
+
+<article class="exp" id="e7">
+  <div class="exp-head">
+    <span class="exp-id">E7</span>
+    <div class="exp-title"><h3>生成概率</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>检验一个不依赖邻居的替代方案：虚假注释是不是只是典型的 repertoire 抽样结果？</p>
+  <p class="field"><span class="lbl">方法</span>用 OLGA 计算单链与配对的 Pgen。</p>
+  <p class="field"><span class="lbl">结果</span><span class="mono">-log10 Pgen(paired)</span> 得 <strong>0.417</strong>——也就是说 Pgen <em>越高</em>反而越可能验证通过，与假设相反。也不正交：与密度的 Spearman 相关在 <span class="pep">GILGFVFTL</span> 上达到 −0.63。在孤立点内部为 0.50–0.53。</p>
+  <div class="field concl"><span class="lbl">定论</span>稠密的趋同簇本就由容易生成的序列构成，所以 Pgen 多半只是在重新编码密度，而且符号不稳定。</div>
+</article>
+
+<article class="exp" id="e8">
+  <div class="exp-head">
+    <span class="exp-id">E8</span>
+    <div class="exp-title"><h3>背景归一化（TCRNET / ALICE 式富集）</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>把抗原驱动的趋同，与"TCR 空间的这一片本来就拥挤"区分开。</p>
+  <p class="field"><span class="lbl">方法</span>用队列内密度除以相对其他表位 TCR 的密度。</p>
+  <p class="field"><span class="lbl">结果</span>本队列密度 0.8396；作差 0.8357；对数比 0.8262。而背景密度<strong>单独</strong>就能得 0.60，且是<em>正向</em>的。</p>
+  <div class="field concl"><span class="lbl">定论</span>TCR 空间中拥挤的区域正是真正的公共克隆型所在之处，所以归一化减掉的是信号而不是噪声。</div>
+</article>
+
+<article class="exp" id="e10">
+  <div class="exp-head">
+    <span class="exp-id">E10</span>
+    <div class="exp-title"><h3>拟合式融合</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>追问学习得到的组合器能否胜过固定的秩平均。</p>
+  <p class="field"><span class="lbl">方法</span>在全部密度与簇形状特征上做逻辑回归与梯度提升，LOEO 评估。</p>
+  <p class="field"><span class="lbl">结果</span>最佳单一无监督特征 0.8362；仅密度的逻辑回归 0.8359；密度 + 簇形状 0.8299；深度 2 的提升树 0.8188；仅簇形状 0.6846。</p>
+  <div class="field concl"><span class="lbl">定论</span>五折撑不起一个拟合组合器。<strong>由此确立一条硬约束：任何融合都必须是零参数的秩平均，且一个组件只有在 LOEO 上带来 &gt; +0.02 的增益时才能进入。</strong>这条阈值此后支配了每一个决策。</div>
+</article>
+
+<article class="exp" id="e11">
+  <div class="exp-head">
+    <span class="exp-id">E11</span>
+    <div class="exp-title"><h3>图上的精修</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>检验全局图结构能否胜过局部度数。</p>
+  <p class="field"><span class="lbl">方法</span>用特征向量中心性、PageRank，以及 1–10 轮标签传播，替换度数中心性（即朴素密度）。</p>
+  <p class="field"><span class="lbl">结果</span>度数 0.8362；PageRank(0.85) 0.8329；传播 ×1 为 0.8297、×3 为 0.8095、×10 为 0.7417；特征向量中心性 0.7486。</p>
+  <div class="field concl"><span class="lbl">定论</span>传播轮数越多单调越差。<strong>信号是严格局部的</strong>；特征向量中心性会塌缩到最大的那个簇上，不再对其余部分排序。</div>
+</article>
+
+<article class="exp" id="e13">
+  <div class="exp-head">
+    <span class="exp-id">E13</span>
+    <div class="exp-title"><h3>表位条件化的特异性模型</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>联合 TCR 与肽来预测结合，并推广到未见过的表位。</p>
+  <p class="field"><span class="lbl">方法</span>LightGBM，输入是 SCEPTR 的 TCR 嵌入拼接 BLOSUM62 的肽编码，在横跨 119 个表位的 21,112 对 VDJdb 配对数据上训练；阴性样本是同一批 TCR 与错误表位配对，使 TCR 身份本身不携带标签。<strong>目标表位被完全移出训练集</strong>——必须如此，因为测试 TCR 本身就是注释到该表位的 VDJdb 条目。</p>
+  <p class="field"><span class="lbl">结果</span><span class="pep">NLVPMVATV</span> 0.553、<span class="pep">GILGFVFTL</span> 0.533、<span class="pep">GLCTLVAML</span> 0.531、<span class="pep">TTDPSFLGRY</span> 0.507、<span class="pep">YLQPRTFLL</span> <strong>0.283</strong>。均值 <strong>0.481——低于随机</strong>。与密度做秩平均会把 0.8415 拖到 0.7293。代价：78 分钟墙钟、1,153 CPU 分钟。</p>
+  <div class="field concl"><span class="lbl">定论</span>预测对训练中从未见过的肽的结合，仍然是未解问题。这个模型真正学到的是<em>一条 TCR 相对 VDJdb 有多"普通"</em>，而在 <span class="pep">YLQPRTFLL</span> 上，看起来普通的 TCR 恰恰就是那些虚假注释——与 <a href="#e4">E4</a> 中 <span class="mono">vdjdb_score</span> 的失败形状完全相同。两次独立失败，同一个机制：<strong>一个符号在表位之间不稳定的量，比没有这个特征更糟。</strong></div>
+</article>
+
+<article class="exp" id="e16">
+  <div class="exp-head">
+    <span class="exp-id">E16</span>
+    <div class="exp-title"><h3>学习密度所依附的那个度量</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>把手工选定的带宽和各向同性距离换成学出来的。</p>
+  <p class="field"><span class="lbl">方法</span>通过在表位内配对排序代理损失上做梯度下降，分别学习：仅核带宽（1 个参数），以及 SCEPTR 64 维上的对角度量（64 个参数，向单位阵收缩）。严格嵌套。</p>
+  <p class="field"><span class="lbl">结果</span>朴素余弦 σ=0.1 为 <strong>0.8396</strong>；仅尺度 <strong>0.8199</strong>；对角 <strong>0.8144</strong>。学出的带宽在每一折都落在 0.20–0.26，而真实最优是 0.07。</p>
+  <h4>诊断分三步，因为前两步都错了</h4>
+  <p><em>第一个猜测——尺度耦合。</em>在损失之前先按表位标准化密度，没有用；σ 仍收敛到 0.20–0.26。<em>第二个猜测——损失形状。</em>换成有界的 sigmoid 反而<em>更差</em>，而且两种代理损失在 σ 网格上与 AUC 都是<strong>负相关</strong>（−0.39 与 −0.51）。<em>真正的原因</em>，来自温度扫描：</p>
+  <div class="tw"><table>
+  <thead><tr><th class="n">温度</th><th class="n">损失极小点 (σ)</th><th class="n">corr(−loss, AUC)</th></tr></thead>
+  <tbody>
+  <tr><td class="n">1.0</td><td class="n">0.30</td><td class="n">−0.51</td></tr>
+  <tr><td class="n">0.2</td><td class="n">0.20</td><td class="n">−0.37</td></tr>
+  <tr><td class="n">0.05</td><td class="n">0.15</td><td class="n">−0.12</td></tr>
+  <tr class="key"><td class="n">0.02</td><td class="n">0.10</td><td class="n">+0.03</td></tr>
+  </tbody></table></div>
+  <p>代理损失只有在它不再光滑的时候才与 AUC 对齐——温度趋于 0 时它就变成了 1−AUC 这个阶跃函数本身，而到那时梯度几乎处处消失。</p>
+  <div class="field concl"><span class="lbl">定论</span>分数分布是<strong>重尾的</strong>：少数 TCR 位于稠密簇中、取到极端的密度值。AUC 对把它们排在最顶端给予全额信用；任何光滑的 margin 代理损失在那里都会饱和，转而被模糊的大多数主导。于是代理损失恰恰在这个度量获取大部分信号的地方最不敏感。这是<strong>结构性的失配，不是实现缺陷。</strong>扫描确实定下来一件事：各表位的最优带宽相差五倍，从 0.03 到 0.15。</div>
+</article>
+
+<article class="exp" id="e17">
+  <div class="exp-head">
+    <span class="exp-id">E17</span>
+    <div class="exp-title"><h3>无标签的自适应带宽</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>在不使用标签的前提下利用 E16 所揭示的真实带宽异质性，使其能原封不动地迁移到私有表位。</p>
+  <p class="field"><span class="lbl">方法</span>从每个队列自身的距离几何来设定 σ。测试十条规则。</p>
+  <div class="tw"><table>
+  <thead><tr><th>规则</th><th class="n">均值</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>固定 0.07</td><td class="n">0.8397</td></tr>
+  <tr><td>固定 0.10</td><td class="n">0.8396</td></tr>
+  <tr><td>中位成对距离 / 12</td><td class="n">0.8385</td></tr>
+  <tr><td>中位 nn1</td><td class="n">0.8054</td></tr>
+  <tr><td>成对距离 10 分位</td><td class="n">0.7927</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>那些<em>有效</em>的规则几乎不自适应（<span class="mono">中位成对距离/8</span> 在各表位都取到 0.091–0.115，本质就是伪装过的固定 σ）；而那些真正会变化的规则，调整方向是<strong>反的</strong>。机制在于：以孤立点为主的队列最近邻距离大，恰恰需要<em>小</em> σ，才能让少数真正接近的配对占据主导；而任何按带宽缩放的启发式都会给稀疏队列<em>大</em> σ，把信号冲淡。带宽异质性是真实的，但<strong>无法从队列几何中预测</strong>。固定 σ≈0.07–0.10 维持不变。</div>
+</article>
+
+<article class="exp" id="e32">
+  <div class="exp-head">
+    <span class="exp-id">E32</span>
+    <div class="exp-title"><h3>剩余六张序列卡片，全部否决</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">方法</span>全部以严格嵌套 LOEO 对照已提交融合模型（0.8498）评判。</p>
+  <div class="tw"><table>
+  <thead><tr><th>卡片</th><th>结果</th><th>判定</th></tr></thead>
+  <tbody>
+  <tr><td class="mono">D04</td><td>identity 0.8007、BLOSUM62 0.7999、BLOSUM45 0.8014</td><td>替换代价矩阵无关紧要</td></tr>
+  <tr><td class="mono">D05</td><td>三尺度平均 0.8378，单一 σ=0.1 为 0.8396</td><td>比单尺度更差</td></tr>
+  <tr><td class="mono">S01</td><td>最佳额外特征 +0.0002，<span class="mono">iptm</span> 为 <b>−0.0193</b></td><td>第三次独立确认标签提供不了东西</td></tr>
+  <tr><td class="mono">S02</td><td>整体 <b>−0.0186</b>；孤立点内部 0.7704，冻结分数为 0.793</td><td>拟合的孤立点模型连在孤立点上都更差</td></tr>
+  <tr><td class="mono">S07</td><td>有近邻组 AUC 0.720，孤立组 0.778</td><td>基于距离的置信度 ≠ 排序可靠性</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>S07 值得反过来陈述：有近邻的那一组 AUC <em>更低</em>，因为它的验证率已经到 0.86，几乎没有什么可排的了。<strong>一个基于距离的置信层标记出的是先验极端的地方，而不是排序不可靠的地方。</strong>卡片 D10 的结果见<a href="#e32b">"这个模型实际上是什么"</a>。</div>
+</article>
+
+<!-- ===== 四、候选池扩充 ===== -->
+<h2><span class="count">第四部分</span>候选池扩充</h2>
+
+<article class="exp" id="e12">
+  <div class="exp-head">
+    <span class="exp-id">E12</span>
+    <div class="exp-title"><h3>能否用未经筛选的 VDJdb TCR 来锐化密度估计？</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">方法</span>统计每个表位可用的额外序列数量。</p>
+  <p class="field"><span class="lbl">结果</span>公开侧：<span class="pep">GILGFVFTL</span> 多 3,005 条，<span class="pep">NLVPMVATV</span> 多 9,881 条（28 倍），<span class="pep">GLCTLVAML</span> 多 459 条。私有侧：<strong><span class="pep">CINGVCWTV</span> 只有 11 条，<span class="pep">LTDEMIAQY</span> 只有 5 条</strong>，<span class="pep">LLWNGPMAV</span> 191 条。</p>
+  <div class="field concl"><span class="lbl">当时的定论，以及后来的重访</span>基于设计层面的理由<strong>在未实际运行的情况下</strong>否决——扩充会抬高公榜分数，却对三个决定性表位中的两个毫无作用。<a href="#e25">E25</a> 后来指出这是一个流程上的缺口，<a href="#e27">E27</a> 把它正式跑了一遍；结论得以保留，但当初的推理并不完整。</div>
+</article>
+
+<article class="exp" id="e27">
+  <div class="exp-head">
+    <span class="exp-id">E27</span>
+    <div class="exp-title"><h3>候选池扩充：审计并量化</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>用测量取代 E12 的断言。</p>
+
+  <h4>（一）查询会找到自己</h4>
+  <p>每条测试 TCR 都来自 VDJdb，所以用 VDJdb 扩充就有把查询本身算作自己邻居的风险。96.4% 的查询能找到一次精确自命中，而且这个次数<strong>不是常数</strong>——<span class="pep">GILGFVFTL</span> 平均 2.19 次，所以被反复收录的克隆型会额外收获零距离的"邻居"。收录重数本身与验证结果相关（1 条记录 → 49.0% 验证率，4 条及以上 → <strong>93.5%</strong>），这使它成为一个伪装成密度的标签代理。直接确认：原始扩充<strong>损失</strong> 0.0024 平均 AUC；剔除查询自身后的扩充增益 0.0048。</p>
+
+  <h4>（二）聚合算子决定扩充到底有没有用</h4>
+  <div class="tw"><table>
+  <thead><tr><th>算子</th><th class="n">无池</th><th class="n">加池</th><th class="n">差值</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>top-8</td><td class="n">0.8414</td><td class="n">0.8526</td><td class="n">+0.0112</td></tr>
+  <tr><td>top-3</td><td class="n">0.8334</td><td class="n">0.8476</td><td class="n">+0.0142</td></tr>
+  <tr><td>top-16</td><td class="n">0.8377</td><td class="n">0.8488</td><td class="n">+0.0111</td></tr>
+  <tr><td>核 σ=0.1</td><td class="n">0.8396</td><td class="n">0.8432</td><td class="n">+0.0036</td></tr>
+  </tbody></table></div>
+  <p><span class="pep">NLVPMVATV</span> 的池有 94.8% 来自单一个 dextramer 研究，它在<strong>核均值下是 −0.0354，在 top-8 下是 +0.0131</strong>：对整个池取均值会被那一个研究的记录淹没，而 top-k 根本不会看到它们。</p>
+
+  <h4>（三）私有侧真正能兑现多少</h4>
+  <p>把每个公开池下采样到私有表位各自的<em>去重克隆型</em>倍率，重复 30 次：<strong>top-8 上 +0.0013，已提交融合模型上 +0.0004</strong>。<strong>公开侧增益的 88% 无法迁移</strong>，因为三个私有表位中有两个最多只能增加约 4% 的去重克隆型。</p>
+  <p><strong>三个不应只引用点估计的理由</strong>——全部是在第一版估计已经写下之后，由自查发现的：</p>
+  <ul>
+    <li>它最初是在一个我们并不提交的模型上算的。换到已提交的配置上，宏观估计从 +0.0013 降到 <strong>+0.0004</strong>，朴素 95% 区间 [−0.0022, +0.0030]，并且在三个私有表位中的两个上为负。</li>
+    <li>均值掩盖了<strong>26 倍的离散</strong>（<span class="pep">GLCTLVAML</span> +0.0158 到 <span class="pep">NLVPMVATV</span> −0.0076，标准差是均值的五倍）。在公开表位间取平均，等于假设增益只取决于倍率——而这正是 <a href="#e21">E21</a> 已经证伪的可交换性。<strong>五个表位估计不出这个量。</strong></li>
+    <li>随机下采样本身偏乐观。<span class="pep">LTDEMIAQY</span> 可用的 5 条额外序列来自一个 97.8% 由单一文献构成的池；只从各池的主导研究中抽取，结果是 <strong>−0.0002</strong>。</li>
+  </ul>
+  <div class="field concl"><span class="lbl">定论</span>不是"增益很小"，而是<strong>"在我们的配置上没有可测量的增益"</strong>。E12 的判定成立，但其推理并不完整——问题不只在于可用的额外 TCR 很少，更在于仅有的那些是来自单一研究的重复。</div>
+</article>
+
+<article class="exp" id="e33">
+  <div class="exp-head">
+    <span class="exp-id">E33</span>
+    <div class="exp-title"><h3>池与来源类卡片，其中两个结果互相纠正</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>检验池的增益究竟是证据还是体量。</p>
+  <p><strong>I02——扩充确实优先"救回"阳性。</strong>当池为一条孤立 TCR 提供了聚类半径内的邻居时，这条 TCR 是已验证阳性的可能性约为<strong>三倍</strong>（<span class="pep">GILGFVFTL</span> 3.2×，合并约 3×）。所以扩充携带真实证据——但在 <span class="pep">GILGFVFTL</span> 之外绝对数量可以忽略，另外三个表位各自只救回两条。</p>
+  <div class="tw"><table><caption>R02——然而一旦节流，增益就消失了</caption>
+  <thead><tr><th>池策略</th><th class="n">均值</th></tr></thead>
+  <tbody>
+  <tr><td>不加池</td><td class="n">0.8414</td></tr>
+  <tr class="key"><td>全部记录</td><td class="n">0.8526</td></tr>
+  <tr><td>每篇文献只取一份</td><td class="n">0.8504</td></tr>
+  <tr><td>每个受试者只取一条</td><td class="n">0.8428</td></tr>
+  </tbody></table></div>
+  <p><strong>R08——"成簇"中有多少只是"容易生成"，是表位特异的。</strong>按配对 Pgen 三分位 × CDR3β 长度做匹配后，成簇与验证之间的差距在 <span class="pep">GILGFVFTL</span> 上从 0.400 降到 <strong>0.067</strong>，而在 <span class="pep">NLVPMVATV</span> 上从 0.658 升到 <strong>0.711</strong>。</p>
+  <p><strong>S05——来源弱监督，第三次死亡。</strong>每克隆型记录数 0.534、不同文献数 0.557、不同实验类别 0.514——而且每一个在每个私有表位内部都只取一到两个不同值。</p>
+  <div class="field concl"><span class="lbl">定论</span>这个增益同时包含<strong>证据</strong>成分（I02）和<strong>体量</strong>成分（R02），这正是原始记录版扩充看起来比它应得的更好的原因。而 Pgen 混杂的程度本身就是表位特异的，这又是一个说明单一全局修正（<a href="#e8">E8</a>）只会帮倒忙的理由。</div>
+</article>
+
+<article class="exp" id="e35">
+  <div class="exp-head">
+    <span class="exp-id">E35</span>
+    <div class="exp-title"><h3>参考数据库的版本、来源与泄漏</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">方法</span>三个 VDJdb 版本——2024-06-13（32,183 条配对人类记录）、2025-02-21（35,672）、2026-06-03（86,221）——在每一个上重跑池的测量。</p>
+  <p><strong>泄漏审计，这件事本该早做却一直没做。</strong>在全部人类文献条目中检索 Immunity 2026 的 DOI、2025 年 bioRxiv 预印本、"TCRvdb"、Schumacher 实验室代码库与 "T-RAP"，<strong>每一项返回零条记录</strong>。池与标签是独立的。</p>
+  <p><strong>筛选集最接近 ~2025-02 的快照。</strong>VDJdb 克隆型数与测试集规模的中位绝对差，在 2025-02-21 上是 4，另两个版本分别是 10 和 25；<span class="pep">CINGVCWTV</span> 精确吻合，243 对 243。</p>
+  <p><strong>池的增益并不能分辨出版本依赖。</strong>三个版本的增益 +0.0052、+0.0099、+0.0112 看起来单调，但<strong>任何一对差值都达不到两倍标准误</strong>，而且这个跨度几乎完全由 <span class="pep">GLCTLVAML</span> 承载。数据库规模扩大 2.7 倍，增益没有可分辨的变化——这本身就是结果。这同时证伪了我在测量之前的一句叙述性断言。</p>
+  <div class="tw"><table><caption>真正经得起时间的发现是一个计数而非 AUC，所以噪声不适用——可用池倍率</caption>
+  <thead><tr><th>表位</th><th class="n">2024-06</th><th class="n">2025-02</th><th class="n">2026-06</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">CINGVCWTV</td><td class="n">1.01</td><td class="n">1.00</td><td class="n">1.05</td></tr>
+  <tr><td class="pep">LTDEMIAQY</td><td class="n">1.04</td><td class="n">1.02</td><td class="n">1.04</td></tr>
+  <tr class="key"><td class="pep">LLWNGPMAV</td><td class="n">1.08</td><td class="n">1.03</td><td class="n">1.83</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span><span class="pep">CINGVCWTV</span> 和 <span class="pep">LTDEMIAQY</span> 在十八个月里几乎没有新增配对 TCR，所以<strong>它们的"枯竭"是该表位的一个持久属性</strong>，这让 E27 与 E33 的结论对三个决定性表位中的两个具有版本稳健性。</div>
+</article>
+
+<article class="exp" id="e38">
+  <div class="exp-head">
+    <span class="exp-id">E38</span>
+    <div class="exp-title"><h3>阴性对照与「池 × 结构」析因实验</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>这两张卡片最初都被我凭自己的判断跳过了。R04 提出的是其他实验都没覆盖的那个怀疑：往里加<em>任何</em>一批规模可观的序列，是不是不管它们是什么都会抬高密度？</p>
+  <p class="field"><span class="lbl">方法</span>三组规模匹配的对照，各添加 2,684 条序列，与真实池数量相同：来自其他表位、按 CDR3β 长度与 TRBV 匹配的真实 TCR；同样来源但不做匹配；以及 OLGA 生成的合成 repertoire。</p>
+  <div class="tw"><table>
+  <thead><tr><th>加入的参考序列</th><th class="n">均值</th><th class="n">增益</th></tr></thead>
+  <tbody>
+  <tr><td>不加</td><td class="n">0.8414</td><td class="n">—</td></tr>
+  <tr class="key"><td>真实的同表位序列</td><td class="n">0.8526</td><td class="n">+0.0112</td></tr>
+  <tr><td>他表位，形状匹配</td><td class="n">0.8333</td><td class="n">−0.0081</td></tr>
+  <tr><td>他表位，不匹配</td><td class="n">0.8350</td><td class="n">−0.0064</td></tr>
+  <tr><td>OLGA 合成 repertoire</td><td class="n">0.8381</td><td class="n">−0.0063</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span><strong>三组对照全都造成了损害。</strong>加入同样数量的无关序列不只是帮不上忙，而是会劣化密度估计。所以扩充带来的增益是<strong>抗原特异的信息</strong>；与 I02、R02 合在一起就构成完整图景：一个真实的机制，由来自同一批受试者的多条记录承载，而私有表位无从获取。R05 的析因实验如预期般退化，用数字确认了此前只是断言的东西。</div>
+</article>
+
+<!-- ===== 五、结构 ===== -->
+<h2><span class="count">第五部分</span>结构</h2>
+
+<article class="exp" id="e14">
+  <div class="exp-head">
+    <span class="exp-id">E14</span>
+    <div class="exp-title"><h3>大规模结构预测</h3></div>
+    <span class="tag adopt">采纳</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>检验预测出的界面能否提供与序列邻域正交的信号。</p>
+  <p class="field"><span class="lbl">方法</span>用 Boltz-2 折叠全部 2,636 个 TCR–肽–MHC 复合物——四条链：TCRα V 区、TCRβ V 区、等位基因特异的 HLA α1α2、肽；约 416 个残基；单序列模式；每个 14 秒，共 7.4 小时。提取界面 PAE 与链对 ipTM。</p>
+  <div class="tw"><table><caption>有信息量的不是分数高低，而是哪些特征"有效"——全都有效，且程度相当</caption>
+  <thead><tr><th>特征</th><th class="n">均值</th></tr></thead>
+  <tbody>
+  <tr><td><span class="mono">pae_a_mhc_min</span>（TCRα–MHC）</td><td class="n">0.759</td></tr>
+  <tr><td><span class="mono">pae_tcr_pep_min</span>（主办方的统计量）</td><td class="n">0.759</td></tr>
+  <tr><td><span class="mono">complex_plddt</span>（整体折叠质量）</td><td class="n">0.694</td></tr>
+  <tr><td><span class="mono">pae_ab_min</span>（TCRα–TCRβ）</td><td class="n">0.656</td></tr>
+  <tr class="key"><td><span class="mono">iptm_mhc_pep</span>（MHC–肽）</td><td class="n">0.647</td></tr>
+  </tbody></table></div>
+  <p><span class="mono">iptm_mhc_pep</span> 是那个诊断性的指标：这个界面<strong>完全不含 TCR</strong>，而且在同一队列里对每个复合物都相同，却能得 0.647。</p>
+  <div class="field concl"><span class="lbl">定论</span>这里的结构置信度在很大程度上报告的是<strong>这条 TCR 有多"规范"</strong>——典型序列通过共享的配对表示在任何地方都折叠得很自信——所以它并不是当初期望的那个正交信号。但它仍有少量贡献：以 0.2–0.3 的权重融合，嵌套 LOEO 给出 <strong>+0.0070</strong>（0.8392 → 0.8461），且权重在每一折都稳定地被选中。五个表位中四个改善；唯一的退步是 <span class="pep">TTDPSFLGRY</span>，<strong>竞赛中唯一的 10 肽</strong>；而三个私有表位都是 9 肽，所以限定在四个 9 肽上增益是 +0.0115。</div>
+</article>
+
+<article class="exp" id="e19">
+  <div class="exp-head">
+    <span class="exp-id">E19</span>
+    <div class="exp-title"><h3>跨扩散采样的对接一致性</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>寻找一个不受"规范性"混杂影响的结构量。</p>
+  <p class="field"><span class="lbl">方法</span>用 5 次扩散采样重新折叠全部 2,636 个复合物（13.2 GPU 小时）。把每一对采样在 MHC 与肽的 Cα 上叠合，再取 TCR 的 Cα RMSD。</p>
+  <h4>那个假设，以及它为什么是错的</h4>
+  <p>当初预期一致性不受混杂影响，理由是五次采样共享完全相同的序列输入。<strong>这个论证是错的。</strong>五次采样共享的不止输入：它们共享那一份已经算好的 trunk 表示。扩散头是在以它为条件的分布上采样，所以一个自信的 trunk 会给出一个窄的条件分布，从而采样之间也就一致。<strong>一致性是 trunk 置信度的下游产物。</strong></p>
+  <p class="field"><span class="lbl">结果</span>对接 RMSD 跨越 0.32–42.7 Å，动态范围是真实的，但它与密度的表位内 Spearman 相关是 <strong>+0.530</strong>——与它本应超越的那些置信度特征的 +0.528 无法区分。融合后最佳增益是 <strong>+0.0010</strong>，而阈值是 +0.02。</p>
+  <div class="field concl"><span class="lbl">定论</span>13.2 GPU 小时换来 +0.001。预注册的规则起了作用。有一点值得留着：一致性在 <span class="pep">GLCTLVAML</span> 上得 0.775，是本项目最弱表位上所有单一特征中的最高分——但把它的权重调到足以利用这一点，整体均值就跌到 0.8128。</div>
+</article>
+
+<article class="exp" id="e28">
+  <div class="exp-head">
+    <span class="exp-id">E28</span>
+    <div class="exp-title"><h3>接触指纹与对接几何</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>从置信度分数转向真正的界面几何。</p>
+  <p class="field"><span class="lbl">方法</span>四张卡片在对 2,636 个结构的一次遍历中一并提取。以肽的位置作为公共坐标——同一表位内肽是相同的——所以唯一必须完全正确的那件事不需要 IMGT 编号。</p>
+  <p class="field"><span class="lbl">结果</span><strong>几何质检通过：</strong>肽–MHC 接触数中位 334、最小 260，说明每条肽都稳坐在凹槽中；CDR3 贡献了全部 TCR–肽接触的 74–76%，正是生物学上预期的比例。有一个复合物 <span class="mono">1_6_B11_22_YLQPRTFLL</span> <strong>完全没有 TCR–肽接触</strong>——一次真实的对接失败，而且发生在公开表位上。</p>
+  <p>接触指纹密度得 <strong>0.7476</strong>，与密度相关 +0.563——又是一次重新编码。<strong>但原始接触计数是本项目测量过的最正交的量：</strong>它与密度的表位内 Spearman 相关只有 <strong>+0.088</strong> 和 +0.103，而此前测过的所有东西都落在 +0.26 到 +0.91 之间。它们也太弱而无法使用——单独 AUC 0.588 与 0.559，嵌套增益 <strong>+0.0008</strong>。</p>
+  <div class="field concl"><span class="lbl">定论——一条值得保留的通则</span><strong>正交性是必要的，但不充分。</strong>一个 AUC 0.59 的组件融合进一个 0.85 的模型，无论它多么独立，贡献都几乎为零——可达成的贡献与它相对随机的余量成比例，而 0.09 买不到任何东西。</div>
+</article>
+
+<article class="exp" id="e34">
+  <div class="exp-head">
+    <span class="exp-id">E34</span>
+    <div class="exp-title"><h3>预测接触与晶体学数据的对照</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>E28 与 E31 都建立在预测界面之上。拿实验数据来核对。</p>
+  <p class="field"><span class="lbl">方法</span>PDB 中为四个竞赛表位提供了 14 个已解析的 TCR–pMHC 复合物，用与竞赛<em>完全相同</em>的流程折叠。</p>
+  <p class="field"><span class="lbl">结果</span><strong>指纹是忠实的。</strong>逐肽位置接触计数的 Spearman 中位 0.992；最小距离 0.983；被接触位置集合的 Jaccard 为 1.000；总接触数预测 102 对实测 99。</p>
+  <h4>三项自查，其中两项削减了这一主张</h4>
+  <ul>
+    <li><strong>零膨胀。</strong>20 个指纹槽位中平均有 11.5 个在两个向量里都是零——那是 TCR 根本够不着的埋藏锚定位点。限定在有接触的位置上，中位数从 0.992 降到 <strong>0.953</strong>。原先那个漂亮数字有一部分只是"在结构上不可能的地方达成一致"。</li>
+    <li><strong>记忆化。</strong>14 个复合物全部发布于 2003–2022 年，因此都早于 Boltz-2。<strong>这是一次记忆化核查，不是预测能力测试。</strong>唯一可用的训练后复合物（9x7r，2026-09-23 发布）表现掉到 Spearman <strong>0.840</strong>、Jaccard <strong>0.700</strong>，接触数高估 40%。n=1 只是轶事，但它是唯一可得的分布外数据点，而且指向预期的方向。</li>
+    <li><strong>复合物之间的区分力——最要紧的那项核查。</strong>在 <span class="pep">GILGFVFTL</span> 的 36 对复合物上，预测与实测的成对指纹距离之间 Spearman 为 <strong>+0.948</strong>。在记忆化的范围内，这个表示确实承载了真实的 TCR 间界面差异。</li>
+  </ul>
+  <div class="field concl"><span class="lbl">定论——后果是不对称的</span>E28 的阴性结果<strong>是安全的，而且被加强了</strong>——预测噪声只会削弱真实信号。E31 的阳性结果<strong>暴露在风险中，但部分地被它自身的设计所保护</strong>：它是拿标签不一致配对去对照来自同一流程的同标签匹配对照，所以任何一致的预测偏差会同等地影响两臂。要仅凭预测误差制造出那个效应，就需要误差与突变本身相关。这是真实的辩护，而不是免疫力。</div>
+</article>
+
+<article class="exp" id="e36">
+  <div class="exp-head">
+    <span class="exp-id">E36</span>
+    <div class="exp-title"><h3>真实靶标对照锚定匹配的诱饵肽</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>直接检验 E14 的推断：结构信号究竟有没有肽特异性？</p>
+  <p class="field"><span class="lbl">方法</span>把同一条 TCR 分别与它注释的肽和与诱饵肽折叠，然后相减——消去一切只属于 TCR 本身的成分。<strong>诱饵按锚定残基的"类别"匹配，而非逐个残基相同</strong>：HLA-A*02:01 要求 P2 与 C 端为脂肪族，A*01:01 要求 P3 为酸性、C 端为芳香族。脚本的第一版要求残基完全相同，立刻失败——没有任何已报道的 A*02:01 九肽同时具备 <span class="pep">GILGFVFTL</span> 的 P2 异亮氨酸<em>和</em>它的 C 端亮氨酸——这也暴露出我挑的两个诱饵在 P3 上用了丝氨酸。</p>
+  <div class="tw"><table><caption>结果——这个差值什么都不携带</caption>
+  <thead><tr><th>量</th><th class="n">仅靶标</th><th class="n">靶标减诱饵</th></tr></thead>
+  <tbody>
+  <tr><td>ipTM</td><td class="n">0.7387</td><td class="n">0.5362</td></tr>
+  <tr><td>置信度分数</td><td class="n">0.7189</td><td class="n">0.5398</td></tr>
+  <tr class="key"><td>TCRα–肽 ipTM</td><td class="n">0.7429</td><td class="n">0.5331</td></tr>
+  <tr><td>TCRβ–肽 ipTM</td><td class="n">0.7329</td><td class="n">0.5251</td></tr>
+  <tr><td>MHC–肽 ipTM</td><td class="n">0.6500</td><td class="n">0.5147</td></tr>
+  <tr><td>复合物 pLDDT</td><td class="n">0.6313</td><td class="n">0.5247</td></tr>
+  </tbody></table></div>
+  <p>靶标 ipTM 均值 0.9152，诱饵 0.9091——差值 <strong>+0.0061</strong>。Boltz 给一条 TCR 的真实靶标和一个无关但锚定匹配的表位，赋予了基本相同的界面置信度。</p>
+  <h4>四项自查，把结论从"有噪声"变成"小得太离谱"</h4>
+  <p>诱饵结构<em>确实</em>不同（同一条 TCR 三个诱饵之间的离散是 0.036，与不同 TCR 之间的 0.062 相当）。这个差值的均值只有它在 TCR 之间离散度的十分之一，而仅仅诱饵选择带来的噪声就是该差值的 <strong>5.9 倍</strong>。没有哪一个诱饵在单独撑着它——逐诱饵差值从 −0.0128 到 +0.0247，其中两个为负。而要达到 AUC 0.70 需要约 0.042 的差值，实测值只有<strong>所需的 14%</strong>：这不是增加诱饵数量就能解决的功效问题。</p>
+  <h4>阶段 2 终究还是跑了，而且这七个 GPU 小时值得</h4>
+  <p>我原本把私有表位的扩展安排在阶段 1 出阳性结果之后，然后跳过了它，理由是一个在全部五个有标签表位上都失败的特征永远不可能越过阈值。这个论证本身成立，但它回答的是与阶段 2 所问不同的问题：<em>这种失败是普遍的，还是只发生在恰好带标签的那些表位上？</em>有标签表位上的平均绝对差值是 0.0406，私有表位是 0.0394——无法区分。<strong>失败是普遍的。</strong>有两个公开表位的平均差值为<strong>负</strong>：在 <span class="pep">TTDPSFLGRY</span> 和 <span class="pep">YLQPRTFLL</span> 上，模型平均而言更偏好诱饵。</p>
+  <div class="field concl"><span class="lbl">定论</span>这关闭了结构这条线，并且查明了机制：<strong>在这个设定下，Boltz 的界面置信度不含任何肽特异的信息</strong>，所以尝试过的每一个结构特征（E14、E19、E28、E36）读到的都是密度已经在读的那个"TCR 规范性"信号。</div>
+</article>
+
+<article class="exp" id="e37">
+  <div class="exp-head">
+    <span class="exp-id">E37</span>
+    <div class="exp-title"><h3>E31 的界面结果能否经受能量最小化？</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>E31 是本项目唯一的阳性机制发现，而它是在 Boltz 的原始坐标上测得的，那些坐标带有原子冲突和未弛豫的侧链。</p>
+  <p class="field"><span class="lbl">方法</span>69 个复合物在一套固定协议下弛豫——PDBFixer 补齐端基原子与 pH 7 下的氢，Amber14 配 GBn2 隐式溶剂，L-BFGS 最小化，分别在 200 步和 1,000 步处测量。</p>
+  <div class="tw"><table><caption>各描述符的稳定性差别很大，这决定了结论可以建立在哪一个之上（数字已由审计更正）</caption>
+  <thead><tr><th>描述符</th><th class="n">0→1,000 步的中位相对变化</th><th class="n">Spearman(原始, 弛豫)</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>埋藏界面面积</td><td class="n">1.63%</td><td class="n">+0.960</td></tr>
+  <tr><td>肽接触数</td><td class="n">9.21%</td><td class="n">+0.793</td></tr>
+  <tr><td>氢键数</td><td class="n">33.33%</td><td class="n">+0.788</td></tr>
+  </tbody></table></div>
+  <p>埋藏面积是稳健的；氢键计数不是，所以任何建立在氢键之上的结论都不安全。<strong>E31 的效应存活下来</strong>：突变位点处的接触数，原始坐标上为 8.61 对 3.97（p=0.026），最小化后为 7.16 对 3.53（p=0.045），接触比从 2.17× 变为 2.03×。</p>
+
+  <h4>修订——那三行其实是同一个发现，而且它是位置性的</h4>
+  <p>这是在准备 E39 时发现的，因为 E39 需要同一批突变位点残基。对同一个物理量读取<strong>第二个描述符</strong>，结果就被劈开了：接触计数能分开两组（3.581 对 1.766，p=0.017），而位点到肽的最小距离不能（6.412 对 6.354，p=0.899）。</p>
+  <p><strong>这不是离群值造成的假象——而且这项审计的第一版用错了方法去检验它。</strong>我当时把计数做秩变换后重跑，而这必然返回逐字相同的 p 值，因为 Mann-Whitney 本身就是秩检验。真正的原因是：<strong>77% 的突变位点根本不接触肽</strong>，所以计数有四分之三并列在零，它的秩检验实质上就是一个二元比较，而距离用上了全部 126 个位点。</p>
+  <div class="tw"><table>
+  <thead><tr><th>量</th><th class="n">不一致组</th><th class="n">对照组</th><th class="n">p</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>位点是否接触肽</td><td class="n">0.323</td><td class="n">0.141</td><td class="n">0.020</td></tr>
+  <tr><td>在接触的前提下，距离（Å）</td><td class="n">3.504</td><td class="n">3.319</td><td class="n">0.195</td></tr>
+  <tr><td>在接触的前提下，接触数</td><td class="n">11.100</td><td class="n">12.556</td><td class="n">0.981</td></tr>
+  </tbody></table></div>
+  <p><strong>全部效应都在那个二元量上。</strong>标签不一致的配对在朝向肽的位点上发生差异的频率高 2.29 倍——这在数值上正是 E31 标题里的"2.3 倍肽接触"。而一旦条件在"确实朝向肽"之上，差异完全消失。</p>
+  <div class="field concl"><span class="lbl">两个后果</span><strong>E31 应当被重新表述</strong>：不是"标签不一致的阴性样本突变在携带更多肽接触的位点上"（这暗示一种渐变的能量差异），而是"标签不一致的配对在朝向肽的位点上发生差异的概率约为两倍"。机制是<strong>位置性的，而非能量性的</strong>。同时<strong>E37 高估了自己的证据</strong>——它那三行并不是三个独立的确认；在 77% 并列的情况下，计数那一行和"是否朝向肽"那一行实质上是同一个检验。</div>
+
+  <h4>更正——它那张描述符表里有三个数字无法复算</h4>
+  <p>由数据审计发现：<span class="mono">scripts/32</span> 声明了 <span class="mono">reports/10_minimisation_robustness.md</span> 却从未写入它，所以 E37 的稳定性表只存在于日志中。</p>
+  <div class="tw"><table>
+  <thead><tr><th>描述符</th><th class="n">日志记载</th><th class="n">可复算</th><th class="n">日志 ρ</th><th class="n">可复算 ρ</th></tr></thead>
+  <tbody>
+  <tr><td>埋藏界面面积</td><td class="n">2.1%</td><td class="n">1.63%</td><td class="n">+0.963</td><td class="n">+0.960</td></tr>
+  <tr><td>肽接触数</td><td class="n">8.5%</td><td class="n">9.21%</td><td class="n">+0.793</td><td class="n">+0.793</td></tr>
+  <tr><td>氢键数</td><td class="n">33.3%</td><td class="n">33.33%</td><td class="n">+0.748</td><td class="n">+0.788</td></tr>
+  </tbody></table></div>
+  <p>接触数的 ρ 精确吻合、氢键的中位数精确吻合，这确定了阶段对与分母的取法；但穷举阶段对、分母、均值与中位数、带符号与绝对值，<strong>没有任何变体</strong>能复现 8.5% 或 2.1%。最可能的原因还是那个反复出现的：这张表是在一个从未保存的 heredoc 里算的，很可能当时 CSV 还没写完。结论不变，甚至更强，但<strong>E37 报告的数字中有六分之一在第二位小数上是错的，只因为那段计算没有进版本控制。</strong></p>
+</article>
+
+<article class="exp" id="e39">
+  <div class="exp-head">
+    <span class="exp-id">E39</span>
+    <div class="exp-title"><h3>界面差异在动力学上稳定吗？</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>最后一张结构卡片。E31 与 E37 都是静态的；而功能取决于一个接触能维持多久，而不只是它在某一张弛豫快照里存不存在。</p>
+  <p class="field"><span class="lbl">方法</span>来自 40 对配对的 69 个弛豫复合物，每个三个独立速度种子，310 K 下 2 ns，4 fs 步长配氢质量重分配，GBn2 隐式溶剂，每 20 ps 采样一次。<strong>207 条轨迹，414 ns，零失败。</strong></p>
+  <p><strong>这套设置守住了结合位姿。</strong>每条轨迹的界面接触中位上升 7.1%，207 条中只有 20 条损失了超过四分之一的接触。从最小化态升温后侧链会压实进入接触；没有任何解离发生。</p>
+  <div class="tw"><table><caption>突变位点上的每一项组间比较都是零结果</caption>
+  <thead><tr><th>量</th><th class="n">不一致组</th><th class="n">对照组</th><th class="n">p</th></tr></thead>
+  <tbody>
+  <tr><td>接触数，时间平均</td><td class="n">2.456</td><td class="n">1.332</td><td class="n">0.159</td></tr>
+  <tr><td>距离，时间平均（Å）</td><td class="n">6.817</td><td class="n">6.803</td><td class="n">0.545</td></tr>
+  <tr><td>处于接触状态的帧数占比</td><td class="n">0.288</td><td class="n">0.154</td><td class="n">0.149</td></tr>
+  <tr class="key"><td>在任意时刻接触过肽</td><td class="n">0.597</td><td class="n">0.594</td><td class="n">1.000</td></tr>
+  </tbody></table></div>
+  <p>最后一行才是要拿去对照静态结果的那一行：在弛豫快照上，二元朝向率是 0.323 对 0.141、p=0.020；而给定 2 ns 和三个副本之后，两组触及肽的比例完全相同。</p>
+  <h4>MD 在静态朝向率之外没有增加任何信息——而且这是一个恒等式，不是印象</h4>
+  <p>以"该位点在弛豫位姿中是否朝向肽"为条件，两组行为完全一致：在 29 个朝向位点上接触占比是 0.758 对 0.708（p=0.943），在 97 个非朝向位点上是 0.064 对 0.063（p=0.579）。展开来看：</p>
+<pre>不一致组  0.323 × 0.758  +  0.677 × 0.064  =  0.288   (实测 0.288)
+对照组    0.141 × 0.708  +  0.859 × 0.063  =  0.154   (实测 0.154)</pre>
+  <p>两个条件项在组间相同，精确到三位小数。动态接触占比<strong>就等于</strong>静态朝向率乘上一个不区分两组的持续因子。</p>
+  <p><strong>方向在表位之间并不一致</strong>——这是三项预先计划的自查中的第三项，而它失败了：<span class="pep">GILGFVFTL</span> 1.161 对 0.641、<span class="pep">NLVPMVATV</span> 5.322 对 0.187 符合所声称的方向，而 <span class="pep">GLCTLVAML</span> 2.835 对 <strong>9.357</strong>、<span class="pep">YLQPRTFLL</span> <strong>0.000</strong> 对 4.442 是反的，且这些小格里只有 2–8 个位点。</p>
+  <div class="field concl"><span class="lbl">定论——对照跑之前就写下的那条限制</span>跑之前已经预先声明：126 个位点中只有 29 个朝向肽（20 个不一致、9 个对照），所以零结果将是<strong>不提供信息的，而非不存在的证据</strong>。实际情况正是如此。C11 既不支持也不推翻 E31。它确实确立的东西更窄但值得拥有：<strong>效应完全包含在静态朝向率之中，因此更多的结构动力学不会再增加什么</strong>，这条线是靠证据而非靠判断关闭的。</div>
+</article>
+
+<!-- ===== 六、验证方法学 ===== -->
+<h2><span class="count">第六部分</span>验证方法学与误差解剖</h2>
+
+<article class="exp" id="e15">
+  <div class="exp-head">
+    <span class="exp-id">E15</span>
+    <div class="exp-title"><h3>「选择一个配置」这件事本身要花多少钱？</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>把选择步骤本身作为模型的一部分来定价。</p>
+  <p class="field"><span class="lbl">方法</span>323 个候选配置。比较三个量：先知（在全部五个表位上打分的最佳配置）、嵌套 LOEO（在每一折内部重新选择配置）、以及先验固定的配置再用朴素 LOEO 打分。</p>
+  <div class="tw"><table>
+  <tbody>
+  <tr><td>先知——在评测集上调出来的</td><td class="n">0.8508</td></tr>
+  <tr class="key"><td>嵌套 LOEO——先交叉验证调参再提交</td><td class="n">0.8460</td></tr>
+  <tr><td>先验最佳配置，朴素 LOEO</td><td class="n">0.8508</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>交叉验证式的选择<strong>比事先固定配置差 0.0048</strong>。机制在 <span class="pep">TTDPSFLGRY</span> 那一折里看得很清楚：在另外四个表位上 <span class="mono">pae_a_mhc_min@0.3</span> 看起来最好，而它在留出表位上返回 0.8328，固定配置则给出 0.8504。<strong>只有五折时，选择步骤的信噪比比被选择的对象还要差。要做更少的决定，而不是把决定交叉验证得更好。</strong>此前为任何一个<em>被选出的</em>配置所报的数字，都因此乐观了大约这么多。</div>
+</article>
+
+<article class="exp" id="e18">
+  <div class="exp-head">
+    <span class="exp-id">E18</span>
+    <div class="exp-title"><h3>跨表位主对照表</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">方法</span>全部放进同一套协议：五个公开表位、LOEO、按表位平均 AUC，任何东西都不在它被打分的那个表位上调过。</p>
+  <div class="tw"><table>
+  <thead><tr><th>方法</th><th class="n">均值</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>融合：三空间密度 + 结构 @0.2</td><td class="n">0.8508</td></tr>
+  <tr><td>融合：双空间密度 + 结构 @0.2</td><td class="n">0.8496</td></tr>
+  <tr><td>融合：三空间密度</td><td class="n">0.8430</td></tr>
+  <tr><td>融合：双空间密度</td><td class="n">0.8415</td></tr>
+  <tr><td>密度：SCEPTR default</td><td class="n">0.8396</td></tr>
+  <tr><td>密度：SCEPTR small</td><td class="n">0.8354</td></tr>
+  <tr><td>融合：三空间密度 + 特异性模型 @0.2</td><td class="n">0.8348</td></tr>
+  <tr><td>密度：tcrdist3 核</td><td class="n">0.8329</td></tr>
+  <tr><td>tcrdist3 nndist（主办方基线）</td><td class="n">0.8247</td></tr>
+  <tr><td>密度：SCEPTR 仅 α 链</td><td class="n">0.7986</td></tr>
+  <tr><td>结构：TCR–肽 min-PAE</td><td class="n">0.7565</td></tr>
+  <tr><td>密度：SCEPTR 仅 β 链</td><td class="n">0.7505</td></tr>
+  <tr><td>结构：全复合物置信度</td><td class="n">0.7467</td></tr>
+  <tr><td>元数据：vdjdb_score</td><td class="n">0.4849</td></tr>
+  <tr><td>特异性模型</td><td class="n">0.4812</td></tr>
+  <tr><td>生成概率</td><td class="n">0.4165</td></tr>
+  </tbody></table></div>
+</article>
+
+<article class="exp" id="e21">
+  <div class="exp-head">
+    <span class="exp-id">E21</span>
+    <div class="exp-title"><h3>队列稀释：密度能在更稀疏的 repertoire 下存活吗？</h3></div>
+    <span class="tag adopt">采纳</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>私有队列比任何验证过的队列都更稀疏，所以 LOEO 估计是一次外推。那就把它模拟出来。</p>
+  <p class="field"><span class="lbl">方法</span>把每个公开队列随机稀释到 1.0 至 0.12 的各个比例，在稀释后的队列内重算密度，再对照真实标签打分，重复 40 次。设两个变体，因为朴素设计会把"更差的密度估计"与"行数更少导致更吵的 AUC"混在一起。</p>
+  <div class="tw"><table><caption>结果 1——对稀疏的稳健性在表位之间差异极大</caption>
+  <thead><tr><th>表位</th><th class="n">稠密端</th><th class="n">稀疏端</th><th class="n">变化</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.868</td><td class="n">0.869</td><td class="n">0.000</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="n">0.928</td><td class="n">0.920</td><td class="n">−0.008</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="n">0.713</td><td class="n">0.688</td><td class="n">−0.025</td></tr>
+  <tr class="key"><td class="pep">TTDPSFLGRY</td><td class="n">0.845</td><td class="n">0.724</td><td class="n">−0.121</td></tr>
+  <tr class="key"><td class="pep">NLVPMVATV</td><td class="n">0.844</td><td class="n">0.699</td><td class="n">−0.145</td></tr>
+  </tbody></table></div>
+  <p><strong>结果 2——而这纠正了 E20。</strong>在基本相同的稀疏度下（近邻比例 ≈0.013–0.014），<span class="pep">YLQPRTFLL</span> 得 <strong>0.920</strong> 而 <span class="pep">NLVPMVATV</span> 得 <strong>0.699</strong>。<strong>稀疏度不决定表现，内在可分性才决定。</strong>所以 E20 那句"私有表位看起来像密度能得 0.84–0.93 的那几个表位"<strong>并不成立</strong>——在私有级别的稀疏度下，那同样的三个表位横跨 0.70–0.93。队列几何无法预报一个私有表位的 AUC。</p>
+  <p><strong>结果 3——稀释并不是强烈悲观的。</strong>孤立点与阴性之间的关联几乎没有移动（在 20% 覆盖度下差距从 0.486 变为 0.454），所以这个模拟相当忠实，而不是一个松垮的下界。</p>
+  <div class="tw"><table><caption>结果 4——结构是保险，而且它改变了提交</caption>
+  <thead><tr><th></th><th class="n">完整</th><th class="n">45%</th><th class="n">20%</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>在两个脆弱表位上的增益</td><td class="n">+0.0059</td><td class="n">+0.0120</td><td class="n">+0.0202</td></tr>
+  <tr><td>在三个稳健表位上的增益</td><td class="n">+0.0112</td><td class="n">+0.0103</td><td class="n">+0.0099</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">决策</span><strong>结构权重 0.2 → 0.3</strong>，依据是占优论证而非针对某个区间做优化。w=0.3 在完整覆盖下与 w=0.2 打平（−0.0002），在两个稀疏档位上都更好；而私有队列正是稀疏的那种情形。w=0.5 在 20% 覆盖下胜出，却在完整覆盖下损失 0.013，风险是不对称的。<strong>即便稀疏性论证根本就是错的，选 0.3 的代价上限也只有 0.0002。</strong></div>
+</article>
+
+<article class="exp" id="e22">
+  <div class="exp-head">
+    <span class="exp-id">E22</span>
+    <div class="exp-title"><h3>成对 AUC 误差分解</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>按表位平均的 AUC 恰好等于"一条已验证 TCR 排在同队列一条未验证 TCR 之前"的概率，所以 1−AUC 就是一批具体的逆序对。查清是哪些。这同时防范一个推论：54% 的阳性是孤立点，这<strong>并不</strong>意味着 54% 的误差涉及它们。</p>
+  <p class="field"><span class="lbl">方法</span>把表位内每一个阳性–阴性配对按簇状态划分，互斥且完备，使各类损失之和等于 1−AUC。脚本断言了这个重构；残差 1.4×10⁻¹⁶。</p>
+  <div class="tw"><table>
+  <thead><tr><th>类别</th><th class="n">占损失</th><th class="n">占配对数</th><th class="n">类内错误率</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="mono">both_singleton</td><td class="n">62.0%</td><td class="n">50.5%</td><td class="n">0.207</td></tr>
+  <tr class="key"><td class="mono">pos_sing_neg_clu</td><td class="n">21.2%</td><td class="n">4.5%</td><td class="n">0.673</td></tr>
+  <tr><td class="mono">diff_cluster</td><td class="n">10.0%</td><td class="n">6.2%</td><td class="n">0.231</td></tr>
+  <tr><td class="mono">pos_clu_neg_sing</td><td class="n">6.4%</td><td class="n">38.6%</td><td class="n">0.021</td></tr>
+  <tr><td class="mono">same_cluster</td><td class="n">0.5%</td><td class="n">0.3%</td><td class="n">0.309</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span><strong>那个对抗类是被系统性倒置的</strong>：当阳性是孤立的而阴性是成簇的，模型有 67% 的时候把顺序弄反——比随机还差。它占 4.5% 的配对和 21.2% 的误差。<strong>这纠正了 E20 对那 34 条近阳性不一致阴性的说法</strong>：同簇配对只贡献 0.5% 的损失，所以重标注它们并不是靠修正簇内区分力拿到 0.024 的。它拿到增益是因为一条被重标注的阴性在<em>所有</em>比较中都不再是阴性，而它造成的损失大部分在 <span class="mono">pos_sing_neg_clu</span> 里。<strong>机制是对成簇阴性的过度打分，而不是分辨不了近邻。</strong></div>
+</article>
+
+<article class="exp" id="e23">
+  <div class="exp-head">
+    <span class="exp-id">E23</span>
+    <div class="exp-title"><h3>对抗类能修好吗？不能，而且算术说明了原因</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <div class="tw"><table><caption>逐类特征强度——结构优于随机的地方，恰恰是密度灾难性更差的地方</caption>
+  <thead><tr><th>特征</th><th class="n">pos_sing_neg_clu</th><th class="n">pos_clu_neg_sing</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>密度</td><td class="n">0.697</td><td class="n">0.013</td></tr>
+  <tr><td>融合 w=0.3</td><td class="n">0.602</td><td class="n">0.023</td></tr>
+  <tr class="key"><td>结构 min-PAE</td><td class="n">0.422</td><td class="n">0.156</td></tr>
+  </tbody></table></div>
+  <p class="field"><span class="lbl">尝试</span>簇状态是无标签可得的，所以对成簇与孤立的 TCR 采用不同的结构权重，在推理时是合法的。在两个权重上做严格嵌套 LOEO：<strong>0.8418，对照扁平权重的 0.8486，低 0.0068。</strong>而在整个 8×8 网格上的先知峰值是 0.8486、出现在 (0.2, 0.3)——<em>与扁平 w=0.3 完全相同</em>。即便拥有完美知识，条件化也买不到任何东西。</p>
+  <p class="field"><span class="lbl">定量的原因</span>分数是按 TCR 给的而不是按配对给的，所以一条 TCR 无从知道自己正处在哪一种比较里。把结构权重从 0.3 提到 0.6，在对抗类（占 4.5% 配对）上带来 <strong>+0.0040</strong>，在其余地方带来 <strong>−0.0336</strong>——净值 −0.0296。在 w=1.0 处彻底修好这个类最多值 +0.0081，代价却是 −0.107。<strong>这笔交易大约是 13:1 的逆差。</strong></p>
+  <div class="field concl"><span class="lbl">定论</span>这个分解在诊断上成功、在处方上失败。真正需要的是一个在成簇子集<em>内部</em>有信息、而在子集<em>之间</em>大致无信息的特征。结构不是这样的东西：它到处都有信息，只是在大多数地方比密度更差。</div>
+</article>
+
+<article class="exp" id="e24">
+  <div class="exp-head">
+    <span class="exp-id">E24</span>
+    <div class="exp-title"><h3>概率化标签建模可行吗？不可行</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>评审提出的 GuanRank 类比，建议建模 <span class="mono">P(Y_true=1 | Y_observed, 实验证据)</span> 而不是硬二元标签。</p>
+  <p class="field"><span class="lbl">核查</span>发布的 TCRvdb 文件有 24 列，而唯一的标签信息是 <span class="mono">pos</span>/<span class="mono">neg</span>/<span class="mono">ambiguous</span>，严格的 one-hot 整数。没有富集值、读数或 UMI 计数、重复实验、p 值、CD69 读出，也没有任何其他连续量；唯一的数值字段是 <span class="mono">vdjdb_score</span>（0–3），而那是<em>先验注释</em>置信度，并且已知与验证结果反相关。</p>
+  <div class="field concl"><span class="lbl">定论</span>在现有数据下这条路是<strong>封死的</strong>，而不只是不被看好。它需要作者方发布更丰富的数据。</div>
+</article>
+
+<article class="exp" id="e29">
+  <div class="exp-head">
+    <span class="exp-id">E29</span>
+    <div class="exp-title"><h3>家族留出与链间不一致</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <div class="tw"><table><caption>S06——留一克隆型家族：每条 TCR 在移除了它自己所属单链接家族的队列上打分</caption>
+  <thead><tr><th>表位</th><th class="n">属于家族比例</th><th class="n">标准</th><th class="n">屏蔽家族后</th><th class="n">差值</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="pep">NLVPMVATV</td><td class="n">0.183</td><td class="n">0.8436</td><td class="n">0.7417</td><td class="n">−0.1019</td></tr>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.476</td><td class="n">0.8678</td><td class="n">0.8520</td><td class="n">−0.0158</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="n">0.552</td><td class="n">0.7130</td><td class="n">0.7000</td><td class="n">−0.0130</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.047</td><td class="n">0.8449</td><td class="n">0.8356</td><td class="n">−0.0093</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="n">0.184</td><td class="n">0.9285</td><td class="n">0.9272</td><td class="n">−0.0012</td></tr>
+  <tr class="key"><td>均值</td><td class="n">0.288</td><td class="n">0.8396</td><td class="n">0.8113</td><td class="n">−0.0282</td></tr>
+  </tbody></table></div>
+  <p>家族性复现确实承担了排序的一部分，而且这种依赖再一次是表位特异的而非结构性的：<span class="pep">NLVPMVATV</span> 与 <span class="pep">YLQPRTFLL</span> 的家族比例几乎相同（0.183、0.184），损失却是 0.102 对 0.001。</p>
+  <div class="field concl"><span class="lbl">D03——α/β 的不对称不是错配</span>错配假说预测：一条错配的 TCR 会表现出很大的单链排名分歧。实测结果是，带符号分歧得 0.536，绝对分歧 <strong>0.429——低于随机</strong>，也就是说 α/β 分歧<em>越大</em>反而越倾向于验证通过，与错配会产生的结果正好相反。否决，而且链间不对称的错配解释得不到任何支持。</div>
+</article>
+
+<article class="exp" id="e30">
+  <div class="exp-head">
+    <span class="exp-id">E30</span>
+    <div class="exp-title"><h3>为什么留一表位交叉验证会高估私榜分数</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="lede"><strong>这是本项目最有分量的结果。</strong>S06 促使我去比较队列的<em>结构</em>而不是队列的规模，而这揭示出了 LOEO 看不见的东西。</p>
+  <div class="tw"><table><caption>结果 1——私有表位的家族结构只有公开表位的四分之一，7.2% 对 28.8%</caption>
+  <thead><tr><th>表位</th><th>划分</th><th class="n">属于家族比例</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="pep">CINGVCWTV</td><td class="mono">私有</td><td class="n">0.025</td></tr>
+  <tr class="key"><td class="pep">LLWNGPMAV</td><td class="mono">私有</td><td class="n">0.044</td></tr>
+  <tr class="key"><td class="pep">LTDEMIAQY</td><td class="mono">私有</td><td class="n">0.146</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="mono">公开</td><td class="n">0.047</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="mono">公开</td><td class="n">0.183</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="mono">公开</td><td class="n">0.184</td></tr>
+  <tr><td class="pep">GILGFVFTL</td><td class="mono">公开</td><td class="n">0.476</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="mono">公开</td><td class="n">0.552</td></tr>
+  </tbody></table></div>
+  <p>这之所以要紧，是因为 <a href="#e22">E22</a>：<span class="mono">pos_clu_neg_sing</span> 占公开配对的 38.6%，而错误率只有 <strong>2%</strong>。正是这些容易的配对在托着公榜 AUC，而 <span class="pep">CINGVCWTV</span> 只会有大约 5.6% 这样的配对。</p>
+  <p><strong>结果 2——分解与重投影。</strong>取已提交模型在各类别上实测的类内错误率，再与每个表位自己的类别构成重新组合，<strong>能把每个公开表位的实际 AUC 复现到 0.0003 以内</strong>，说明这套算术是成立的。把它应用到私有表位的无标签构成上：</p>
+  <div class="tw"><table>
+  <thead><tr><th>表位</th><th class="n">双孤立配对占比</th><th class="n">容易配对占比</th><th class="n">投影 AUC</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">CINGVCWTV</td><td class="n">92.6%</td><td class="n">5.6%</td><td class="n">0.795</td></tr>
+  <tr><td class="pep">LLWNGPMAV</td><td class="n">87.2%</td><td class="n">9.8%</td><td class="n">0.797</td></tr>
+  <tr><td class="pep">LTDEMIAQY</td><td class="n">60.7%</td><td class="n">29.2%</td><td class="n">0.806</td></tr>
+  <tr class="key"><td>宏平均</td><td class="n"></td><td class="n"></td><td class="n">0.799</td></tr>
+  </tbody></table></div>
+  <p>而 LOEO 的估计是 0.846。</p>
+  <div class="tw"><table><caption>结果 3——整个投影最终坍缩到一个未知量：私有表位的孤立 TCR 到底有多可分</caption>
+  <thead><tr><th>若私有孤立点的可分性像</th><th class="n">双孤立 AUC</th><th class="n">投影私榜宏平均</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="pep">GLCTLVAML</td><td class="n">0.642</td><td class="n">0.668</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="n">0.748</td><td class="n">0.758</td></tr>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.827</td><td class="n">0.831</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.830</td><td class="n">0.832</td></tr>
+  <tr class="key"><td class="pep">YLQPRTFLL</td><td class="n">0.915</td><td class="n">0.907</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span><strong>LOEO 留出了表位身份，却没有留出队列结构。</strong>对"一个像公开表位那样抽出来的表位"它是无偏的，而对一个具有私有式家族稀疏性的表位它是向上偏的。这个偏差约为 <strong>−0.047</strong>，而且任何形式的留一表位交叉验证都探测不到它，因为五个公开表位在家族丰富度上全都高于私有三个。<strong>修订后的立场：中心估计 0.80，合理区间 0.67–0.91</strong>，取代原先单一的 0.846。这个跨度<strong>不是抽样噪声</strong>——它是一个实质性的未知量，而 <a href="#e21">E21</a> 已经证明这个量无法从队列几何预报。这是 E20、E21、E22 与 E32 的 D10 共同汇聚的地方。</div>
+</article>
+
+<!-- ===== 七、不可消除误差的机制 ===== -->
+<h2><span class="count">第七部分</span>不可消除误差的机制</h2>
+
+<article class="exp" id="e31">
+  <div class="exp-head">
+    <span class="exp-id">E31</span>
+    <div class="exp-title"><h3>标签不一致的阴性看起来是精细特异性，而不是实验漏检</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>E20 找到了一些是已验证阳性单残基变体的阴性样本；E22 重新定位了它们造成的损失。但一直没有人检验它们<em>为什么</em>不同，而两种候选解释含义完全相反：一个废掉肽接触的突变是真实的精细特异性，那就不能怪罪任何序列方法；而一个发生在溶剂暴露位点的突变则指向实验或注释。</p>
+  <p class="field"><span class="lbl">方法</span>这个检验需要一个零假设，所以每个不一致突变都要对照<strong>匹配的同标签配对</strong>——即同一表位内、一条链的 CDR3 完全相同、另一条链相差一到两个残基的阳性/阳性邻居。没有这个对照，"突变倾向于朝向肽"就只是 CDR3 突变的一般属性而已。71 对不一致配对（103 个突变位点）对照 522 对对照配对（767 个位点）。置换检验<strong>按表位分层</strong>、做 2,000 次抽样，这样一个仅由 <span class="pep">GILGFVFTL</span> 在池中占主导而产生的效应就会被洗掉。</p>
+  <div class="tw"><table>
+  <thead><tr><th>突变位点属性</th><th class="n">不一致组</th><th class="n">对照组</th><th class="n">分层置换 p</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>该位置的肽接触数</td><td class="n">6.53</td><td class="n">2.90</td><td class="n">0.0070</td></tr>
+  <tr class="key"><td>配对两成员之间肽接触的变化量</td><td class="n">3.37</td><td class="n">1.27</td><td class="n">0.0010</td></tr>
+  <tr><td>该位置是否朝向肽</td><td class="n">0.340</td><td class="n">0.231</td><td class="n">0.0790</td></tr>
+  <tr><td>体积变化</td><td class="n">53.7</td><td class="n">41.9</td><td class="n">0.023</td></tr>
+  <tr><td>电荷变化</td><td class="n">0.27</td><td class="n">0.23</td><td class="n">0.314</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>这支持真实的精细特异性而非实验漏检：如果这些是漏检，那么突变位置相对于肽界面应当是随机的，因而与对照组无法区分。事实并非如此。所以近阳性的标签不一致至少部分是<strong>真实的生物学</strong>，这意味着序列邻域方法面对的是一个<strong>有生物学依据的天花板</strong>，而不只是噪声天花板——而且它无法靠更好的序列建模来突破，只能靠读取界面，而 <a href="#e28">E28</a> 已经表明界面信息太弱、无法使用。当时就写下的限制：这些是预测结构；电荷变化没有效应，所以简单的"盐桥丢失"故事得不到支持；而且这解释了天花板，却完全没有抬高竞赛分数。</div>
+  <blockquote><p><strong>经 E37 修订后的重述。</strong>存活下来的效应是那个<strong>二元</strong>的——标签不一致配对在朝向肽的位点上发生差异的频率高 2.29 倍——而<em>不是</em>一种渐变的能量差异。一旦条件在"该位点确实朝向肽"之上，距离与接触数都没有差异。机制是<strong>位置性的</strong>。<a href="#e39">E39</a> 的 414 ns 分子动力学随后表明，这个效应完全包含在那个静态二元量之中，动力学没有增加任何东西。</p></blockquote>
+</article>
+
+<!-- ===== 八、独立交叉验证 ===== -->
+<h2><span class="count">第八部分</span>与独立流程的交叉验证</h2>
+
+<article class="exp" id="e25">
+  <div class="exp-head">
+    <span class="exp-id">E25</span>
+    <div class="exp-title"><h3>与一条独立流程的交叉核对</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>一位队友在同一竞赛上独立跑了另一条流程。记录在此，是为了它确认了什么、暴露了什么缺口、以及两边在哪里分歧。<strong>其中没有任何东西被采纳进提交。</strong></p>
+  <p><strong>独立复现，这是最有价值的部分。</strong>两条互不接触构建的流程在脚手架层面得到了相同的数字：宏 AUC 标准误 0.0116 对 0.0110；各表位标准误吻合到小数点后第三位；基线重算 0.8245 对 0.8247。而且<strong>有七条死路被独立关闭</strong>：注释元数据、OLGA Pgen、背景归一化、图拓扑、链分解、学习表示未能胜过经典距离（他们用 ESM-2 650M 得 0.8182，我们用 SCEPTR），以及最重要的——<strong>内层超参搜索会损害跨表位迁移</strong>：他们用 400 点网格时结果转负、只调一个参数时转正，与 <a href="#e15">E15</a> 测得的 0.0048 是同一个效应。</p>
+  <p><strong>他们领先的地方。</strong>候选池扩充：E12 基于设计理由否决的事情他们跑了，并且用下采样量化了私有侧可兑现的增益（+0.011，加 IEDB 为 +0.013），而不是去报那个被池抬高的公榜数字；他们还用了<strong>定向</strong>扩充——只往 VDJdb 倍率低于 2 的表位里合并 IEDB——把 <span class="pep">LTDEMIAQY</span> 的池从 1.04× 抬到 1.72×，而公榜代价恰好为零。<strong>我们根本没有看过 IEDB、McPAS 或 ITRAP。这是一个真实的缺口。</strong></p>
+  <p><strong>我们领先的地方。</strong>他们把自建结构分支列为"待定、预期收益为负"，理由是 AF3 基线的 0.787 落后于 tcrdist3 的 0.824。<strong>那是一次独立比较，不是融合检验。</strong>E14 与 E21 跑完了全部 2,636 个复合物：诚实的嵌套增益 +0.007，而且这个增益<strong>在密度塌缩的那些表位上会翻三倍</strong>，在稳健表位上则保持平稳。他们自己的诊断就是私有侧受池限制——而受池限制恰恰是密度变弱、结构能派上用场的条件。</p>
+  <p><strong>关于比较两本账的一个告诫。</strong>他们最好的公榜数字（0.8552）和我们的（0.8498）不可比，因为他们那个被私有表位大多无法获得的池扩充抬高了。按私有可兑现口径，他们大约是 0.840，我们是 0.846 的嵌套估计。<strong>一本账里混用分母极易被误读。</strong></p>
+  <div class="field concl"><span class="lbl">他们有一个比我们更好的表述框架</span>他们把论文中非验证的因果分类映射到相似性空间的特征上：多聚体背景结合会给出一个密度能抓到的孤立离群点；α 链错配会给出一条典型的 β 配上随机的 α；单碱基测序错误或 V 基因错误注释会把该 TCR 放在<em>紧邻一个真阳性</em>的位置；而真正低于 Jurkat 阈值的低亲和力也会如此。后两者与我们的"近阳性标签不一致克隆型"是同一群体，但他们的框架解释了<em>为什么</em>这个群体必然存在、以及为什么没有任何序列方法能够触及它。</div>
+</article>
+
+<article class="exp" id="e26">
+  <div class="exp-head">
+    <span class="exp-id">E26</span>
+    <div class="exp-title"><h3>整个 V 区比对带来的增益，究竟来自哪里？</h3></div>
+    <span class="tag reject">否决</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>E25 复现了队友在拼装可变区上做的比对距离，发现它是最不相关的集成成员，并留下一个基于 +0.0026 融合增益的候选提交悬而未决。现在把这个增益归因到结构域的某个区域，并<strong>预先声明判据</strong>：如果框架区 / V 基因能解释全部增益，那么结果就是种系混杂，而不是识别信号。</p>
+  <p class="field"><span class="lbl">方法</span>CDR3 在全部 2,636 行的 <span class="mono">full_seq</span> 中都能逐字找到，位置中位在结构域的 79% 处、占据约 12%，所以切分很干净：完整结构域、屏蔽掉 CDR3（即框架区 + CDR1/2，占另外 88%）、以及仅 CDR3。</p>
+  <div class="tw"><table>
+  <thead><tr><th>区域</th><th class="n">平均 AUC</th><th class="n">与完整版的表位内 Spearman</th></tr></thead>
+  <tbody>
+  <tr><td>完整 V 区</td><td class="n">0.8379</td><td class="n">—</td></tr>
+  <tr class="key"><td>屏蔽 CDR3</td><td class="n">0.8287</td><td class="n">+0.990</td></tr>
+  <tr><td>仅 CDR3</td><td class="n">0.7999</td><td class="n">+0.730</td></tr>
+  </tbody></table></div>
+  <p><strong>完整结构域的排序就是屏蔽 CDR3 后的排序。</strong>CDR3 对这个排序几乎没有贡献；信号坐落在种系编码的那 88% 里。那份"不相关性"也来自同一个地方。</p>
+  <div class="field concl"><span class="lbl">定论</span>预先声明的判据被触发，所以诚实的读法是<strong>种系混杂</strong>，而不是一种关于 CDR3 化学性质的新比较。还有第二种更不舒服的读法：V 基因用法与研究和供体相关，也与趋同重组倾向相关，所以这可能是<strong>第三次</strong>在重新编码"这条 TCR 有多典型"——前两次分别是密度本身和结构置信度。<strong>决策：<span class="mono">submissions/density4_struct03.csv</span> 不予采纳。</strong>它在 +0.0026 时就已经低于 +0.02 的阈值，现在还多了一个反对它的机制。</div>
+  <blockquote><p><strong>值得注意的是这件事说明了方法，而不只是说明了这个特征：</strong>一个看起来像是有用的去相关性的结果，通过了相关性检查、通过了嵌套 LOEO 检查、通过了五折全中的选择检查，<strong>唯独在被追问"它来自分子的哪一部分"时才失败。统计筛查没有抓住它；生物学归因抓住了。</strong></p></blockquote>
+</article>
+
+<!-- ===== 九、自查发现 ===== -->
+<h2><span class="count">第九部分</span>自查发现</h2>
+<p class="prose lede">在我自己的工作中抓到的错误。之所以列出，是因为其中有几个已经产出过看起来像结果的数字。这一部分大概是整份记录里对重复这项工作的人最有用的。</p>
+<div class="tw"><table>
+<thead><tr><th>位置</th><th>错在哪里</th><th>影响</th></tr></thead>
+<tbody>
+<tr><td class="mono">E6</td><td>密度只在<em>有标签</em>的行上计算，而推理用的是整个队列</td><td>使该表的算子排序反转；结论与提交不受影响</td></tr>
+<tr><td class="mono">E16</td><td>在找到正确原因之前有两次错误诊断——先是尺度耦合，然后是损失形状</td><td>真正的原因是代理损失只有在不再可微时才与 AUC 对齐</td></tr>
+<tr><td class="mono">E19</td><td>声称 5 次扩散采样因共享序列输入而不受"规范性"混杂影响</td><td>错：它们共享的是已算好的 trunk 表示，所以一致性是 trunk 置信度的<em>下游</em></td></tr>
+<tr><td class="mono">E20</td><td>倚重了两个分母不同的比率之间 3.9% 的巧合一致</td><td>纯属巧合，不具任何分量</td></tr>
+<tr><td class="mono">E20</td><td>从队列几何推断私榜 AUC</td><td><strong>被 E21 证伪</strong>：稀疏度不决定可分性</td></tr>
+<tr><td class="mono">E20</td><td>重标注的算术在呈现时没有带上它的选择效应</td><td>那些行之所以被选中，正是因为它们排名高</td></tr>
+<tr class="key"><td class="mono">E27</td><td>私榜增益的点估计是在一个并不提交的模型上算的</td><td>+0.0013 → <strong>+0.0004</strong>，且掩盖了 26 倍离散与偏乐观的下采样</td></tr>
+<tr><td class="mono">E34</td><td>把接触计数与最小距离合并进同一个 Spearman</td><td>使其虚高；两个区块反向相关且取值范围不同</td></tr>
+<tr><td class="mono">E35</td><td>在测量之前就在叙述中断言增益在主办方那个快照上会更小</td><td>实际只小 0.0012——在噪声之内</td></tr>
+<tr><td class="mono">E36</td><td>把阶段 2 安排在阶段 1 出阳性之后，然后跳过了它</td><td>论证本身成立但回答的是另一个问题；跑完才知道失败是<strong>普遍的</strong></td></tr>
+<tr><td class="mono">E37</td><td>三行被当作独立的确认来报告</td><td>在 77% 并列的情况下它们实质上是同一个检验</td></tr>
+<tr class="key"><td class="mono">E37</td><td>描述符表是在未保存的 heredoc 里算的</td><td>六个数字中有三个无法从 CSV 复算</td></tr>
+<tr class="key"><td class="mono">E39</td><td>把突变位点残基取成配对两个成员的<strong>并集</strong></td><td>40 对中有 5 对被错误探测，且全部是不一致组；烟雾测试给出漂亮的 6.2 对 0.0，而那完全来自污染</td></tr>
+<tr><td class="mono">E39</td><td>replica 离散度 guard 拿组均值差去比"每位点 replica 标准差的中位数"</td><td>该值对多数位点恒为零，于是任何量都必然"超出离散度"</td></tr>
+<tr class="key"><td class="mono">E39</td><td>静态表与 MD 表的连接未按结构键去重</td><td>126 行被放大成 150 行，伪造出一次方向反转和一个 p=0.047</td></tr>
+<tr><td class="mono">E39</td><td>两组在位点层面并不互斥</td><td>117 个位点中有 3 个在一个配对里是不一致、在另一个里是对照；同样适用于 E37</td></tr>
+</tbody></table></div>
+<p class="prose">其中有三个已经产出过看起来可以发表的数字。反复出现的原因是：<strong>在未进版本控制的 heredoc 里做计算。</strong></p>
+
+<!-- ===== 十、最终状态 ===== -->
+<h2><span class="count">第十部分</span>最终状态</h2>
+<p class="prose"><strong>49 张计划卡片执行了 46 张。</strong>未执行的三张分别是湿实验验证（由 PI 排除）和两张需要与队友交换产物的卡片（已谢绝）。</p>
+<div class="tw"><table>
+<tbody>
+<tr><td>已记录实验</td><td class="n">39</td><td>E1–E39，外加 E37 的两次修订</td></tr>
+<tr><td>脚本</td><td class="n">36</td><td></td></tr>
+<tr><td>报告</td><td class="n">14</td><td></td></tr>
+<tr><td>实验日志</td><td class="n">1,920</td><td>行</td></tr>
+<tr class="key"><td>数据层审计</td><td class="n">57</td><td>项检查，全部通过</td></tr>
+<tr><td>GPU 工作量</td><td class="n"></td><td>2,636 次单样本折叠（7.4 h）、2,636 次五样本折叠（13.2 h）、2,706 次诱饵折叠（7 h）、414 ns 分子动力学（14 h）</td></tr>
+</tbody></table></div>
+
+<div class="prose-wide">
+<h4>核心科学发现</h4>
+<p>可提取的信号是<strong>表位队列内部的局部邻域密度</strong>，而它在尝试过的每一种表示下都饱和在 0.83–0.84。大约 24 个阴性结果，每一个都附带已查明的机制，而不只是一个数字。</p>
+
+<h4>两个阳性机制结果</h4>
+<p><a href="#e31">E31</a>/<a href="#e37">E37</a>，现已重述为位置性的：标签不一致的配对在朝向肽的位点上发生差异的概率约为两倍，这给序列方法划出了一个有生物学依据的天花板。以及 <a href="#e38">E38</a>：候选池扩充携带真实的抗原特异信息，因为三组规模匹配的阴性对照全都造成了<em>损害</em>。</p>
+
+<h4>最重要的修订</h4>
+<p><a href="#e30">E30</a>——LOEO 留出了表位身份，却没有留出队列结构。<strong>私榜估计中心 0.80、合理区间 0.67–0.91</strong>，而不是嵌套 LOEO 报出的 0.846。</p>
+
+<h4>一项待办</h4>
+<p>请在 Kaggle 界面中确认最终选定的提交是 <span class="mono">density3_struct03.csv</span>，而不是更早那个纯密度文件。</p>
+</div>
+
+<footer>
+  <p><strong>数据来源与许可。</strong>TCRvdb 的功能验证标签需向 <span class="mono">tcrvdb.nkiai.nl</span> 申请获取。<strong>不允许以任何形式再分发或公开共享该数据集的全部或部分</strong>——该文件已被 gitignore，从未提交到版本库。使用它的工作必须引用 <span class="mono">doi:10.1016/j.immuni.2026.09.007</span>。</p>
+  <p>VDJdb 版本 2024-06-13、2025-02-21 与 2026-06-03；IMGT/HLA 等位基因序列；E34 中 14 个已解析复合物来自 RCSB PDB。</p>
+</footer>
+
+</div>
+</body>
+</html>
