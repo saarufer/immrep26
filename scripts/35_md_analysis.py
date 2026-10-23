@@ -100,11 +100,8 @@ def compare(frame: pd.DataFrame, column: str, label: str) -> dict:
     return out
 
 
-def static() -> pd.DataFrame:
-    sites = load_pairs()
-    print(f"{sites.pair.nunique()} pairs, {len(sites)} mutated-site measurements "
-          f"on relaxed coordinates\n")
-
+def measure_static(sites: pd.DataFrame) -> pd.DataFrame:
+    """Contacts and minimum distance at each mutated site, on relaxed coordinates."""
     records = []
     for tcr_id, group in sites.groupby("tcr_id"):
         path = RELAXED / f"{tcr_id}.pdb"
@@ -124,7 +121,14 @@ def static() -> pd.DataFrame:
                 "contacts": int(sum(len(h) for h in hits)),
                 "min_dist": float(tree.query(coords[mask])[0].min()),
             })
-    frame = pd.DataFrame(records)
+    return pd.DataFrame(records)
+
+
+def static() -> tuple[pd.DataFrame, pd.DataFrame]:
+    sites = load_pairs()
+    print(f"{sites.pair.nunique()} pairs, {len(sites)} mutated-site measurements "
+          f"on relaxed coordinates\n")
+    frame = measure_static(sites)
 
     print("=== E37's quantity, two descriptors, same structures ===")
     rows = [compare(frame, "contacts", "peptide contacts at site (count)"),
@@ -243,6 +247,80 @@ def md() -> None:
           f"{touching['frac_replica_sd'].median():.3f}"
           f" (all sites: {per_site['frac_replica_sd'].median():.3f},"
           f" which is near zero only because most sites never touch).")
+
+    # The card's actual question, which none of the above asks: the static audit
+    # found the surviving effect is binary -- whether the mutated site faces the
+    # peptide at all. So the dynamic question is whether a facing site keeps
+    # facing, and whether a non-facing one comes into contact.
+    print("\n=== the card's question: does facing persist, and does it form? ===")
+    from scipy.stats import fisher_exact
+
+    # Deduplicate on the structural key before joining. The same TCR appears in
+    # several pairs and the same residue can be the mutated site in more than
+    # one of them, so the measurement table has 126 rows over 117 distinct
+    # (tcr_id, chain, resid) keys. Merging without this multiplied 126 site rows
+    # into 150.
+    key = ["tcr_id", "chain", "resid"]
+    static_frame = measure_static(load_pairs()).drop_duplicates(key)[
+        key + ["contacts", "min_dist"]].rename(
+        columns={"contacts": "static_contacts", "min_dist": "static_dist"})
+    joined = per_site.merge(static_frame, on=key, how="left")
+    assert len(joined) == len(per_site), (len(joined), len(per_site))
+    joined["faces_static"] = joined["static_contacts"] > 0
+    joined["faces_md"] = joined["frac"] > 0
+
+    table = pd.crosstab(joined["group"], joined["faces_md"]).reindex(
+        index=["discordant", "control"], columns=[False, True], fill_value=0)
+    odds, p_md = fisher_exact(table.to_numpy())
+    disc_rate = joined.loc[joined["group"] == "discordant", "faces_md"].mean()
+    ctl_rate = joined.loc[joined["group"] == "control", "faces_md"].mean()
+    print(f"  site touches at any point in MD   disc {disc_rate:.3f}  "
+          f"ctl {ctl_rate:.3f}  p={p_md:.3f}  (Fisher)")
+    print("  the same test on the relaxed snapshot gave 0.323 / 0.141, p=0.020")
+    rows.append({"descriptor": "touches at any point in MD (binary)",
+                 "discordant": disc_rate, "control": ctl_rate,
+                 "n_disc": int(table.loc["discordant"].sum()),
+                 "n_ctl": int(table.loc["control"].sum()), "p": p_md})
+
+    held = joined[joined["faces_static"]]
+    formed = joined[~joined["faces_static"]]
+    print(f"\n  persistence, among the {len(held)} sites facing in the relaxed pose:")
+    if len(held):
+        rows.append(compare(held, "frac", "frames in contact | faced statically"))
+    print(f"\n  formation, among the {len(formed)} sites not facing in that pose:")
+    if len(formed):
+        print(f"    came into contact at some point   "
+              f"disc {formed.loc[formed['group'] == 'discordant', 'faces_md'].mean():.3f}"
+              f"  ctl {formed.loc[formed['group'] == 'control', 'faces_md'].mean():.3f}")
+        rows.append(compare(formed, "frac", "frames in contact | did not face"))
+
+    # If the conditional quantities are equal between groups, then the whole
+    # dynamic difference is just the static facing rate carried through, and MD
+    # has added no information. Checking that as an identity rather than by eye.
+    print("\n  Does MD add anything beyond the static facing rate?")
+    for group in ("discordant", "control"):
+        block = joined[joined["group"] == group]
+        rate = block["faces_static"].mean()
+        held_mean = block.loc[block["faces_static"], "frac"].mean()
+        formed_mean = block.loc[~block["faces_static"], "frac"].mean()
+        predicted = rate * held_mean + (1 - rate) * formed_mean
+        actual = block["frac"].mean()
+        print(f"    {group:<11} static facing {rate:.3f} x persistence {held_mean:.3f}"
+              f"  +  {1 - rate:.3f} x formation {formed_mean:.3f}"
+              f"  =  {predicted:.3f}  (observed {actual:.3f})")
+    print("    The conditional terms are group-independent, so the dynamic")
+    print("    difference is the static facing rate and nothing else.")
+
+    # The groups are not disjoint at the level of sites, which bears on every
+    # Mann-Whitney in this file and in E37: a mutated position is discordant
+    # with one partner and same-label with another, so the same physical
+    # measurement can enter both groups.
+    overlap = per_site.groupby(key)["group"].nunique()
+    shared = int((overlap > 1).sum())
+    print(f"\n  Independence caveat: {shared} of {len(overlap)} distinct sites are"
+          f" both a\n  discordant and a control site, in different pairs, so the two"
+          f" groups\n  are not disjoint and the tests above are not fully independent."
+          f"\n  This applies to E37's tests equally.")
 
     print("\n=== is the pose held, or lost? interface contact drift ===")
     if TRACE.exists():

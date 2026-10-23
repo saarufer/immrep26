@@ -1797,3 +1797,95 @@ will be substantially luck.
 5. Verify that a surrogate objective actually tracks the metric before
    optimising it (E16). Two plausible fixes were both wrong, and the real
    answer was that no smooth surrogate works here.
+
+## E39 — Is the interface difference dynamically stable? (plan card C11)
+
+The last structural card, and the one I twice called infeasible for the wrong
+reason. 69 relaxed complexes from 40 pairs, three velocity seeds each, 2 ns at
+310 K with a 4 fs step and hydrogen-mass repartitioning, implicit GBn2, sampled
+every 20 ps. 207 trajectories, 414 ns, no failures.
+`scripts/34_md_interface_stability.py`, `scripts/35_md_analysis.py --md`.
+
+**The setup holds the pose.** Interface contact rises a median 7.1% over each
+trajectory and 20 of 207 trajectories lose more than a quarter of their
+contacts. Side chains settle into contact on heating from the minimised state;
+nothing is dissociating, so the trajectories are sampling the pose rather than
+losing it.
+
+**Every group comparison at the mutated site is null.**
+
+| quantity | disc | ctl | p |
+|---|---:|---:|---:|
+| contacts, time-averaged | 2.456 | 1.332 | 0.159 |
+| distance, time-averaged (A) | 6.817 | 6.803 | 0.545 |
+| fraction of frames in contact | 0.288 | 0.154 | 0.149 |
+| **touches the peptide at any point** | **0.597** | **0.594** | **1.000** |
+
+The last row is the one to read against the static result. On the relaxed
+snapshot the binary facing rate was 0.323 against 0.141 at p=0.020; given 2 ns
+and three replicas, both groups reach the peptide at the same rate. The loose
+criterion washes the difference out entirely.
+
+**MD adds nothing beyond the static facing rate, and that is an identity, not an
+impression.** Conditioning on whether the site faced the peptide in the relaxed
+pose, both groups behave the same under dynamics: among the 29 facing sites the
+contact fraction is 0.758 against 0.708 (p=0.943), and among the 97 non-facing
+sites it is 0.064 against 0.063 (p=0.579). Decomposing the overall fraction:
+
+```
+discordant  0.323 x 0.758  +  0.677 x 0.064  =  0.288   (observed 0.288)
+control     0.141 x 0.708  +  0.859 x 0.063  =  0.154   (observed 0.154)
+```
+
+The conditional terms are group-independent to three decimals. So the dynamic
+contact fraction *is* the static facing rate carried through a persistence
+factor that does not distinguish the groups. The trajectories neither amplify
+nor erode E31; they reprice it at exactly what the snapshot already said.
+
+**The direction is not consistent across epitopes**, which was the third
+pre-planned self-check and it fails:
+
+| epitope | disc | ctl | sites (disc/ctl) |
+|---|---:|---:|---:|
+| GILGFVFTL | 1.161 | 0.641 | 34/46 |
+| NLVPMVATV | 5.322 | 0.187 | 18/8 |
+| GLCTLVAML | 2.835 | **9.357** | 6/2 |
+| YLQPRTFLL | **0.000** | 4.442 | 4/8 |
+
+Two epitopes in the claimed direction, two reversed, on 2 to 8 sites in the
+small cells. No epitope-level conclusion is available from this.
+
+**Verdict, against the limit stated before the run.** I pre-registered that only
+29 of 126 sites face the peptide at all, 20 discordant against 9 control, so a
+null result here would be uninformative rather than evidence of absence. That is
+what happened. C11 does not refute E31 and does not support it. What it does
+establish is narrower and worth having: the effect is entirely contained in the
+static facing rate, so no further structural dynamics will add to it, and this
+line is closed on evidence rather than on judgement.
+
+**Three code-review findings in my own work, two of which had manufactured a
+result.**
+
+The replica-spread guard the plan requires passed everything by construction. It
+compared the group-mean difference against the median per-site replica sd, but
+most sites never touch the peptide in any replica, so their sd is trivially zero
+and the median with it. Rebuilt as the spread of the group difference when each
+replica is used alone, it correctly reports the distance effect as no result --
+the sign flips, -0.025, +0.200, -0.134 -- while the contact fraction agrees
+across all three. Found by running the analysis against partial trajectories at
+83 of 207 rather than waiting, which is the only reason it was fixed before the
+write-up rather than after.
+
+Joining the static measurements to the MD table inflated 126 site rows to 150,
+because the same TCR appears in several pairs and the same residue can be the
+mutated site in more than one. Before the fix this showed the binary facing rate
+*reversing* under dynamics, 0.481 against 0.606, and gave formation among
+non-facing sites p=0.047. Both were artefacts of the duplicated join; corrected,
+they are p=1.000 and p=0.579.
+
+The groups are not disjoint at the level of sites. Three of 117 distinct sites
+are a discordant site in one pair and a control site in another, since a mutated
+position can be discordant with one partner and same-label with a different one.
+The effect is small here but the point applies to E37's tests equally, and
+neither entry had noted it.
+
