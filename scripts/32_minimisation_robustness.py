@@ -164,8 +164,62 @@ def minimise(path: Path) -> list[dict]:
     return out
 
 
+def write_report() -> int:
+    """Produce the report this script has always declared and never written.
+
+    The data audit caught it: REPORT was defined at the top and main() only ever
+    wrote the CSV, so E37's descriptor-stability table lived solely in the
+    experiment log. This rebuilds it from the existing CSV rather than repeating
+    several hours of minimisation.
+    """
+    from scipy.stats import spearmanr
+
+    frame = pd.read_csv(OUT)
+    descriptors = ["contacts", "hbonds", "salt_bridges", "buried_area"]
+    first, last = frame["stage"].min(), frame["stage"].max()
+    rows = []
+    for name in descriptors:
+        if name not in frame:
+            continue
+        wide = frame.pivot_table(index="tcr_id", columns="stage", values=name)
+        if first not in wide or last not in wide:
+            continue
+        pair = wide[[first, last]].dropna()
+        relative = (pair[last] - pair[first]).abs() / pair[first].replace(0, np.nan)
+        rows.append({
+            "descriptor": name,
+            f"median |change| {first}->{last}": float(relative.median()),
+            "spearman(raw, relaxed)": float(spearmanr(pair[first], pair[last]).statistic),
+            "moves >20%": float((relative > 0.20).mean()),
+            "n": len(pair),
+        })
+    table = pd.DataFrame(rows)
+    print(table.round(4).to_string(index=False))
+    REPORT.parent.mkdir(parents=True, exist_ok=True)
+    REPORT.write_text(
+        "# Minimisation robustness of the interface descriptors\n\n"
+        f"{frame['tcr_id'].nunique()} complexes relaxed under one fixed protocol "
+        "(PDBFixer terminal atoms and hydrogens at pH 7, Amber14 with GBn2 "
+        "implicit solvent, L-BFGS), measured at "
+        f"{sorted(frame['stage'].unique())} cumulative iterations.\n\n"
+        "Stability differs sharply between descriptors, which decides which of "
+        "them a conclusion may rest on.\n\n"
+        + table.round(4).to_markdown(index=False)
+        + "\n\nThe position-specific test of E31 is not here: it needs contact "
+          "at the *mutated CDR3 position*, which this script enabled by saving "
+          "the relaxed coordinates to `data/interim/relaxed/`. See the E37 entry "
+          "and its revision in `reports/00_experiment_log.md`, and "
+          "`scripts/35_md_analysis.py --static`.\n",
+        encoding="utf-8")
+    print(f"\nwrote {REPORT.relative_to(ROOT)}")
+    return 0
+
+
 def main() -> int:
     import importlib.util
+
+    if "--report" in sys.argv:
+        return write_report()
 
     spec = importlib.util.spec_from_file_location(
         "anat", ROOT / "scripts/26_discordant_pair_anatomy.py")

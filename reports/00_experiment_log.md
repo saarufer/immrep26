@@ -1716,6 +1716,35 @@ rather than after it.
 
 ---
 
+### E37 correction — three numbers in its descriptor table are not reproducible
+
+Found by the data audit (`scripts/36_data_audit.py`), which flagged that
+`scripts/32` declared `reports/10_minimisation_robustness.md` and never wrote
+it, so E37's stability table existed only here. Rebuilding it from
+`data/interim/minimisation_robustness.csv` (69 complexes x 3 stages, no missing
+cells) with `scripts/32_minimisation_robustness.py --report`:
+
+| descriptor | logged | reproducible | logged rho | reproducible rho |
+|---|---:|---:|---:|---:|
+| buried interface area | 2.1% | **1.63%** | +0.963 | +0.960 |
+| peptide contacts | 8.5% | **9.21%** | +0.793 | +0.793 |
+| hydrogen bonds | 33.3% | 33.33% | +0.748 | **+0.788** |
+
+The contacts rho matches exactly and the hydrogen-bond median matches exactly,
+which fixes the stage pair as 0 to 1,000 and the denominator as the raw value;
+no variant of stage pair, denominator, mean against median, or signed against
+absolute reproduces 8.5% or 2.1%. The likely cause is the same one that has
+bitten twice already: the table was computed in a heredoc that was never saved,
+probably while the background minimisation was still filling the CSV.
+
+**The conclusion is unchanged and if anything strengthened** -- buried area is
+the robust descriptor at 1.63%, hydrogen bonds are unusable at 33%, contacts sit
+between at 9.21% with 17% of complexes moving more than a fifth. Only the three
+numbers above should be cited, and a sixth of E37's reported figures were wrong
+in the second decimal because the computation was not in version control.
+
+---
+
 ## E38 — Negative controls and the pool x structure factorial (plan cards R04, R05)
 
 Both cards I had skipped on my own judgement. Running them corrected me twice.
