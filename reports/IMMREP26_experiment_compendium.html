@@ -1,0 +1,1900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMMREP26 Experiment Compendium</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#f2f4f3; --surface:#fbfcfc; --surface-2:#eef1f0;
+    --ink:#11181b; --ink-2:#3c4a4e; --muted:#6b7a7d;
+    --rule:#d9e0de; --rule-2:#c3cdca;
+    --accent:#15635c; --accent-soft:#e2efec;
+    --found:#7a6420; --found-soft:#f3eedd;
+    --adopt:#15635c; --adopt-soft:#e2efec;
+    --reject:#8f4a3c; --reject-soft:#f6e8e4;
+    --diag:#53548a; --diag-soft:#e9e9f3;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --paper:#101617; --surface:#161e20; --surface-2:#1c2527;
+      --ink:#e7edeb; --ink-2:#b6c3c1; --muted:#849391;
+      --rule:#273234; --rule-2:#364346;
+      --accent:#5fc2b4; --accent-soft:#15302c;
+      --found:#d9c177; --found-soft:#2e2915;
+      --adopt:#5fc2b4; --adopt-soft:#15302c;
+      --reject:#dd9583; --reject-soft:#351f1a;
+      --diag:#a8a9dd; --diag-soft:#212138;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --paper:#101617; --surface:#161e20; --surface-2:#1c2527;
+    --ink:#e7edeb; --ink-2:#b6c3c1; --muted:#849391;
+    --rule:#273234; --rule-2:#364346;
+    --accent:#5fc2b4; --accent-soft:#15302c;
+    --found:#d9c177; --found-soft:#2e2915;
+    --adopt:#5fc2b4; --adopt-soft:#15302c;
+    --reject:#dd9583; --reject-soft:#351f1a;
+    --diag:#a8a9dd; --diag-soft:#212138;
+  }
+
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:15.5px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1020px; margin:0 auto; padding-inline:20px; padding-block:0 72px;}
+  .prose{max-width:66ch;}
+  .prose-wide{max-width:82ch;}
+
+  a{color:var(--accent); text-decoration-color:var(--rule-2); text-underline-offset:2px;}
+  a:focus-visible, .chip:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;}
+
+  /* ---------- masthead ---------- */
+  header.mast{
+    border-bottom:1px solid var(--rule-2);
+    padding-block:44px 26px; margin-bottom:34px;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(30px,5.6vw,46px);
+    line-height:1.08; letter-spacing:-.015em; margin:0 0 14px; text-wrap:balance;
+  }
+  .standfirst{
+    font-family:var(--serif); font-size:clamp(16.5px,2.3vw,19px); line-height:1.5;
+    color:var(--ink-2); margin:0; max-width:56ch;
+  }
+  .mast-meta{
+    margin-top:22px; font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; flex-wrap:wrap; gap:6px 18px;
+  }
+
+  /* ---------- headline figures ---------- */
+  .figs{
+    display:grid; gap:1px; background:var(--rule);
+    grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+    border:1px solid var(--rule); margin:0 0 40px;
+  }
+  .fig{background:var(--surface); padding:16px 18px 18px;}
+  .fig dt{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.11em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 7px;
+  }
+  .fig dd{
+    margin:0; font-family:var(--serif); font-size:28px; font-weight:600;
+    line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.01em;
+  }
+  .fig .sub{
+    display:block; margin-top:7px; font-family:var(--sans); font-size:12.5px;
+    font-weight:400; color:var(--muted); line-height:1.4;
+  }
+  .fig.hi dd{color:var(--accent);}
+
+  /* ---------- sections ---------- */
+  h2{
+    font-family:var(--serif); font-weight:600; font-size:clamp(22px,3.4vw,29px);
+    line-height:1.14; letter-spacing:-.01em; margin:62px 0 6px;
+    padding-top:22px; border-top:1px solid var(--rule-2); text-wrap:balance;
+  }
+  h2 .count{
+    display:block; font-family:var(--mono); font-size:11.5px; font-weight:400;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+    margin-bottom:9px;
+  }
+  h3{
+    font-family:var(--serif); font-weight:600; font-size:19.5px; line-height:1.25;
+    margin:0 0 3px; text-wrap:balance;
+  }
+  h4{
+    font-family:var(--sans); font-weight:600; font-size:14.5px;
+    margin:26px 0 6px; color:var(--ink);
+  }
+  p{margin:0 0 14px;}
+  .lede{color:var(--ink-2);}
+
+  /* ---------- experiment entry ---------- */
+  .exp{margin:36px 0 0; padding-top:22px; border-top:1px solid var(--rule);}
+  .exp:first-of-type{border-top:none; padding-top:6px;}
+  .exp-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; margin-bottom:14px;}
+  .exp-id{
+    font-family:var(--mono); font-size:12.5px; font-weight:500; color:var(--muted);
+    letter-spacing:.04em; flex:0 0 auto; padding-top:3px;
+  }
+  .exp-title{flex:1 1 320px; min-width:0;}
+  .exp-title h3{display:inline;}
+
+  .tag{
+    display:inline-block; font-family:var(--mono); font-size:10px; font-weight:500;
+    letter-spacing:.1em; text-transform:uppercase; padding:3px 7px 2px;
+    border:1px solid currentColor; flex:0 0 auto; white-space:nowrap;
+  }
+  .tag.found{color:var(--found); background:var(--found-soft);}
+  .tag.adopt{color:var(--adopt); background:var(--adopt-soft);}
+  .tag.reject{color:var(--reject); background:var(--reject-soft);}
+  .tag.diag{color:var(--diag); background:var(--diag-soft);}
+
+  .field{margin:0 0 12px; max-width:72ch;}
+  .field .lbl{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); margin-right:8px;
+  }
+  .field.concl{
+    background:var(--surface); border-left:2px solid var(--accent);
+    padding:12px 16px; margin-top:16px;
+  }
+  .field.concl .lbl{color:var(--accent);}
+
+  /* ---------- tables ---------- */
+  .tw{overflow-x:auto; margin:16px 0 18px; border-top:1px solid var(--rule-2);}
+  table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:min(100%,340px);}
+  caption{
+    caption-side:top; text-align:left; font-family:var(--mono); font-size:11px;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+    padding:0 0 8px;
+  }
+  th,td{
+    padding:7px 14px 7px 0; text-align:left; vertical-align:baseline;
+    border-bottom:1px solid var(--rule);
+  }
+  th{
+    font-family:var(--mono); font-weight:500; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--muted); white-space:nowrap;
+  }
+  td.n,th.n{text-align:right; font-variant-numeric:tabular-nums; font-family:var(--mono); font-size:12.5px; padding-right:0;}
+  th.n{font-size:11px;}
+  tr.key td{font-weight:600; background:var(--surface);}
+  tr.key td.n{color:var(--accent);}
+  td b, strong{font-weight:600;}
+  .mono{font-family:var(--mono); font-size:.92em;}
+  .pep{font-family:var(--mono); font-size:.92em; letter-spacing:.02em;}
+
+  /* ---------- index grid ---------- */
+  .idx{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
+    border-top:1px solid var(--rule); border-left:1px solid var(--rule);
+    margin:18px 0 10px;
+  }
+  .chip{
+    background:var(--surface); padding:9px 10px; text-decoration:none;
+    display:flex; align-items:center; gap:8px; color:var(--ink-2);
+    font-family:var(--mono); font-size:12px; line-height:1.2;
+    border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    overflow-wrap:anywhere;
+  }
+  .chip:hover{background:var(--surface-2); color:var(--ink);}
+  .dot{width:7px; height:7px; flex:0 0 auto; border-radius:50%;}
+  .dot.found{background:var(--found);} .dot.adopt{background:var(--adopt);}
+  .dot.reject{background:var(--reject);} .dot.diag{background:var(--diag);}
+  .legend{
+    display:flex; flex-wrap:wrap; gap:8px 20px; margin:0 0 30px;
+    font-family:var(--mono); font-size:11.5px; color:var(--muted);
+  }
+  .legend span{display:flex; align-items:center; gap:7px;}
+
+  /* ---------- misc ---------- */
+  blockquote{
+    margin:18px 0; padding:12px 16px; background:var(--surface);
+    border-left:2px solid var(--rule-2); color:var(--ink-2); max-width:72ch;
+  }
+  blockquote p:last-child{margin-bottom:0;}
+  pre{
+    font-family:var(--mono); font-size:12.5px; line-height:1.65;
+    background:var(--surface); border:1px solid var(--rule);
+    padding:13px 15px; overflow-x:auto; margin:16px 0;
+  }
+  ul{margin:0 0 14px; padding-left:20px; max-width:72ch;}
+  li{margin-bottom:7px;}
+  hr{border:none; border-top:1px solid var(--rule-2); margin:48px 0;}
+  footer{
+    margin-top:58px; padding-top:22px; border-top:1px solid var(--rule-2);
+    font-size:13px; color:var(--muted); max-width:72ch;
+  }
+  .note{font-size:13px; color:var(--muted);}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important; animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">IMMREP26 · Validation of public TCR–pMHC data</p>
+  <h1>Experiment Compendium</h1>
+  <p class="standfirst">Thirty-nine experiments on whether a published TCR–epitope
+  annotation will survive functional re-screening — what each one asked, how it
+  was measured, and what it settled.</p>
+  <div class="mast-meta">
+    <span>Compiled 2026-10-23</span>
+    <span>Source: reports/00_experiment_log.md</span>
+    <span>Data audit: 57 checks, all passing</span>
+  </div>
+</header>
+
+<dl class="figs">
+  <div class="fig"><dt>Submitted · public</dt><dd>0.8498<span class="sub">leaderboard showed 0.849</span></dd></div>
+  <div class="fig hi"><dt>Private estimate</dt><dd>0.80<span class="sub">range 0.67–0.91, not LOEO's 0.846</span></dd></div>
+  <div class="fig"><dt>Organisers' baseline</dt><dd>0.8247<span class="sub">tcrdist3 nearest-neighbour</span></dd></div>
+  <div class="fig"><dt>Experiments</dt><dd>39<span class="sub">19 rejections, 3 adopted components</span></dd></div>
+</dl>
+
+<section class="prose-wide">
+<h4 style="margin-top:0">How to read the numbers</h4>
+<p>The competition metric is the <strong>unweighted mean of per-epitope ROC AUC,
+with ambiguous rows dropped</strong> — reverse-engineered in E1 and confirmed
+three times against the leaderboard. Unless stated, every figure is that
+quantity over the five public epitopes.</p>
+
+<div class="tw">
+<table>
+<tbody>
+<tr><td>Organisers' tcrdist3 baseline</td><td class="n"><b>0.8247</b></td></tr>
+<tr><td>Organisers' AlphaFold3 min-PAE baseline</td><td class="n">0.787</td></tr>
+<tr><td>Standard error of a five-epitope estimate</td><td class="n">≈ 0.011</td></tr>
+<tr><td>Standard error on the three private epitopes</td><td class="n">≈ 0.023</td></tr>
+<tr class="key"><td>Pre-registered inclusion threshold for a new component</td><td class="n">&gt; +0.02</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The dataset is 2,636 rows in <span class="mono">test.csv</span>: 2,034 public
+(of which 1,782 carry a usable label and 252 are ambiguous) and 602 private
+across three epitopes. <strong>Only the private 602 decide the final
+ranking.</strong></p>
+
+<h4>The submitted model</h4>
+<p><span class="mono">submissions/density3_struct03.csv</span>, built by
+<span class="mono">scripts/18_final_submission.py</span>: a rank average of three
+within-epitope kernel densities — SCEPTR <span class="mono">default</span> and
+<span class="mono">small</span> at cosine σ=0.1, tcrdist3 α+β at σ=20 — blended
+0.7 / 0.3 with Boltz-2 TCR–peptide minimum PAE. <strong>Fully unsupervised, zero
+fitted parameters.</strong></p>
+
+<h4>The honest private estimate</h4>
+<p><strong>0.80 central, plausible range 0.67–0.91.</strong> Not the 0.846 that
+nested leave-one-epitope-out reports. <a href="#e30">E30</a> is the reason, and
+it is the most consequential result here.</p>
+</section>
+
+<h2><span class="count">Index · 39 experiments by outcome</span>All experiments</h2>
+<div class="legend">
+  <span><i class="dot found"></i> Foundation — settled a ground rule (3)</span>
+  <span><i class="dot adopt"></i> Adopted into the submission (3)</span>
+  <span><i class="dot reject"></i> Rejected (19)</span>
+  <span><i class="dot diag"></i> Diagnostic — changed understanding (14)</span>
+</div>
+<div class="idx">
+  <a class="chip" href="#e1"><i class="dot found"></i>E1 Metric</a>
+  <a class="chip" href="#e2"><i class="dot found"></i>E2 Label leak</a>
+  <a class="chip" href="#e3"><i class="dot found"></i>E3 Provenance</a>
+  <a class="chip" href="#e4"><i class="dot reject"></i>E4 Metadata</a>
+  <a class="chip" href="#e5"><i class="dot diag"></i>E5 The signal</a>
+  <a class="chip" href="#e6"><i class="dot adopt"></i>E6 Spaces</a>
+  <a class="chip" href="#e7"><i class="dot reject"></i>E7 Pgen</a>
+  <a class="chip" href="#e8"><i class="dot reject"></i>E8 Background</a>
+  <a class="chip" href="#e9"><i class="dot reject"></i>E9 Cluster shape</a>
+  <a class="chip" href="#e10"><i class="dot reject"></i>E10 Fitted fusion</a>
+  <a class="chip" href="#e11"><i class="dot reject"></i>E11 Graph</a>
+  <a class="chip" href="#e12"><i class="dot reject"></i>E12 Pool (a priori)</a>
+  <a class="chip" href="#e13"><i class="dot reject"></i>E13 Specificity</a>
+  <a class="chip" href="#e14"><i class="dot adopt"></i>E14 Structure</a>
+  <a class="chip" href="#e15"><i class="dot diag"></i>E15 Selection cost</a>
+  <a class="chip" href="#e16"><i class="dot reject"></i>E16 Metric learning</a>
+  <a class="chip" href="#e17"><i class="dot reject"></i>E17 Adaptive σ</a>
+  <a class="chip" href="#e18"><i class="dot diag"></i>E18 Master table</a>
+  <a class="chip" href="#e19"><i class="dot reject"></i>E19 Consistency</a>
+  <a class="chip" href="#e20"><i class="dot diag"></i>E20 Four questions</a>
+  <a class="chip" href="#e21"><i class="dot adopt"></i>E21 Thinning</a>
+  <a class="chip" href="#e22"><i class="dot diag"></i>E22 Error anatomy</a>
+  <a class="chip" href="#e23"><i class="dot reject"></i>E23 Adversarial fix</a>
+  <a class="chip" href="#e24"><i class="dot reject"></i>E24 Soft labels</a>
+  <a class="chip" href="#e25"><i class="dot diag"></i>E25 Cross-check</a>
+  <a class="chip" href="#e26"><i class="dot reject"></i>E26 V-domain</a>
+  <a class="chip" href="#e27"><i class="dot reject"></i>E27 Pool audited</a>
+  <a class="chip" href="#e28"><i class="dot reject"></i>E28 Contacts</a>
+  <a class="chip" href="#e29"><i class="dot diag"></i>E29 Family holdout</a>
+  <a class="chip" href="#e30"><i class="dot diag"></i>E30 LOEO bias</a>
+  <a class="chip" href="#e31"><i class="dot diag"></i>E31 Fine specificity</a>
+  <a class="chip" href="#e32"><i class="dot reject"></i>E32 Six cards</a>
+  <a class="chip" href="#e33"><i class="dot reject"></i>E33 Pool &amp; provenance</a>
+  <a class="chip" href="#e34"><i class="dot diag"></i>E34 PDB check</a>
+  <a class="chip" href="#e35"><i class="dot diag"></i>E35 DB version</a>
+  <a class="chip" href="#e36"><i class="dot reject"></i>E36 Decoy peptides</a>
+  <a class="chip" href="#e37"><i class="dot diag"></i>E37 Relaxation</a>
+  <a class="chip" href="#e38"><i class="dot diag"></i>E38 Pool controls</a>
+  <a class="chip" href="#e39"><i class="dot diag"></i>E39 Dynamics</a>
+</div>
+
+<!-- ============ FOUNDATIONS ============ -->
+<h2><span class="count">Part one</span>Foundations</h2>
+
+<article class="exp" id="e1">
+  <div class="exp-head">
+    <span class="exp-id">E1</span>
+    <div class="exp-title"><h3>Is the competition's metric knowable without the Evaluation page?</h3></div>
+    <span class="tag found">Foundation</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Determine the exact scoring
+  function, so local measurement can replace submissions — the daily limit is 1.</p>
+  <p class="field"><span class="lbl">Method</span>Score the organisers' own
+  <span class="mono">tcrdist_predictions.csv</span>, whose public score is 0.824,
+  against the published TCRvdb labels under every plausible metric.
+  <span class="mono">scripts/02_confirm_metric.py</span>.</p>
+  <div class="tw"><table><caption>Result — exactly one candidate matches</caption>
+  <thead><tr><th>candidate</th><th class="n">value</th></tr></thead><tbody>
+  <tr class="key"><td>mean per-epitope ROC AUC, ambiguous dropped</td><td class="n">0.824728</td></tr>
+  <tr><td>mean per-epitope average precision</td><td class="n">0.8338</td></tr>
+  <tr><td>n-weighted mean per-epitope ROC AUC</td><td class="n">0.8466</td></tr>
+  <tr><td>pooled ROC AUC</td><td class="n">0.8577</td></tr>
+  <tr><td>pooled average precision</td><td class="n">0.8602</td></tr>
+  <tr><td>mean per-epitope AUC, ambiguous as positive</td><td class="n">0.7908</td></tr>
+  <tr><td>mean per-epitope AUC, ambiguous as negative</td><td class="n">0.7769</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>Only within-epitope
+  ranking is read, so the 28.7–66.3% spread in validation rate across epitopes
+  needs no calibration. Each epitope carries equal weight regardless of size, so
+  the 130-row <span class="pep">LTDEMIAQY</span> counts as much as the 243-row
+  <span class="pep">CINGVCWTV</span>. Confirmed end to end twice — 0.8396 scored
+  0.839 and 0.8498 scored 0.849; Kaggle truncates rather than rounds.
+  <strong>The local harness is the leaderboard.</strong> This also resolves the
+  competition text's internal contradiction: the "~68%" public split is
+  1,782/2,636 = 67.6%, i.e. 2,034 public rows minus 252 ambiguous.</div>
+</article>
+
+<article class="exp" id="e2">
+  <div class="exp-head">
+    <span class="exp-id">E2</span>
+    <div class="exp-title"><h3>Can the public labels simply be recovered?</h3></div>
+    <span class="tag found">Foundation</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Test whether the public
+  leaderboard measures skill at all.</p>
+  <p class="field"><span class="lbl">Method</span>Join TCRvdb to
+  <span class="mono">test.csv</span> and score the recovered label.</p>
+  <p class="field"><span class="lbl">Result</span><span class="mono">tcr_id</span>
+  is shared <strong>verbatim</strong>: 2,034/2,034 rows match exactly, no fuzzy
+  matching needed. Submitting the recovered label scores <strong>1.000 on every
+  public epitope</strong>. Simulating 5% match failure still gives 0.9988.</p>
+  <div class="field concl"><span class="lbl">Settled</span>The public leaderboard
+  measures a <span class="mono">merge</span>, not skill — the 1.000 and 0.997
+  standings are reproducible in one line. Public standing was dropped from
+  consideration entirely after this. <strong>Do the private labels leak too? No.</strong>
+  TCRvdb's changelog lists exactly which epitopes each release contains:
+  <span class="pep">YLQPRTFLL</span>+<span class="pep">GLCTLVAML</span>
+  (2025-05-01), plus <span class="pep">TTDPSFLGRY</span>,
+  <span class="pep">GILGFVFTL</span> and <span class="pep">NLVPMVATV</span>
+  (2026-10-01). The private three have never been released and are absent from
+  the downloaded file. <strong>The private leaderboard is sound</strong>, so
+  modelling decides the ranking.</div>
+</article>
+
+<article class="exp" id="e3">
+  <div class="exp-head">
+    <span class="exp-id">E3</span>
+    <div class="exp-title"><h3>Can annotation provenance rank the private epitopes at all?</h3></div>
+    <span class="tag found">Foundation</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Establish, before trusting any
+  cross-validation score, whether provenance metadata even varies where it must.</p>
+  <p class="field"><span class="lbl">Method</span>For every VDJdb metadata field,
+  count distinct levels <em>within</em> each epitope cohort; flag a field unusable
+  if it is constant, or if its dominant level holds &gt;95% of rows, in any private
+  epitope. <span class="mono">scripts/01_audit_metadata_viability.py</span>.</p>
+  <p class="field"><span class="lbl">Result</span><strong>Not one field survives.</strong>
+  <span class="mono">vdjdb_score</span> is constant 0 for
+  <span class="pep">LLWNGPMAV</span> and <span class="pep">LTDEMIAQY</span>;
+  <span class="mono">method.verification</span> is null for all 602 private rows;
+  <span class="pep">LTDEMIAQY</span> is 97.8% a single
+  <span class="mono">reference.id</span> and a single
+  <span class="mono">method.identification</span>.</p>
+  <div class="field concl"><span class="lbl">Settled</span>A provenance feature
+  can look strong in cross-validation on the public epitopes — where
+  <span class="pep">GILGFVFTL</span> and <span class="pep">NLVPMVATV</span> span
+  <span class="mono">vdjdb_score</span> 0–3 — and contribute literally zero on the
+  private side. <strong>This became a standing rule: every new feature is checked
+  for within-epitope variance on all three private epitopes before its LOEO score
+  is believed.</strong></div>
+</article>
+
+<article class="exp" id="e4">
+  <div class="exp-head">
+    <span class="exp-id">E4</span>
+    <div class="exp-title"><h3>Metadata-only baseline: how much does evidence quality explain?</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Quantify what VDJdb's own
+  confidence score is worth.</p>
+  <p class="field"><span class="lbl">Method</span>Score
+  <span class="mono">vdjdb_score</span> directly, pooled and within epitope.</p>
+  <p class="field"><span class="lbl">Result</span>Pooled AUC <strong>0.455</strong>
+  — below chance — and the direction <em>flips between epitopes</em>: 0.581 on
+  <span class="pep">GLCTLVAML</span>, 0.399 on <span class="pep">NLVPMVATV</span>,
+  0.443 on <span class="pep">YLQPRTFLL</span>, undefined on
+  <span class="pep">TTDPSFLGRY</span> (constant). The 158 score-3
+  <span class="pep">NLVPMVATV</span> entries validate at 15.8%, against 23.5% for
+  score-0 in the same cohort.</p>
+  <div class="field concl"><span class="lbl">Settled</span>VDJdb's confidence
+  score <strong>anti-correlates</strong> with functional validation. A model that
+  learns "higher confidence means more reliable" on one epitope is actively harmed
+  on the next. Metadata is kept as a documented ablation, never as a submission
+  component.</div>
+</article>
+
+<!-- ============ THE SIGNAL ============ -->
+<h2><span class="count">Part two</span>What the signal actually is</h2>
+
+<article class="exp" id="e5">
+  <div class="exp-head">
+    <span class="exp-id">E5</span>
+    <div class="exp-title"><h3>What is the signal, structurally?</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Characterise what separates
+  validated from non-validating TCRs.</p>
+  <p class="field"><span class="lbl">Method</span>Within each epitope, compare
+  median distance from each TCR to its nearest validated neighbour, split by
+  label; cluster at tcrdist ≤ 90 and measure label purity and singleton rate.</p>
+  <div class="tw"><table>
+  <thead><tr><th>epitope</th><th class="n">pos → nearest validated</th><th class="n">neg → nearest validated</th><th class="n">singletons</th><th>singleton rate vs cohort</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">24</td><td class="n">169</td><td class="n">34%</td><td class="mono">0.31 vs 0.66</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="n">42</td><td class="n">198</td><td class="n">58%</td><td class="mono">0.10 vs 0.41</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="n">24</td><td class="n">212</td><td class="n">70%</td><td class="mono">0.13 vs 0.29</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">108</td><td class="n">183</td><td class="n">83%</td><td class="mono">0.39 vs 0.50</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="n">24</td><td class="n">144</td><td class="n">37%</td><td class="mono">0.48 vs 0.66</td></tr>
+  </tbody></table></div>
+  <p>Clusters of ≥3 members have median label purity 0.89–1.00.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Validated TCRs sit in
+  tight, label-pure clusters; non-validating ones are isolated. <strong>Every
+  method in this competition is really answering "is this TCR part of a
+  convergent, antigen-driven cluster".</strong>
+  <span class="pep">GLCTLVAML</span> is the weak epitope everywhere because being
+  a singleton barely predicts anything there (0.48 vs a 0.66 cohort rate), and
+  density scores its singletons at AUC 0.482 — no information at all.</div>
+</article>
+
+<article class="exp" id="e6">
+  <div class="exp-head">
+    <span class="exp-id">E6</span>
+    <div class="exp-title"><h3>Does the representation matter?</h3></div>
+    <span class="tag adopt">Adopted</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Find out whether a better metric
+  space buys anything.</p>
+  <p class="field"><span class="lbl">Method</span>Compute the same density
+  reductions (kernel at several bandwidths, top-k mean, neighbour counts) over
+  tcrdist3 and seven SCEPTR variants.</p>
+  <div class="tw"><table>
+  <thead><tr><th>representation</th><th>best reduction</th><th class="n">mean</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>SCEPTR <span class="mono">default</span></td><td>kernel σ=0.1</td><td class="n">0.8396</td></tr>
+  <tr><td>SCEPTR <span class="mono">small</span></td><td>kernel σ=0.1</td><td class="n">0.8354</td></tr>
+  <tr><td>tcrdist3 α+β</td><td>kernel σ=20</td><td class="n">0.8329</td></tr>
+  <tr><td>SCEPTR <span class="mono">large</span></td><td>kernel σ=0.1</td><td class="n">0.8260</td></tr>
+  <tr><td>SCEPTR α only</td><td>top-11</td><td class="n">0.7986</td></tr>
+  <tr><td>SCEPTR <span class="mono">cdr3_only</span></td><td>kernel σ=0.1</td><td class="n">0.8007</td></tr>
+  <tr><td>SCEPTR β only</td><td>kernel σ=0.2</td><td class="n">0.7505</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>A learned paired-chain
+  representation beats a hand-built distance by 0.007, inside one standard error.
+  <strong>The metric space does not matter.</strong> Two durable facts fell out:
+  the <strong>α chain carries more of this signal than β</strong> (0.799 vs
+  0.751), inverting the usual expectation, and α-only is the only space that helps
+  <span class="pep">GLCTLVAML</span>.</div>
+  <blockquote><p><strong>Caveat added by E27.</strong> This table computed density
+  using only the <em>labelled</em> rows as the reference set, where inference uses
+  the whole cohort. On the full cohort top-8 reads 0.8414 against kernel's 0.8396,
+  reversing this table's ordering. The conclusion is unaffected and no submission
+  was touched, but the ordering here should be read with that caveat.</p></blockquote>
+</article>
+
+<article class="exp" id="e9">
+  <div class="exp-head">
+    <span class="exp-id">E9</span>
+    <div class="exp-title"><h3>Cluster shape: real motif family or co-annotated artifact?</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Separate convergent recombination
+  from a knot of near-duplicates that entered VDJdb together.</p>
+  <p class="field"><span class="lbl">Method</span>Prompted by a diagnostic:
+  <span class="pep">NLVPMVATV</span>'s 23 high-density non-validating TCRs cluster
+  tightly with <em>each other</em> (median cosine 0.148) but sit far from that
+  epitope's validated TCRs (0.312), whereas elsewhere the high-density mistakes
+  sit right on the positives (0.050, 0.088). So: measure cluster size, internal
+  tightness, V/J purity, per-position CDR3 entropy, centrality.</p>
+  <p class="field"><span class="lbl">Result</span>Restricted to rows inside a
+  cluster, per-position CDR3β entropy scores <strong>0.773</strong> against
+  density's 0.768, and internal tightness scores <strong>0.275</strong> — meaning
+  <strong>tighter clusters validate less</strong>. Imputed across the full cohort,
+  entropy collapses to 0.5553.</p>
+  <div class="field concl"><span class="lbl">Settled</span>A real signal with a
+  clean mechanism — convergent recombination produces loose, diverse motif
+  families, while a co-annotated knot is tight, and plain density scores both as
+  "dense" — but it is largely a restatement of cluster membership and adds nothing
+  on top.</div>
+</article>
+
+<article class="exp" id="e20">
+  <div class="exp-head">
+    <span class="exp-id">E20</span>
+    <div class="exp-title"><h3>Four questions about what density is actually doing</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <h4>(a) Does the method lean on density more than on the labels?</h4>
+  <p>It uses <strong>no labels at all.</strong> Density and structure are both
+  unsupervised; all 1,782 labels serve only to validate. That is a strength —
+  there is nothing to overfit, which is why the local estimate reproduced the
+  leaderboard exactly — and an unresolved gap: 1,782 labels exist and the
+  predictor extracts nothing from them. Every supervised route tried
+  (<a href="#e10">E10</a>, <a href="#e13">E13</a>, <a href="#e16">E16</a>) lost to
+  variance or scored below chance.</p>
+
+  <h4>(b) Are clustered TCRs merely label-pure, or genuinely positive-leaning?</h4>
+  <div class="tw"><table><caption>45 clusters with ≥3 members, SCEPTR cosine ≤ 0.12</caption>
+  <thead><tr><th>cluster validation rate</th><th class="n">clusters</th><th class="n">TCRs</th></tr></thead>
+  <tbody>
+  <tr><td>100% (pure positive)</td><td class="n">26</td><td class="n">205</td></tr>
+  <tr><td>80–100%</td><td class="n">8</td><td class="n">136</td></tr>
+  <tr><td>60–80%</td><td class="n">8</td><td class="n">31</td></tr>
+  <tr class="key"><td>20–60%</td><td class="n">0</td><td class="n">0</td></tr>
+  <tr><td>0–20%</td><td class="n">0</td><td class="n">0</td></tr>
+  <tr><td>0% (pure negative)</td><td class="n">3</td><td class="n">13</td></tr>
+  </tbody></table></div>
+  <p>The 20–60% band is <strong>empty</strong>, and only 13 of 385 clustered TCRs
+  (3.4%) sit in a pure-negative cluster. Cluster membership is positive evidence
+  in its own right, not a statement about homogeneity. The ceiling is equally
+  clear: only 487 of 1,782 TCRs are in any cluster, and <strong>about 54% of
+  positives are singletons</strong>.</p>
+
+  <h4>(c) Is anything available for singletons?</h4>
+  <p>Density remains the best thing there — mean AUC 0.758 within singletons,
+  against structure 0.722, multi-sample confidence 0.729, consistency 0.692, Pgen
+  0.497. One exception, and it is the weak epitope: on
+  <span class="pep">GLCTLVAML</span>'s 81 singletons density collapses to
+  <strong>0.551</strong> while every structure-derived feature beats it
+  (confidence 0.676, consistency 0.668, min-PAE 0.659).</p>
+
+  <h4>(d) Near-neighbour label discordance</h4>
+  <p>Some negatives are single-residue variants of validated positives, sitting
+  inside otherwise-pure positive clusters: 34 of 872 negatives
+  (<strong>3.9%</strong>), and relabelling them would move 0.8362 → 0.8602.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Two cautions raised in
+  review, both correct. The relabelling arithmetic is
+  <strong>selection-affected</strong> — these rows were picked <em>because</em>
+  they sit close to positives, the same property that makes the model rank them
+  high. And the discordance has two possible causes this analysis cannot separate:
+  assay dropout, or genuine fine specificity. So 0.024 is not a demonstrated
+  ceiling. The honest description is <strong>near-positive discordant
+  clonotypes</strong>: negatives indistinguishable from validated positives by
+  sequence, of unresolved cause. <a href="#e22">E22</a> later relocated their
+  damage and <a href="#e31">E31</a> settled the cause.</div>
+
+  <h4>(e) Why is GLCTLVAML weak, and does that threaten the private side?</h4>
+  <p>Density fails there because <strong>everything is dense</strong> — 55.2% of
+  its cohort has a neighbour inside the clustering radius, against 2.5–14.6% on the
+  private three. None of the private epitopes share this pathology.
+  <span class="note">(<a href="#e21">E21</a> later corrected the inference drawn
+  from this: cohort geometry does not forecast AUC.)</span></p>
+</article>
+
+<article class="exp" id="e32b">
+  <div class="exp-head">
+    <span class="exp-id">E32 · card D10</span>
+    <div class="exp-title"><h3>What the model actually is</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Method</span>Bin by nearest-neighbour
+  distance and score within each bin.</p>
+  <div class="tw"><table>
+  <thead><tr><th>nn1 band</th><th class="n">n</th><th class="n">validation rate</th><th class="n">within-band AUC</th></tr></thead>
+  <tbody>
+  <tr><td class="mono">&lt;0.06</td><td class="n">310</td><td class="n">0.823</td><td class="n">0.791</td></tr>
+  <tr class="key"><td class="mono">0.06–0.12</td><td class="n">189</td><td class="n">0.921</td><td class="n">0.553</td></tr>
+  <tr class="key"><td class="mono">0.12–0.25</td><td class="n">221</td><td class="n">0.805</td><td class="n">0.523</td></tr>
+  <tr><td class="mono">0.25–0.5</td><td class="n">526</td><td class="n">0.432</td><td class="n">0.690</td></tr>
+  <tr><td class="mono">&gt;0.5</td><td class="n">534</td><td class="n">0.139</td><td class="n">0.659</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>Within-band
+  discrimination is poor everywhere (0.52–0.79) while the validation rate falls
+  0.92 → 0.14 across bands. <strong>The model is essentially a monotone function
+  of nearest-neighbour distance and barely discriminates inside any narrow band of
+  it.</strong> And the private epitopes sit in the far bands — 86.8% of
+  <span class="pep">CINGVCWTV</span>, 75.1% of <span class="pep">LLWNGPMAV</span>,
+  80.0% of <span class="pep">LTDEMIAQY</span> beyond 0.25 — an independent,
+  simpler confirmation of <a href="#e30">E30</a>'s reprojection.</div>
+</article>
+
+<!-- ============ REJECTED SEQUENCE ============ -->
+<h2><span class="count">Part three</span>Rejected sequence approaches</h2>
+
+<article class="exp" id="e7">
+  <div class="exp-head">
+    <span class="exp-id">E7</span>
+    <div class="exp-title"><h3>Generation probability</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Test a neighbour-free
+  alternative: are spurious annotations just typical repertoire draws?</p>
+  <p class="field"><span class="lbl">Method</span>OLGA Pgen per chain and paired.</p>
+  <p class="field"><span class="lbl">Result</span><span class="mono">-log10
+  Pgen(paired)</span> scores <strong>0.417</strong> — i.e. <em>higher</em> Pgen
+  means more likely to validate, the opposite of the hypothesis. Not orthogonal
+  either: Spearman with density reaches −0.63 on
+  <span class="pep">GILGFVFTL</span>. Within singletons, 0.50–0.53.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Dense convergent
+  clusters are built from easy-to-generate sequences, so Pgen mostly re-encodes
+  density with an unstable sign.</div>
+</article>
+
+<article class="exp" id="e8">
+  <div class="exp-head">
+    <span class="exp-id">E8</span>
+    <div class="exp-title"><h3>Background normalisation (TCRNET / ALICE-style)</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Separate antigen-driven
+  convergence from "this region of TCR space is just crowded".</p>
+  <p class="field"><span class="lbl">Method</span>Divide cohort density by density
+  against the other epitopes' TCRs.</p>
+  <p class="field"><span class="lbl">Result</span>Own-cohort density 0.8396;
+  difference 0.8357; log ratio 0.8262. Background density <strong>alone</strong>
+  scores 0.60 <em>positive</em>.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Crowded regions of TCR
+  space are where genuinely public clonotypes live, so normalising subtracts
+  signal rather than noise.</div>
+</article>
+
+<article class="exp" id="e10">
+  <div class="exp-head">
+    <span class="exp-id">E10</span>
+    <div class="exp-title"><h3>Fitted fusion</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Ask whether a learned combiner
+  beats a fixed rank average.</p>
+  <p class="field"><span class="lbl">Method</span>Logistic regression and gradient
+  boosting over all density and cluster-shape features, LOEO.</p>
+  <p class="field"><span class="lbl">Result</span>Best single unsupervised feature
+  0.8362; logistic regression on density only 0.8359; density + cluster shape
+  0.8299; depth-2 booster 0.8188; cluster shape alone 0.6846.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Five folds cannot
+  support a fitted combiner. <strong>Hard constraint adopted: any fusion is a
+  zero-parameter rank average, and a component enters only if it adds &gt; +0.02 in
+  LOEO.</strong> This threshold governed every later decision.</div>
+</article>
+
+<article class="exp" id="e11">
+  <div class="exp-head">
+    <span class="exp-id">E11</span>
+    <div class="exp-title"><h3>Graph refinement</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Test whether global graph
+  structure beats local degree.</p>
+  <p class="field"><span class="lbl">Method</span>Replace degree centrality
+  (plain density) with eigenvector centrality, PageRank, and 1–10 rounds of label
+  propagation.</p>
+  <p class="field"><span class="lbl">Result</span>Degree 0.8362; PageRank(0.85)
+  0.8329; propagation ×1 0.8297, ×3 0.8095, ×10 0.7417; eigenvector centrality
+  0.7486.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Monotonically worse
+  with more propagation. <strong>The signal is strictly local</strong>;
+  eigenvector centrality collapses onto the largest cluster and stops ranking the
+  others.</div>
+</article>
+
+<article class="exp" id="e13">
+  <div class="exp-head">
+    <span class="exp-id">E13</span>
+    <div class="exp-title"><h3>Epitope-conditioned specificity model</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Predict binding from TCR and
+  peptide jointly, generalising to an unseen epitope.</p>
+  <p class="field"><span class="lbl">Method</span>LightGBM over SCEPTR TCR
+  embeddings concatenated with a BLOSUM62 peptide encoding, trained on 21,112
+  VDJdb paired pairs across 119 epitopes; negatives are the same TCRs paired with
+  wrong epitopes so TCR identity carries no label. <strong>The target epitope is
+  removed from training entirely</strong> — it must be, since the test TCRs are
+  themselves VDJdb entries annotated to it.</p>
+  <p class="field"><span class="lbl">Result</span><span class="pep">NLVPMVATV</span>
+  0.553, <span class="pep">GILGFVFTL</span> 0.533,
+  <span class="pep">GLCTLVAML</span> 0.531, <span class="pep">TTDPSFLGRY</span>
+  0.507, <span class="pep">YLQPRTFLL</span> <strong>0.283</strong>. Mean
+  <strong>0.481 — below chance</strong>. Rank-averaged with density it drags 0.8415
+  down to 0.7293. Cost: 78 min wall, 1,153 CPU-min.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Predicting binding to a
+  peptide never seen in training remains unsolved. What the model learns is
+  <em>how generic a TCR looks against VDJdb</em>, and on
+  <span class="pep">YLQPRTFLL</span> the generic-looking TCRs are precisely the
+  spurious annotations — the same failure shape as
+  <span class="mono">vdjdb_score</span> in <a href="#e4">E4</a>. Two independent
+  failures with one mechanism: <strong>a quantity whose sign is not stable across
+  epitopes is worse than no feature.</strong></div>
+</article>
+
+<article class="exp" id="e16">
+  <div class="exp-head">
+    <span class="exp-id">E16</span>
+    <div class="exp-title"><h3>Learning the metric that density lives in</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Replace a hand-chosen bandwidth
+  and isotropic distance with learned ones.</p>
+  <p class="field"><span class="lbl">Method</span>Learn the kernel bandwidth alone
+  (1 parameter) and a diagonal metric over the 64 SCEPTR dimensions (64
+  parameters, shrunk toward identity) by gradient descent on a within-epitope
+  pairwise ranking surrogate. Strictly nested.</p>
+  <p class="field"><span class="lbl">Result</span>Plain cosine σ=0.1
+  <strong>0.8396</strong>; scale-only <strong>0.8199</strong>; diagonal
+  <strong>0.8144</strong>. Learned bandwidths came out at 0.20–0.26 in every fold,
+  against a true optimum of 0.07.</p>
+  <h4>Diagnosis, in three steps, because the first two were wrong</h4>
+  <p><em>First guess — scale coupling.</em> Standardising density within epitope
+  before the loss did not help; σ still converged to 0.20–0.26.
+  <em>Second guess — loss shape.</em> A bounded sigmoid was <em>worse</em>, and
+  both surrogates are <strong>negatively correlated with AUC</strong> across a σ
+  grid (−0.39 and −0.51). <em>What is actually going on</em>, from a temperature
+  sweep:</p>
+  <div class="tw"><table>
+  <thead><tr><th class="n">temperature</th><th class="n">loss argmin (σ)</th><th class="n">corr(−loss, AUC)</th></tr></thead>
+  <tbody>
+  <tr><td class="n">1.0</td><td class="n">0.30</td><td class="n">−0.51</td></tr>
+  <tr><td class="n">0.2</td><td class="n">0.20</td><td class="n">−0.37</td></tr>
+  <tr><td class="n">0.05</td><td class="n">0.15</td><td class="n">−0.12</td></tr>
+  <tr class="key"><td class="n">0.02</td><td class="n">0.10</td><td class="n">+0.03</td></tr>
+  </tbody></table></div>
+  <p>The surrogate only aligns with AUC as it stops being smooth — as temperature
+  → 0 it becomes exactly the 1−AUC step function, by which point gradients have
+  vanished.</p>
+  <div class="field concl"><span class="lbl">Settled</span>The score distribution
+  is <strong>heavy-tailed</strong>: a minority of TCRs sit in dense clusters at
+  extreme density values. AUC gives full credit for ranking those at the very top;
+  any smooth margin surrogate saturates there and is dominated by the ambiguous
+  bulk. So the surrogate is least sensitive exactly where the metric gets most of
+  its signal. This is a <strong>structural mismatch, not an implementation
+  flaw.</strong> What the sweep did settle: per-epitope optimal bandwidth varies
+  five-fold, 0.03 to 0.15.</div>
+</article>
+
+<article class="exp" id="e17">
+  <div class="exp-head">
+    <span class="exp-id">E17</span>
+    <div class="exp-title"><h3>Label-free adaptive bandwidth</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Exploit E16's real bandwidth
+  heterogeneity without using labels, so it transfers to private epitopes
+  unchanged.</p>
+  <p class="field"><span class="lbl">Method</span>Set σ from each cohort's own
+  distance geometry. Ten rules tested.</p>
+  <div class="tw"><table>
+  <thead><tr><th>rule</th><th class="n">mean</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>fixed 0.07</td><td class="n">0.8397</td></tr>
+  <tr><td>fixed 0.10</td><td class="n">0.8396</td></tr>
+  <tr><td>median pairwise / 12</td><td class="n">0.8385</td></tr>
+  <tr><td>median nn1</td><td class="n">0.8054</td></tr>
+  <tr><td>q10 pairwise</td><td class="n">0.7927</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>The rules that
+  <em>work</em> barely adapt (<span class="mono">median pairwise/8</span> picks
+  0.091–0.115 everywhere — fixed σ in disguise); the rules that genuinely vary
+  adapt in the <strong>wrong direction</strong>. Mechanism:
+  singleton-dominated cohorts have large nearest-neighbour distances and need
+  <em>small</em> σ so the few genuinely close pairs dominate, while any
+  bandwidth-scaling heuristic gives sparse cohorts <em>large</em> σ and washes the
+  signal out. Bandwidth heterogeneity is real but <strong>not predictable from
+  cohort geometry.</strong> Fixed σ≈0.07–0.10 stands.</div>
+</article>
+
+<article class="exp" id="e32">
+  <div class="exp-head">
+    <span class="exp-id">E32</span>
+    <div class="exp-title"><h3>Six remaining sequence cards, all rejected</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Method</span>All judged by strict nested LOEO
+  against the submitted blend at 0.8498.</p>
+  <div class="tw"><table>
+  <thead><tr><th>card</th><th>result</th><th>verdict</th></tr></thead>
+  <tbody>
+  <tr><td class="mono">D04</td><td>identity 0.8007, BLOSUM62 0.7999, BLOSUM45 0.8014</td><td>the cost matrix does not matter</td></tr>
+  <tr><td class="mono">D05</td><td>three-scale average 0.8378 vs single σ=0.1 at 0.8396</td><td>worse than one scale</td></tr>
+  <tr><td class="mono">S01</td><td>best extra feature +0.0002, <span class="mono">iptm</span> <b>−0.0193</b></td><td>third confirmation that the labels add nothing</td></tr>
+  <tr><td class="mono">S02</td><td>global <b>−0.0186</b>; within-singleton 0.7704 vs the frozen score's 0.793</td><td>a fitted singleton model loses even on singletons</td></tr>
+  <tr><td class="mono">S07</td><td>close-neighbour group AUC 0.720, isolated group 0.778</td><td>distance confidence ≠ ranking reliability</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>S07 is worth stating in
+  the inverse: the group with close neighbours has a <em>lower</em> AUC than the
+  isolated group, because its validation rate is already 0.86 and there is little
+  left to order. <strong>A distance-based confidence layer would flag where the
+  prior is extreme, not where the ranking is unreliable.</strong> Card D10's result
+  appears under <a href="#e32b">"What the model actually is"</a>.</div>
+</article>
+
+<!-- ============ POOL ============ -->
+<h2><span class="count">Part four</span>Candidate-pool expansion</h2>
+
+<article class="exp" id="e12">
+  <div class="exp-head">
+    <span class="exp-id">E12</span>
+    <div class="exp-title"><h3>Can the density estimate be sharpened with unscreened VDJdb TCRs?</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Method</span>Count available extras per
+  epitope.</p>
+  <p class="field"><span class="lbl">Result</span>Public: 3,005 extra for
+  <span class="pep">GILGFVFTL</span>, 9,881 for <span class="pep">NLVPMVATV</span>
+  (28×), 459 for <span class="pep">GLCTLVAML</span>. Private:
+  <strong>11 for <span class="pep">CINGVCWTV</span>, 5 for
+  <span class="pep">LTDEMIAQY</span></strong>, 191 for
+  <span class="pep">LLWNGPMAV</span>.</p>
+  <div class="field concl"><span class="lbl">Settled, then revisited</span>Rejected
+  on design grounds <strong>without being run</strong> — enrichment would inflate
+  public scores while leaving two of three deciding epitopes untouched.
+  <a href="#e25">E25</a> later identified this as a procedural gap, and
+  <a href="#e27">E27</a> ran it properly; the verdict survived but the reasoning
+  was incomplete.</div>
+</article>
+
+<article class="exp" id="e27">
+  <div class="exp-head">
+    <span class="exp-id">E27</span>
+    <div class="exp-title"><h3>Pool expansion, audited and quantified</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Replace E12's assertion with
+  measurement.</p>
+
+  <h4>(a) The query finds itself</h4>
+  <p>Every test TCR came from VDJdb, so expanding with VDJdb risks counting the
+  query as its own neighbour. 96.4% of queries find an exact self-hit, and the
+  count is <strong>not constant</strong> — <span class="pep">GILGFVFTL</span>
+  averages 2.19, so repeatedly curated clonotypes collect extra zero-distance
+  "neighbours". Curation multiplicity tracks validation (1 record → 49.0%
+  validation, 4+ records → <strong>93.5%</strong>), making it a label proxy
+  masquerading as density. Confirmed directly: raw expansion <strong>loses</strong>
+  0.0024 of mean AUC; query-removed expansion gains 0.0048.</p>
+
+  <h4>(b) The aggregation operator decides whether expansion helps at all</h4>
+  <div class="tw"><table>
+  <thead><tr><th>operator</th><th class="n">no pool</th><th class="n">pooled</th><th class="n">delta</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>top-8</td><td class="n">0.8414</td><td class="n">0.8526</td><td class="n">+0.0112</td></tr>
+  <tr><td>top-3</td><td class="n">0.8334</td><td class="n">0.8476</td><td class="n">+0.0142</td></tr>
+  <tr><td>top-16</td><td class="n">0.8377</td><td class="n">0.8488</td><td class="n">+0.0111</td></tr>
+  <tr><td>kernel σ=0.1</td><td class="n">0.8396</td><td class="n">0.8432</td><td class="n">+0.0036</td></tr>
+  </tbody></table></div>
+  <p><span class="pep">NLVPMVATV</span>, whose pool is 94.8% a single dextramer
+  study, goes <strong>−0.0354 under kernel-mean and +0.0131 under top-8</strong>:
+  a mean over the whole pool is drowned by one study's records, while top-k never
+  looks at them.</p>
+
+  <h4>(c) What the private side can realise</h4>
+  <p>Downsampling each public pool to the private epitopes' own
+  distinct-clonotype multipliers, 30 repeats: <strong>+0.0013 on top-8, +0.0004 on
+  the submitted blend</strong>. <strong>88% of the public gain cannot
+  transfer</strong>, because two of three private epitopes can add only ~4% more
+  distinct clonotypes.</p>
+  <p><strong>Three reasons not to quote the point value alone</strong> — all found
+  by self-review after the first estimate was already written down:</p>
+  <ul>
+    <li>It was first computed on a model not submitted. On the submitted
+    configuration the macro estimate falls from +0.0013 to <strong>+0.0004</strong>,
+    naive 95% interval [−0.0022, +0.0030], negative on two of three private
+    epitopes.</li>
+    <li>The mean hides a <strong>26-fold spread</strong>
+    (<span class="pep">GLCTLVAML</span> +0.0158 to
+    <span class="pep">NLVPMVATV</span> −0.0076, sd five times the mean).
+    Averaging across public epitopes assumes the gain depends only on the
+    multiplier — exactly the exchangeability <a href="#e21">E21</a> disproved.
+    <strong>Five epitopes cannot estimate this quantity.</strong></li>
+    <li>Random subsampling is optimistic. <span class="pep">LTDEMIAQY</span>'s 5
+    available extras come from a pool that is 97.8% one reference; drawing only
+    from each pool's dominant study gives <strong>−0.0002</strong>.</li>
+  </ul>
+  <div class="field concl"><span class="lbl">Settled</span>Not "the gain is small"
+  but <strong>"on our configuration there is no measurable gain"</strong>. E12's
+  verdict stands; its reasoning was incomplete — the problem is not only that few
+  extra TCRs exist, but that the ones that do are duplicates from single
+  studies.</div>
+</article>
+
+<article class="exp" id="e33">
+  <div class="exp-head">
+    <span class="exp-id">E33</span>
+    <div class="exp-title"><h3>Pool and provenance cards, with two results that correct each other</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Test whether the pool gain is
+  evidence or volume.</p>
+  <p><strong>I02 — expansion rescues positives preferentially.</strong> When the
+  pool gives an isolated TCR a neighbour inside the clustering radius, that TCR is
+  about <strong>three times</strong> more likely to be a validated positive
+  (<span class="pep">GILGFVFTL</span> 3.2×, pooled ~3×). So expansion carries
+  genuine evidence — but outside <span class="pep">GILGFVFTL</span> the absolute
+  counts are negligible, two TCRs rescued each on three epitopes.</p>
+  <div class="tw"><table><caption>R02 — and yet throttling kills the gain</caption>
+  <thead><tr><th>pool policy</th><th class="n">mean</th></tr></thead>
+  <tbody>
+  <tr><td>no pool</td><td class="n">0.8414</td></tr>
+  <tr class="key"><td>all records</td><td class="n">0.8526</td></tr>
+  <tr><td>one share per reference</td><td class="n">0.8504</td></tr>
+  <tr><td>one per subject</td><td class="n">0.8428</td></tr>
+  </tbody></table></div>
+  <p><strong>R08 — how much "clustered" just means "easy to generate" is
+  epitope-specific.</strong> Matching on Pgen terciles × CDR3β length, the
+  clustering-to-validation gap goes 0.400 → <strong>0.067</strong> on
+  <span class="pep">GILGFVFTL</span> but 0.658 → <strong>0.711</strong> on
+  <span class="pep">NLVPMVATV</span>.</p>
+  <p><strong>S05 — provenance weak supervision, dead for the third time.</strong>
+  Records per clonotype 0.534, distinct references 0.557, assay classes 0.514 —
+  and each takes only one or two distinct values within every private epitope.</p>
+  <div class="field concl"><span class="lbl">Settled</span>The gain has both an
+  <strong>evidential</strong> component (I02) and a <strong>volume</strong>
+  component (R02), which is why raw-record expansion looked better than it
+  deserved. And the degree of Pgen confounding is itself epitope-specific, which is
+  one more reason a single global correction (<a href="#e8">E8</a>) could only
+  hurt.</div>
+</article>
+
+<article class="exp" id="e35">
+  <div class="exp-head">
+    <span class="exp-id">E35</span>
+    <div class="exp-title"><h3>Reference-database version, source and leakage</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Method</span>Three VDJdb releases —
+  2024-06-13 (32,183 paired human rows), 2025-02-21 (35,672), 2026-06-03 (86,221)
+  — with the pool measurement rerun on each.</p>
+  <p><strong>Leakage audit, which had not been done and should have been.</strong>
+  Searching every human reference for the Immunity 2026 DOI, the 2025 bioRxiv
+  preprint, "TCRvdb", the Schumacher lab repo and "T-RAP" returns
+  <strong>zero records each</strong>. The pool is independent of the labels.</p>
+  <p><strong>The screening set most resembles a ~2025-02 snapshot.</strong> Median
+  absolute difference between VDJdb clonotype count and test-set size is 4 for
+  2025-02-21, against 10 and 25 for the others;
+  <span class="pep">CINGVCWTV</span> matches exactly, 243 against 243.</p>
+  <p><strong>The pool gain is not resolvably version-dependent.</strong> Gains of
+  +0.0052, +0.0099, +0.0112 across the three releases look monotone, but
+  <strong>no pairwise difference reaches two standard errors</strong>, and the
+  spread is carried almost entirely by <span class="pep">GLCTLVAML</span>. A
+  2.7-fold increase in database size produces no resolvable change — which is
+  itself the result. This also falsifies a claim made in narration before
+  measuring.</p>
+  <div class="tw"><table><caption>The durable finding is a count, not an AUC, so noise does not apply — available pool multiplier</caption>
+  <thead><tr><th>epitope</th><th class="n">2024-06</th><th class="n">2025-02</th><th class="n">2026-06</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">CINGVCWTV</td><td class="n">1.01</td><td class="n">1.00</td><td class="n">1.05</td></tr>
+  <tr><td class="pep">LTDEMIAQY</td><td class="n">1.04</td><td class="n">1.02</td><td class="n">1.04</td></tr>
+  <tr class="key"><td class="pep">LLWNGPMAV</td><td class="n">1.08</td><td class="n">1.03</td><td class="n">1.83</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>
+  <span class="pep">CINGVCWTV</span> and <span class="pep">LTDEMIAQY</span>
+  gained essentially no new paired TCRs in eighteen months, so <strong>their
+  exhaustion is a durable property of the epitope</strong>, making E27's and E33's
+  conclusion version-robust for two of the three deciding epitopes.</div>
+</article>
+
+<article class="exp" id="e38">
+  <div class="exp-head">
+    <span class="exp-id">E38</span>
+    <div class="exp-title"><h3>Negative controls and the pool × structure factorial</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Both cards were originally skipped
+  on my own judgement. R04 asks the sceptical question nothing else covered: does
+  adding <em>any</em> sizeable batch of sequences raise density regardless of what
+  they are?</p>
+  <p class="field"><span class="lbl">Method</span>Three size-matched controls, all
+  adding 2,684 sequences — the same count as the real pool: real TCRs from other
+  epitopes matched on CDR3β length and TRBV; the same drawn unmatched; and
+  OLGA-generated synthetic repertoire.</p>
+  <div class="tw"><table>
+  <thead><tr><th>reference added</th><th class="n">mean</th><th class="n">gain</th></tr></thead>
+  <tbody>
+  <tr><td>none</td><td class="n">0.8414</td><td class="n">—</td></tr>
+  <tr class="key"><td>real same-epitope</td><td class="n">0.8526</td><td class="n">+0.0112</td></tr>
+  <tr><td>other-epitope, shape-matched</td><td class="n">0.8333</td><td class="n">−0.0081</td></tr>
+  <tr><td>other-epitope, unmatched</td><td class="n">0.8350</td><td class="n">−0.0064</td></tr>
+  <tr><td>OLGA synthetic repertoire</td><td class="n">0.8381</td><td class="n">−0.0063</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span><strong>All three
+  controls actively hurt.</strong> Adding the same number of irrelevant sequences
+  does not merely fail to help, it degrades the density estimate. So the expansion
+  gain is <strong>antigen-specific information</strong>, which together with I02
+  and R02 completes the picture: a real mechanism, carried by multiple records
+  from the same subjects, that the private epitopes cannot access. R05's factorial
+  was degenerate as expected, confirming with numbers what had been
+  asserted.</div>
+</article>
+
+<!-- ============ STRUCTURE ============ -->
+<h2><span class="count">Part five</span>Structure</h2>
+
+<article class="exp" id="e14">
+  <div class="exp-head">
+    <span class="exp-id">E14</span>
+    <div class="exp-title"><h3>Structure prediction at scale</h3></div>
+    <span class="tag adopt">Adopted</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Test whether a predicted interface
+  supplies signal orthogonal to sequence neighbourhood.</p>
+  <p class="field"><span class="lbl">Method</span>Fold all 2,636
+  TCR–peptide–MHC complexes with Boltz-2 — four chains: TCRα V, TCRβ V,
+  allele-specific HLA α1α2, peptide; ~416 residues; single-sequence; 14 s each,
+  7.4 h total. Extract interface PAE and chain-pair ipTM.</p>
+  <div class="tw"><table><caption>The informative part is which features work — all of them, equally</caption>
+  <thead><tr><th>feature</th><th class="n">mean</th></tr></thead>
+  <tbody>
+  <tr><td><span class="mono">pae_a_mhc_min</span> (TCRα–MHC)</td><td class="n">0.759</td></tr>
+  <tr><td><span class="mono">pae_tcr_pep_min</span> (organisers' statistic)</td><td class="n">0.759</td></tr>
+  <tr><td><span class="mono">complex_plddt</span> (global fold quality)</td><td class="n">0.694</td></tr>
+  <tr><td><span class="mono">pae_ab_min</span> (TCRα–TCRβ)</td><td class="n">0.656</td></tr>
+  <tr class="key"><td><span class="mono">iptm_mhc_pep</span> (MHC–peptide)</td><td class="n">0.647</td></tr>
+  </tbody></table></div>
+  <p><span class="mono">iptm_mhc_pep</span> is the diagnostic: that interface
+  contains <strong>no TCR</strong> and is identical for every complex in a cohort,
+  yet scores 0.647.</p>
+  <div class="field concl"><span class="lbl">Settled</span>Structure confidence
+  here largely reports <strong>how canonical the TCR is</strong> — typical
+  sequences fold confidently everywhere through the shared pair representation —
+  so it is not the orthogonal signal hoped for. It still adds a little: blended at
+  weight 0.2–0.3, nested LOEO gives <strong>+0.0070</strong> (0.8392 → 0.8461),
+  with the weight stably selected in every fold. Four of five epitopes improve;
+  the sole regression is <span class="pep">TTDPSFLGRY</span>, <strong>the only
+  10-mer</strong>, and all three private epitopes are 9-mers, so restricted to the
+  four 9-mers the gain is +0.0115.</div>
+</article>
+
+<article class="exp" id="e19">
+  <div class="exp-head">
+    <span class="exp-id">E19</span>
+    <div class="exp-title"><h3>Docking consistency across diffusion samples</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Find a structural quantity immune
+  to the canonicality confound.</p>
+  <p class="field"><span class="lbl">Method</span>Re-fold all 2,636 complexes with
+  5 diffusion samples (13.2 GPU-hours). Superpose each pair of samples on the MHC
+  and peptide Cα, then take TCR Cα RMSD.</p>
+  <h4>The hypothesis, and why it was wrong</h4>
+  <p>Consistency was expected to be immune to the confound because all five
+  samples share identical sequence input. <strong>That argument was wrong.</strong>
+  The five samples share more than the input: they share the single
+  already-computed trunk representation. The diffusion head samples a distribution
+  conditioned on it, so a confident trunk yields a narrow conditional and
+  therefore consistent samples. <strong>Consistency is downstream of trunk
+  confidence.</strong></p>
+  <p class="field"><span class="lbl">Result</span>Docking RMSD spans 0.32–42.7 Å,
+  so the dynamic range is real, but within-epitope Spearman against density is
+  <strong>+0.530</strong> — indistinguishable from the +0.528 of the confidence
+  features it was meant to improve on. Blended, the best gain is
+  <strong>+0.0010</strong> against a +0.02 threshold.</p>
+  <div class="field concl"><span class="lbl">Settled</span>13.2 GPU-hours for
+  +0.001. The pre-registered rule did its job. One thing worth keeping:
+  consistency scores 0.775 on <span class="pep">GLCTLVAML</span>, the highest of
+  any single feature on the project's weakest epitope — but weighting it heavily
+  enough to exploit that drops the overall mean to 0.8128.</div>
+</article>
+
+<article class="exp" id="e28">
+  <div class="exp-head">
+    <span class="exp-id">E28</span>
+    <div class="exp-title"><h3>Contact fingerprints and docking geometry</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Move from confidence scores to
+  actual interface geometry.</p>
+  <p class="field"><span class="lbl">Method</span>All four cards extracted in one
+  pass over the 2,636 structures. Peptide position is the common coordinate — the
+  peptide is identical within an epitope — so no IMGT numbering is needed for the
+  one thing that must be exactly right.</p>
+  <p class="field"><span class="lbl">Result</span><strong>Geometry QC passes:</strong>
+  peptide–MHC contacts median 334, minimum 260, so every peptide sits in the
+  groove; CDR3 supplies 74–76% of all TCR–peptide contacts, the biologically
+  expected share. One complex,
+  <span class="mono">1_6_B11_22_YLQPRTFLL</span>, has <strong>no TCR–peptide
+  contact at all</strong> — a genuine docking failure in a public epitope.</p>
+  <p>Contact-fingerprint density scores <strong>0.7476</strong>, correlated +0.563
+  with density — another re-encoding. <strong>But the raw contact counts are the
+  most orthogonal quantity measured in this project:</strong> within-epitope
+  Spearman against density is <strong>+0.088</strong> and +0.103, where everything
+  else ever measured sat between +0.26 and +0.91. They are also too weak to use —
+  standalone AUC 0.588 and 0.559, nested gain <strong>+0.0008</strong>.</p>
+  <div class="field concl"><span class="lbl">Settled — a general lesson worth
+  keeping</span><strong>Orthogonality is necessary but not sufficient.</strong> A
+  component at AUC 0.59 blended into a model at 0.85 contributes almost nothing
+  however independent it is — the achievable contribution scales with its margin
+  over chance, and 0.09 does not buy anything.</div>
+</article>
+
+<article class="exp" id="e34">
+  <div class="exp-head">
+    <span class="exp-id">E34</span>
+    <div class="exp-title"><h3>Predicted contacts against crystallography</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>E28 and E31 both rest on predicted
+  interfaces. Check them against experiment.</p>
+  <p class="field"><span class="lbl">Method</span>The PDB yields 14 solved
+  TCR–pMHC complexes for four competition epitopes, folded through the
+  <em>same</em> pipeline used for the competition.</p>
+  <p class="field"><span class="lbl">Result</span><strong>The fingerprints are
+  faithful.</strong> Median Spearman on contact counts per peptide position 0.992;
+  on minimum distance 0.983; Jaccard of touched positions 1.000; total contacts
+  102 predicted vs 99 measured.</p>
+  <h4>Three self-checks, two of which cut the claim down</h4>
+  <ul>
+    <li><strong>Zero inflation.</strong> Of 20 fingerprint slots, 11.5 on average
+    are zero in both vectors — buried anchor positions no TCR can reach.
+    Restricting to contact-bearing positions drops the median from 0.992 to
+    <strong>0.953</strong>. The headline number was partly agreement on what is
+    structurally impossible.</li>
+    <li><strong>Memorisation.</strong> All 14 complexes were released 2003–2022,
+    so all predate Boltz-2. <strong>This is a memorisation check, not a
+    prediction test.</strong> The one post-training complex available (9x7r,
+    released 2026-09-23) drops to Spearman <strong>0.840</strong>, Jaccard
+    <strong>0.700</strong>, with contacts overpredicted by 40%. n=1 is an
+    anecdote, but it is the only out-of-distribution point and it points the
+    expected way.</li>
+    <li><strong>Between-complex discrimination — the check that matters most.</strong>
+    Over the 36 pairs of <span class="pep">GILGFVFTL</span> complexes, Spearman
+    between predicted and measured pairwise fingerprint distance is
+    <strong>+0.948</strong>. Within the memorised regime the representation does
+    carry real inter-TCR interface variation.</li>
+  </ul>
+  <div class="field concl"><span class="lbl">Settled — the consequences are
+  asymmetric</span>E28's negative result is <strong>safe and strengthened</strong>
+  — prediction noise can only weaken a real signal. E31's positive result is
+  <strong>exposed but partly defended by its design</strong>: it compared
+  discordant pairs against matched same-label controls from the same pipeline, so
+  a uniform prediction bias affects both arms equally. Producing that effect from
+  prediction error alone would require the error to correlate with the mutation
+  itself. A real defence, not immunity.</div>
+</article>
+
+<article class="exp" id="e36">
+  <div class="exp-head">
+    <span class="exp-id">E36</span>
+    <div class="exp-title"><h3>Target against anchor-matched decoy peptides</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Test E14's inference directly: is
+  the structural signal peptide-specific at all?</p>
+  <p class="field"><span class="lbl">Method</span>Fold the same TCR against its
+  annotated peptide and against decoys, then subtract — cancelling everything that
+  is a property of the TCR alone. <strong>Decoys are anchor-matched by class, not
+  identity</strong>: HLA-A*02:01 constrains an aliphatic P2 and C-terminus,
+  A*01:01 an acidic P3 and aromatic C-terminus. A first draft asserted identical
+  residues and failed immediately — no reported A*02:01 nonamer shares
+  <span class="pep">GILGFVFTL</span>'s P2 isoleucine <em>and</em> its C-terminal
+  leucine — which also exposed two decoys chosen with a serine at P3.</p>
+  <div class="tw"><table><caption>Result — the margin carries nothing</caption>
+  <thead><tr><th>quantity</th><th class="n">target only</th><th class="n">target minus decoy</th></tr></thead>
+  <tbody>
+  <tr><td>ipTM</td><td class="n">0.7387</td><td class="n">0.5362</td></tr>
+  <tr><td>confidence score</td><td class="n">0.7189</td><td class="n">0.5398</td></tr>
+  <tr class="key"><td>TCRα–peptide ipTM</td><td class="n">0.7429</td><td class="n">0.5331</td></tr>
+  <tr><td>TCRβ–peptide ipTM</td><td class="n">0.7329</td><td class="n">0.5251</td></tr>
+  <tr><td>MHC–peptide ipTM</td><td class="n">0.6500</td><td class="n">0.5147</td></tr>
+  <tr><td>complex pLDDT</td><td class="n">0.6313</td><td class="n">0.5247</td></tr>
+  </tbody></table></div>
+  <p>Mean target ipTM 0.9152 against decoy 0.9091 — a margin of
+  <strong>+0.0061</strong>. Boltz assigns a TCR's true target and an unrelated
+  anchor-matched epitope essentially the same interface confidence.</p>
+  <h4>Four self-checks, which turn this from "noisy" into "far too small"</h4>
+  <p>The decoy structures <em>are</em> different (spread across decoys 0.036,
+  comparable to 0.062 across TCRs). The margin's mean is a tenth of its
+  between-TCR spread, and decoy-choice noise alone is <strong>5.9×</strong> the
+  margin. No single decoy carries it — per-decoy margins run −0.0128 to +0.0247,
+  two negative. And reaching AUC 0.70 would take a margin near 0.042, so the
+  observed value is <strong>14% of what is needed</strong>: not a power problem
+  more decoys would fix.</p>
+  <h4>Phase 2 was run after all, and it was worth seven GPU-hours</h4>
+  <p>I had staged the private extension behind a positive phase-1 result and then
+  skipped it, arguing that a feature failing on all five labelled epitopes can
+  never clear the threshold. The argument stands but answers a different question
+  from the one phase 2 asks: <em>is the failure universal, or specific to the
+  epitopes that happen to carry labels?</em> Mean absolute margin is 0.0406 on
+  labelled epitopes and 0.0394 on private ones — indistinguishable.
+  <strong>The failure is universal.</strong> Two public epitopes carry
+  <strong>negative</strong> mean margins: on <span class="pep">TTDPSFLGRY</span>
+  and <span class="pep">YLQPRTFLL</span> the model prefers the decoys on
+  average.</p>
+  <div class="field concl"><span class="lbl">Settled</span>This closes the
+  structural line with its mechanism identified: <strong>Boltz interface
+  confidence contains no peptide-specific information in this setting</strong>, so
+  every structural feature tried (E14, E19, E28, E36) was reading the same
+  TCR-canonicality signal that density already reads.</div>
+</article>
+
+<article class="exp" id="e37">
+  <div class="exp-head">
+    <span class="exp-id">E37</span>
+    <div class="exp-title"><h3>Does the E31 interface result survive relaxation?</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>E31 is the project's one positive
+  mechanistic finding and it was measured on raw Boltz coordinates, which carry
+  clashes and unrelaxed side chains.</p>
+  <p class="field"><span class="lbl">Method</span>69 complexes relaxed under one
+  fixed protocol — PDBFixer for terminal atoms and hydrogens at pH 7, Amber14 with
+  GBn2 implicit solvent, L-BFGS minimisation at 200 and 1,000 iterations.</p>
+  <div class="tw"><table><caption>Descriptor stability differs sharply, which decides which descriptors a conclusion may rest on (numbers corrected by the audit)</caption>
+  <thead><tr><th>descriptor</th><th class="n">median relative change, 0→1,000</th><th class="n">Spearman(raw, relaxed)</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>buried interface area</td><td class="n">1.63%</td><td class="n">+0.960</td></tr>
+  <tr><td>peptide contacts</td><td class="n">9.21%</td><td class="n">+0.793</td></tr>
+  <tr><td>hydrogen bonds</td><td class="n">33.33%</td><td class="n">+0.788</td></tr>
+  </tbody></table></div>
+  <p>Buried area is robust; hydrogen-bond counts are not, so a conclusion resting
+  on them would not be safe. <strong>The E31 effect survives</strong>: contacts at
+  the mutated site read disc 8.61 vs ctl 3.97 (p=0.026) raw and 7.16 vs 3.53
+  (p=0.045) minimised, with the contact ratio going 2.17× → 2.03×.</p>
+
+  <h4>Revision — the three rows are one finding, and it is positional</h4>
+  <p>Found while preparing E39, which needed the same mutated-site residues.
+  Reading a <strong>second descriptor</strong> of the same physical quantity splits
+  the result apart: the contact count separates the groups (3.581 vs 1.766,
+  p=0.017) but the minimum site-to-peptide distance does not (6.412 vs 6.354,
+  p=0.899).</p>
+  <p><strong>Not an outlier artefact — and the first version of this audit checked
+  that wrongly.</strong> It rank-transformed the count and re-ran, which returns
+  the identical p-value by construction, because Mann-Whitney is already a rank
+  test. The real reason: <strong>77% of mutated sites have no peptide contact at
+  all</strong>, so the count is three quarters ties at zero and its rank test is in
+  effect a binary comparison, while the distance uses all 126 sites.</p>
+  <div class="tw"><table>
+  <thead><tr><th>quantity</th><th class="n">disc</th><th class="n">ctl</th><th class="n">p</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>site touches the peptide at all</td><td class="n">0.323</td><td class="n">0.141</td><td class="n">0.020</td></tr>
+  <tr><td>distance given the site touches (Å)</td><td class="n">3.504</td><td class="n">3.319</td><td class="n">0.195</td></tr>
+  <tr><td>contacts given the site touches</td><td class="n">11.100</td><td class="n">12.556</td><td class="n">0.981</td></tr>
+  </tbody></table></div>
+  <p><strong>The whole effect is the binary one.</strong> Discordant pairs differ
+  at a peptide-facing position 2.29× as often — numerically E31's headline "2.3×
+  more peptide contact". Conditional on facing there is no difference at all.</p>
+  <div class="field concl"><span class="lbl">Two consequences</span><strong>E31
+  should be restated</strong>: not "discordant negatives mutate at positions
+  carrying more peptide contact", which implies a graded energetic difference, but
+  "discordant pairs are about twice as likely to differ at a peptide-facing
+  position". The mechanism is <strong>positional, not energetic</strong>. And
+  <strong>E37 overstated its own evidence</strong> — its three rows are not three
+  independent confirmations; with 77% ties the count row and the facing row are
+  substantially the same test.</div>
+
+  <h4>Correction — three numbers in its descriptor table are not reproducible</h4>
+  <p>Found by the data audit, which flagged that
+  <span class="mono">scripts/32</span> declared
+  <span class="mono">reports/10_minimisation_robustness.md</span> and never wrote
+  it, so E37's stability table existed only in the log.</p>
+  <div class="tw"><table>
+  <thead><tr><th>descriptor</th><th class="n">logged</th><th class="n">reproducible</th><th class="n">logged ρ</th><th class="n">reproducible ρ</th></tr></thead>
+  <tbody>
+  <tr><td>buried interface area</td><td class="n">2.1%</td><td class="n">1.63%</td><td class="n">+0.963</td><td class="n">+0.960</td></tr>
+  <tr><td>peptide contacts</td><td class="n">8.5%</td><td class="n">9.21%</td><td class="n">+0.793</td><td class="n">+0.793</td></tr>
+  <tr><td>hydrogen bonds</td><td class="n">33.3%</td><td class="n">33.33%</td><td class="n">+0.748</td><td class="n">+0.788</td></tr>
+  </tbody></table></div>
+  <p>The contacts ρ matches exactly and the hydrogen-bond median matches exactly,
+  which fixes the stage pair and denominator; <strong>no variant</strong> of stage
+  pair, denominator, mean vs median, or signed vs absolute reproduces 8.5% or
+  2.1%. The likely cause is the recurring one: the table was computed in a heredoc
+  that was never saved, probably against a partially written CSV. The conclusion
+  is unchanged and if anything strengthened, but <strong>a sixth of E37's reported
+  figures were wrong in the second decimal because the computation was not in
+  version control.</strong></p>
+</article>
+
+<article class="exp" id="e39">
+  <div class="exp-head">
+    <span class="exp-id">E39</span>
+    <div class="exp-title"><h3>Is the interface difference dynamically stable?</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>The last structural card. E31 and
+  E37 are both static; function depends on how long a contact persists, not only
+  on whether it exists in one relaxed snapshot.</p>
+  <p class="field"><span class="lbl">Method</span>69 relaxed complexes from 40
+  pairs, three velocity seeds each, 2 ns at 310 K with a 4 fs step and
+  hydrogen-mass repartitioning, implicit GBn2, sampled every 20 ps.
+  <strong>207 trajectories, 414 ns, no failures.</strong></p>
+  <p><strong>The setup holds the pose.</strong> Interface contact rises a median
+  7.1% over each trajectory and 20 of 207 trajectories lose more than a quarter of
+  their contacts. Side chains settle into contact on heating from the minimised
+  state; nothing is dissociating.</p>
+  <div class="tw"><table><caption>Every group comparison at the mutated site is null</caption>
+  <thead><tr><th>quantity</th><th class="n">disc</th><th class="n">ctl</th><th class="n">p</th></tr></thead>
+  <tbody>
+  <tr><td>contacts, time-averaged</td><td class="n">2.456</td><td class="n">1.332</td><td class="n">0.159</td></tr>
+  <tr><td>distance, time-averaged (Å)</td><td class="n">6.817</td><td class="n">6.803</td><td class="n">0.545</td></tr>
+  <tr><td>fraction of frames in contact</td><td class="n">0.288</td><td class="n">0.154</td><td class="n">0.149</td></tr>
+  <tr class="key"><td>touches the peptide at any point</td><td class="n">0.597</td><td class="n">0.594</td><td class="n">1.000</td></tr>
+  </tbody></table></div>
+  <p>The last row is the one to read against the static result: on the relaxed
+  snapshot the binary facing rate was 0.323 vs 0.141 at p=0.020; given 2 ns and
+  three replicas, both groups reach the peptide at the same rate.</p>
+  <h4>MD adds nothing beyond the static facing rate — and that is an identity, not an impression</h4>
+  <p>Conditioning on whether the site faced the peptide in the relaxed pose, both
+  groups behave the same: among the 29 facing sites the contact fraction is 0.758
+  vs 0.708 (p=0.943), and among the 97 non-facing sites 0.064 vs 0.063 (p=0.579).
+  Decomposing:</p>
+<pre>discordant  0.323 × 0.758  +  0.677 × 0.064  =  0.288   (observed 0.288)
+control     0.141 × 0.708  +  0.859 × 0.063  =  0.154   (observed 0.154)</pre>
+  <p>The conditional terms are group-independent to three decimals. The dynamic
+  contact fraction <strong>is</strong> the static facing rate carried through a
+  persistence factor that does not distinguish the groups.</p>
+  <p><strong>The direction is not consistent across epitopes</strong> — the third
+  pre-planned self-check, and it fails: <span class="pep">GILGFVFTL</span> 1.161
+  vs 0.641 and <span class="pep">NLVPMVATV</span> 5.322 vs 0.187 are in the
+  claimed direction, while <span class="pep">GLCTLVAML</span> 2.835 vs
+  <strong>9.357</strong> and <span class="pep">YLQPRTFLL</span>
+  <strong>0.000</strong> vs 4.442 are reversed, on 2–8 sites in the small
+  cells.</p>
+  <div class="field concl"><span class="lbl">Settled, against a limit stated
+  before the run</span>It was pre-registered that only 29 of 126 sites face the
+  peptide (20 discordant, 9 control), so a null result would be
+  <strong>uninformative rather than evidence of absence</strong>. That is what
+  happened. C11 neither supports nor refutes E31. What it does establish is
+  narrower and worth having: <strong>the effect is entirely contained in the
+  static facing rate, so no further structural dynamics will add to it</strong>,
+  and this line closes on evidence rather than on judgement.</div>
+</article>
+
+<!-- ============ METHODOLOGY ============ -->
+<h2><span class="count">Part six</span>Validation methodology and error anatomy</h2>
+
+<article class="exp" id="e15">
+  <div class="exp-head">
+    <span class="exp-id">E15</span>
+    <div class="exp-title"><h3>How much does choosing a configuration cost?</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Price the selection step itself as
+  part of the model.</p>
+  <p class="field"><span class="lbl">Method</span>323 candidate configurations.
+  Compare the oracle (best config scored on all five epitopes), nested LOEO
+  (config re-chosen inside each fold), and a config fixed a priori then scored by
+  plain LOEO.</p>
+  <div class="tw"><table>
+  <tbody>
+  <tr><td>oracle — tuned on the evaluation set</td><td class="n">0.8508</td></tr>
+  <tr class="key"><td>nested LOEO — tune by CV, then submit</td><td class="n">0.8460</td></tr>
+  <tr><td>best a priori config, plain LOEO</td><td class="n">0.8508</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>Cross-validated
+  selection is <strong>0.0048 worse than fixing the configuration in
+  advance</strong>. Mechanism, visible in the <span class="pep">TTDPSFLGRY</span>
+  fold: on the other four epitopes
+  <span class="mono">pae_a_mhc_min@0.3</span> looked best and returned 0.8328 on
+  the held-out epitope, where the fixed config gave 0.8504. <strong>With five
+  folds the selection step has worse signal-to-noise than the thing being
+  selected. Make fewer decisions, not better-cross-validated ones.</strong> Every
+  earlier number quoted for a <em>chosen</em> configuration is optimistic by
+  roughly this much.</div>
+</article>
+
+<article class="exp" id="e18">
+  <div class="exp-head">
+    <span class="exp-id">E18</span>
+    <div class="exp-title"><h3>Master cross-epitope comparison</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Method</span>Everything in one protocol: five
+  public epitopes, LOEO, mean per-epitope AUC, nothing tuned on the epitope it is
+  scored on.</p>
+  <div class="tw"><table>
+  <thead><tr><th>method</th><th class="n">mean</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>FUSION: 3-space density + structure @0.2</td><td class="n">0.8508</td></tr>
+  <tr><td>FUSION: 2-space density + structure @0.2</td><td class="n">0.8496</td></tr>
+  <tr><td>FUSION: 3-space density</td><td class="n">0.8430</td></tr>
+  <tr><td>FUSION: 2-space density</td><td class="n">0.8415</td></tr>
+  <tr><td>density: SCEPTR default</td><td class="n">0.8396</td></tr>
+  <tr><td>density: SCEPTR small</td><td class="n">0.8354</td></tr>
+  <tr><td>FUSION: 3-space density + specificity @0.2</td><td class="n">0.8348</td></tr>
+  <tr><td>density: tcrdist3 kernel</td><td class="n">0.8329</td></tr>
+  <tr><td>tcrdist3 nndist (organisers' baseline)</td><td class="n">0.8247</td></tr>
+  <tr><td>density: SCEPTR α-chain only</td><td class="n">0.7986</td></tr>
+  <tr><td>structure: TCR–peptide min-PAE</td><td class="n">0.7565</td></tr>
+  <tr><td>density: SCEPTR β-chain only</td><td class="n">0.7505</td></tr>
+  <tr><td>structure: whole-complex confidence</td><td class="n">0.7467</td></tr>
+  <tr><td>metadata: vdjdb_score</td><td class="n">0.4849</td></tr>
+  <tr><td>specificity model</td><td class="n">0.4812</td></tr>
+  <tr><td>generation probability</td><td class="n">0.4165</td></tr>
+  </tbody></table></div>
+</article>
+
+<article class="exp" id="e21">
+  <div class="exp-head">
+    <span class="exp-id">E21</span>
+    <div class="exp-title"><h3>Cohort thinning: does density survive a sparser repertoire?</h3></div>
+    <span class="tag adopt">Adopted</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>The private cohorts are sparser
+  than anything validated on, so the LOEO estimate is an extrapolation. Simulate
+  it.</p>
+  <p class="field"><span class="lbl">Method</span>Randomly thin each public cohort
+  to fractions 1.0 down to 0.12, recompute density within the thinned cohort,
+  score against real labels, 40 repeats. Two variants, because the naive design
+  confounds a worse density estimate with a noisier AUC on fewer rows.</p>
+  <div class="tw"><table><caption>Result 1 — robustness to sparsity is wildly epitope-dependent</caption>
+  <thead><tr><th>epitope</th><th class="n">dense end</th><th class="n">sparse end</th><th class="n">change</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.868</td><td class="n">0.869</td><td class="n">0.000</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="n">0.928</td><td class="n">0.920</td><td class="n">−0.008</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="n">0.713</td><td class="n">0.688</td><td class="n">−0.025</td></tr>
+  <tr class="key"><td class="pep">TTDPSFLGRY</td><td class="n">0.845</td><td class="n">0.724</td><td class="n">−0.121</td></tr>
+  <tr class="key"><td class="pep">NLVPMVATV</td><td class="n">0.844</td><td class="n">0.699</td><td class="n">−0.145</td></tr>
+  </tbody></table></div>
+  <p><strong>Result 2 — and this corrects E20.</strong> At essentially identical
+  sparsity (close-neighbour fraction ≈0.013–0.014)
+  <span class="pep">YLQPRTFLL</span> scores <strong>0.920</strong> and
+  <span class="pep">NLVPMVATV</span> <strong>0.699</strong>. <strong>Sparsity does
+  not determine performance; intrinsic separability does.</strong> So E20's claim
+  that the private epitopes "look like the epitopes where density scores
+  0.84–0.93" <strong>does not hold</strong> — at private-like sparsity those same
+  three span 0.70–0.93. Cohort geometry cannot forecast a private epitope's AUC.</p>
+  <p><strong>Result 3 — thinning is not strongly pessimistic.</strong> The
+  singleton-to-negative association barely moves (gap 0.486 → 0.454 at 20%
+  coverage), so the simulation is reasonably faithful rather than a loose bound.</p>
+  <div class="tw"><table><caption>Result 4 — structure is insurance, and it changed the submission</caption>
+  <thead><tr><th></th><th class="n">full</th><th class="n">45%</th><th class="n">20%</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>gain on the two fragile epitopes</td><td class="n">+0.0059</td><td class="n">+0.0120</td><td class="n">+0.0202</td></tr>
+  <tr><td>gain on the three robust epitopes</td><td class="n">+0.0112</td><td class="n">+0.0103</td><td class="n">+0.0099</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Decision</span><strong>Structure
+  weight 0.2 → 0.3</strong>, on a dominance argument rather than by optimising a
+  regime. w=0.3 ties w=0.2 at full coverage (−0.0002) and beats it at both sparse
+  levels; the private cohorts are the sparse case. w=0.5 wins at 20% coverage but
+  loses 0.013 at full coverage, so its risk is asymmetric. <strong>If the sparsity
+  argument is simply wrong, the cost of 0.3 is bounded at 0.0002.</strong></div>
+</article>
+
+<article class="exp" id="e22">
+  <div class="exp-head">
+    <span class="exp-id">E22</span>
+    <div class="exp-title"><h3>Pairwise AUC error decomposition</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Mean per-epitope AUC is exactly
+  the probability a validated TCR outranks a non-validating one from the same
+  cohort, so 1−AUC is a set of specific inverted pairs. Find out which ones. The
+  inference this guards against: 54% of positives are singletons, which does
+  <strong>not</strong> imply 54% of the error involves them.</p>
+  <p class="field"><span class="lbl">Method</span>Partition every
+  positive–negative pair within an epitope by cluster state, mutually exclusive
+  and complete, so the class losses sum to 1−AUC. The script asserts that
+  reconstruction; residual 1.4×10⁻¹⁶.</p>
+  <div class="tw"><table>
+  <thead><tr><th>class</th><th class="n">share of loss</th><th class="n">share of pairs</th><th class="n">error rate within class</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="mono">both_singleton</td><td class="n">62.0%</td><td class="n">50.5%</td><td class="n">0.207</td></tr>
+  <tr class="key"><td class="mono">pos_sing_neg_clu</td><td class="n">21.2%</td><td class="n">4.5%</td><td class="n">0.673</td></tr>
+  <tr><td class="mono">diff_cluster</td><td class="n">10.0%</td><td class="n">6.2%</td><td class="n">0.231</td></tr>
+  <tr><td class="mono">pos_clu_neg_sing</td><td class="n">6.4%</td><td class="n">38.6%</td><td class="n">0.021</td></tr>
+  <tr><td class="mono">same_cluster</td><td class="n">0.5%</td><td class="n">0.3%</td><td class="n">0.309</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span><strong>The adversarial
+  class is systematically inverted</strong>: when the positive is isolated and the
+  negative is clustered, the model gets the order wrong 67% of the time — worse
+  than chance. It is 4.5% of pairs and 21.2% of the error. <strong>This corrects
+  E20's account of the 34 near-positive discordant negatives</strong>:
+  same-cluster pairs contribute only 0.5% of loss, so relabelling them did not gain
+  0.024 by fixing within-cluster discrimination. It gained it because a relabelled
+  negative stops being a negative in <em>every</em> comparison, and most of its
+  damage was in <span class="mono">pos_sing_neg_clu</span>. <strong>The mechanism
+  is over-scoring of clustered negatives, not failure to resolve a
+  neighbour.</strong></div>
+</article>
+
+<article class="exp" id="e23">
+  <div class="exp-head">
+    <span class="exp-id">E23</span>
+    <div class="exp-title"><h3>Can the adversarial class be fixed? No, and the arithmetic says why</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <div class="tw"><table><caption>Per-class feature strength — structure is better than chance exactly where density is catastrophically worse</caption>
+  <thead><tr><th>feature</th><th class="n">pos_sing_neg_clu</th><th class="n">pos_clu_neg_sing</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>density</td><td class="n">0.697</td><td class="n">0.013</td></tr>
+  <tr><td>blend w=0.3</td><td class="n">0.602</td><td class="n">0.023</td></tr>
+  <tr class="key"><td>structure min-PAE</td><td class="n">0.422</td><td class="n">0.156</td></tr>
+  </tbody></table></div>
+  <p class="field"><span class="lbl">Attempt</span>Cluster state is label-free, so
+  weighting structure differently for clustered and isolated TCRs is legitimate at
+  inference. Strict nested LOEO over both weights: <strong>0.8418 against 0.8486
+  for the flat weight, −0.0068.</strong> And the oracle over the whole 8×8 grid
+  peaks at 0.8486 at (0.2, 0.3) — <em>identical to flat w=0.3</em>. Even with
+  perfect knowledge, conditioning buys nothing.</p>
+  <p class="field"><span class="lbl">Why, quantitatively</span>Scores are per TCR,
+  not per pair, so a TCR cannot know which comparison it is in. Raising structure
+  weight from 0.3 to 0.6 gives <strong>+0.0040</strong> in the adversarial class
+  (4.5% of pairs) and <strong>−0.0336</strong> elsewhere — net −0.0296. Fixing the
+  class completely at w=1.0 is worth at most +0.0081 while costing −0.107.
+  <strong>The trade is about 13:1 against.</strong></p>
+  <div class="field concl"><span class="lbl">Settled</span>The decomposition
+  succeeded diagnostically and failed prescriptively. What would be needed is a
+  feature informative <em>within</em> the clustered subset and roughly
+  uninformative <em>between</em> subsets. Structure is not that: it is informative
+  everywhere, merely worse than density in most places.</div>
+</article>
+
+<article class="exp" id="e24">
+  <div class="exp-head">
+    <span class="exp-id">E24</span>
+    <div class="exp-title"><h3>Is probabilistic label modelling available? No</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>A reviewer's GuanRank analogy
+  suggests modelling
+  <span class="mono">P(Y_true=1 | Y_observed, assay evidence)</span> rather than a
+  hard binary.</p>
+  <p class="field"><span class="lbl">Checked</span>The released TCRvdb file has 24
+  columns and the only label information is
+  <span class="mono">pos</span>/<span class="mono">neg</span>/<span class="mono">ambiguous</span>,
+  strictly one-hot integers. There is no enrichment value, read or UMI count,
+  replicate, p-value, CD69 readout or any other continuous quantity; the sole
+  numeric field is <span class="mono">vdjdb_score</span> (0–3), which is the
+  <em>prior annotation</em> confidence and already known to anti-correlate with
+  validation.</p>
+  <div class="field concl"><span class="lbl">Settled</span>The route is
+  <strong>closed with the data available</strong>, not merely unpromising. It would
+  need a richer release from the authors.</div>
+</article>
+
+<article class="exp" id="e29">
+  <div class="exp-head">
+    <span class="exp-id">E29</span>
+    <div class="exp-title"><h3>Family holdout and chain discordance</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <div class="tw"><table><caption>S06 — leave-one-clonotype-family-out: each TCR scored against a cohort with its own single-linkage family removed</caption>
+  <thead><tr><th>epitope</th><th class="n">in a family</th><th class="n">standard</th><th class="n">family-masked</th><th class="n">delta</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="pep">NLVPMVATV</td><td class="n">0.183</td><td class="n">0.8436</td><td class="n">0.7417</td><td class="n">−0.1019</td></tr>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.476</td><td class="n">0.8678</td><td class="n">0.8520</td><td class="n">−0.0158</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="n">0.552</td><td class="n">0.7130</td><td class="n">0.7000</td><td class="n">−0.0130</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.047</td><td class="n">0.8449</td><td class="n">0.8356</td><td class="n">−0.0093</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="n">0.184</td><td class="n">0.9285</td><td class="n">0.9272</td><td class="n">−0.0012</td></tr>
+  <tr class="key"><td>mean</td><td class="n">0.288</td><td class="n">0.8396</td><td class="n">0.8113</td><td class="n">−0.0282</td></tr>
+  </tbody></table></div>
+  <p>Family recurrence carries part of the ranking, and once again the dependence
+  is epitope-specific rather than structural:
+  <span class="pep">NLVPMVATV</span> and <span class="pep">YLQPRTFLL</span> have
+  near-identical family rates (0.183, 0.184) and lose 0.102 against 0.001.</p>
+  <div class="field concl"><span class="lbl">D03 — the α/β asymmetry is not
+  mispairing</span>The mispairing hypothesis predicts that a mispaired TCR shows
+  large single-chain rank disagreement. Measured, signed disagreement scores 0.536
+  and absolute disagreement <strong>0.429 — below chance</strong>, meaning
+  <em>larger</em> α/β disagreement associates with validating, the opposite of what
+  mispairing would produce. Rejected, and the mispairing explanation gets no
+  support.</div>
+</article>
+
+<article class="exp" id="e30">
+  <div class="exp-head">
+    <span class="exp-id">E30</span>
+    <div class="exp-title"><h3>Why leave-one-epitope-out overestimates the private score</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="lede"><strong>This is the most consequential result in the
+  project.</strong> S06 prompted a comparison of cohort <em>structure</em> rather
+  than cohort size. It revealed something LOEO cannot see.</p>
+  <div class="tw"><table><caption>Result 1 — the private epitopes have four times less family structure, 7.2% against 28.8%</caption>
+  <thead><tr><th>epitope</th><th>split</th><th class="n">in a family</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="pep">CINGVCWTV</td><td class="mono">PRIVATE</td><td class="n">0.025</td></tr>
+  <tr class="key"><td class="pep">LLWNGPMAV</td><td class="mono">PRIVATE</td><td class="n">0.044</td></tr>
+  <tr class="key"><td class="pep">LTDEMIAQY</td><td class="mono">PRIVATE</td><td class="n">0.146</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="mono">public</td><td class="n">0.047</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="mono">public</td><td class="n">0.183</td></tr>
+  <tr><td class="pep">YLQPRTFLL</td><td class="mono">public</td><td class="n">0.184</td></tr>
+  <tr><td class="pep">GILGFVFTL</td><td class="mono">public</td><td class="n">0.476</td></tr>
+  <tr><td class="pep">GLCTLVAML</td><td class="mono">public</td><td class="n">0.552</td></tr>
+  </tbody></table></div>
+  <p>That matters because of <a href="#e22">E22</a>:
+  <span class="mono">pos_clu_neg_sing</span> is 38.6% of public pairs at a
+  <strong>2% error rate</strong>. Those easy pairs hold a public AUC up, and
+  <span class="pep">CINGVCWTV</span> will have about 5.6% of them.</p>
+  <p><strong>Result 2 — decomposing and reprojecting.</strong> Taking each class's
+  measured within-class error rate for the submitted model and recombining with
+  each epitope's own class composition <strong>reproduces every public epitope's
+  actual AUC to within 0.0003</strong>, so the arithmetic is sound. Applying it to
+  the private epitopes' label-free compositions:</p>
+  <div class="tw"><table>
+  <thead><tr><th>epitope</th><th class="n">both-singleton share</th><th class="n">easy share</th><th class="n">projected AUC</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">CINGVCWTV</td><td class="n">92.6%</td><td class="n">5.6%</td><td class="n">0.795</td></tr>
+  <tr><td class="pep">LLWNGPMAV</td><td class="n">87.2%</td><td class="n">9.8%</td><td class="n">0.797</td></tr>
+  <tr><td class="pep">LTDEMIAQY</td><td class="n">60.7%</td><td class="n">29.2%</td><td class="n">0.806</td></tr>
+  <tr class="key"><td>macro</td><td class="n"></td><td class="n"></td><td class="n">0.799</td></tr>
+  </tbody></table></div>
+  <p>against the LOEO estimate of 0.846.</p>
+  <div class="tw"><table><caption>Result 3 — the whole projection collapses to one unknown: how separable the private epitopes' isolated TCRs are</caption>
+  <thead><tr><th>if private singletons separate like</th><th class="n">both-singleton AUC</th><th class="n">projected private macro</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="pep">GLCTLVAML</td><td class="n">0.642</td><td class="n">0.668</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="n">0.748</td><td class="n">0.758</td></tr>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.827</td><td class="n">0.831</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.830</td><td class="n">0.832</td></tr>
+  <tr class="key"><td class="pep">YLQPRTFLL</td><td class="n">0.915</td><td class="n">0.907</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span><strong>LOEO holds out
+  epitope identity but not cohort structure.</strong> It is unbiased for "an
+  epitope drawn like the public ones" and biased upward for an epitope with
+  private-like family sparsity. That bias is about <strong>−0.047</strong>, and no
+  amount of leave-one-epitope-out can detect it, because all five public epitopes
+  are family-richer than the private three. <strong>Revised position: central
+  estimate 0.80, plausible range 0.67–0.91</strong>, in place of the single 0.846.
+  The spread is <strong>not sampling noise</strong> — it is one substantive
+  unknown, and <a href="#e21">E21</a> already showed that cannot be forecast from
+  cohort geometry. This is the convergence point of E20, E21, E22 and E32's
+  D10.</div>
+</article>
+
+<!-- ============ MECHANISM ============ -->
+<h2><span class="count">Part seven</span>Mechanism of the irreducible error</h2>
+
+<article class="exp" id="e31">
+  <div class="exp-head">
+    <span class="exp-id">E31</span>
+    <div class="exp-title"><h3>The discordant negatives look like fine specificity, not assay dropout</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>E20 found negatives that are
+  single-residue CDR3 variants of validated positives; E22 relocated their damage.
+  Nothing had tested <em>why</em> they differ, and the two candidates imply
+  opposite things: a mutation abolishing a peptide contact is real fine
+  specificity, so no sequence method can be blamed; a mutation at a solvent-facing
+  position points at the assay or the annotation.</p>
+  <p class="field"><span class="lbl">Method</span>The test needs a null, so each
+  discordant mutation is compared against <strong>matched same-label pairs</strong>
+  — positive/positive neighbours sharing one CDR3 exactly and differing by one or
+  two residues on the other, within the same epitope. Without that control,
+  "mutations tend to be peptide-facing" would just be a property of CDR3 mutation
+  in general. 71 discordant pairs (103 mutated sites) against 522 control pairs
+  (767 sites). Permutation is <strong>stratified by epitope</strong> over 2,000
+  draws, so an effect produced only by <span class="pep">GILGFVFTL</span>
+  dominating the pool would wash out.</p>
+  <div class="tw"><table>
+  <thead><tr><th>mutated-site property</th><th class="n">discordant</th><th class="n">control</th><th class="n">stratified permutation p</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>peptide contacts at that position</td><td class="n">6.53</td><td class="n">2.90</td><td class="n">0.0070</td></tr>
+  <tr class="key"><td>change in peptide contacts between members</td><td class="n">3.37</td><td class="n">1.27</td><td class="n">0.0010</td></tr>
+  <tr><td>position is peptide-facing at all</td><td class="n">0.340</td><td class="n">0.231</td><td class="n">0.0790</td></tr>
+  <tr><td>volume change</td><td class="n">53.7</td><td class="n">41.9</td><td class="n">0.023</td></tr>
+  <tr><td>charge change</td><td class="n">0.27</td><td class="n">0.23</td><td class="n">0.314</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>This supports genuine
+  fine specificity over assay dropout: if these were dropouts, the mutated position
+  would be random with respect to the peptide interface and therefore
+  indistinguishable from the control. It is not. So near-positive discordance is at
+  least partly <strong>real biology</strong>, which means sequence-neighbourhood
+  methods have a <strong>biologically grounded ceiling</strong> rather than merely
+  a noise ceiling — and it cannot be fixed by better sequence modelling, only by
+  reading the interface, which <a href="#e28">E28</a> showed is too weak to use.
+  Limits stated at the time: these are predicted structures; charge change shows
+  no effect, so the simple "salt-bridge lost" story is not supported; and this
+  explains the ceiling without moving the competition score at all.</div>
+  <blockquote><p><strong>Restated by the E37 revision.</strong> The surviving
+  effect is the <strong>binary</strong> one — discordant pairs differ at a
+  peptide-facing position 2.29× as often — and <em>not</em> a graded energetic
+  difference. Conditional on the site facing the peptide there is no difference in
+  distance or contact count. The mechanism is <strong>positional</strong>.
+  <a href="#e39">E39</a>'s 414 ns of MD then showed the effect is entirely
+  contained in that static binary, with dynamics adding nothing.</p></blockquote>
+</article>
+
+<!-- ============ CROSS-CHECK ============ -->
+<h2><span class="count">Part eight</span>Independent cross-check</h2>
+
+<article class="exp" id="e25">
+  <div class="exp-head">
+    <span class="exp-id">E25</span>
+    <div class="exp-title"><h3>Cross-check against an independent pipeline</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>A teammate ran a separate pipeline
+  on the same competition. Recorded for what it confirms, what it exposes as a
+  gap, and where the two disagree. <strong>Nothing from it was adopted into the
+  submission.</strong></p>
+  <p><strong>Independent replication, which is the most valuable part.</strong> Two
+  pipelines built without contact reached the same numbers on the scaffolding:
+  macro-AUC SE 0.0116 vs 0.0110; per-epitope SEs matching to the third decimal;
+  baseline recomputation 0.8245 vs 0.8247. And <strong>seven dead ends closed
+  independently</strong>: annotation metadata, OLGA Pgen, background
+  normalisation, graph topology, chain decomposition, a learned representation
+  failing to beat classical distances (ESM-2 650M at 0.8182 for them, SCEPTR for
+  us), and most importantly <strong>inner hyperparameter search damaging
+  cross-epitope transfer</strong> — their result went negative with a 400-point
+  grid and positive when only one parameter was tuned, the same effect
+  <a href="#e15">E15</a> measured at 0.0048.</p>
+  <p><strong>Where they are ahead.</strong> Candidate-pool expansion: they ran what
+  E12 rejected on design grounds, quantified the private-realisable gain by
+  downsampling (+0.011, or +0.013 with IEDB) rather than reporting the
+  pool-inflated public number, and used <strong>targeted</strong> expansion —
+  merging IEDB only into epitopes whose VDJdb multiple is below 2 — lifting the
+  <span class="pep">LTDEMIAQY</span> pool from 1.04× to 1.72× at exactly zero
+  public cost. <strong>We never examined IEDB, McPAS or ITRAP at all. That is a
+  real gap.</strong></p>
+  <p><strong>Where we are ahead.</strong> They list a self-run structure branch as
+  pending with negative expected value, reasoning that the AF3 baseline's 0.787
+  trails tcrdist3's 0.824. <strong>That is a standalone comparison, not a fusion
+  test.</strong> E14 and E21 ran all 2,636 complexes: +0.007 honest nested gain,
+  and the gain <strong>triples on the epitopes where density collapses</strong>
+  while staying flat on the robust ones. Their own diagnosis is that the private
+  side is pool-limited — exactly the condition under which density weakens and
+  structure pays.</p>
+  <p><strong>A caution on comparing ledgers.</strong> Their best public figure
+  (0.8552) and ours (0.8498) are not comparable, because theirs is lifted by pool
+  expansion the private epitopes mostly cannot receive. On a private-realisable
+  basis theirs is roughly 0.840 and ours is the 0.846 nested estimate.
+  <strong>Mixed denominators inside a single ledger are easy to misread.</strong></p>
+  <div class="field concl"><span class="lbl">One framing of theirs that is better
+  than ours</span>They map the paper's causal taxonomy of non-validation onto
+  similarity-space signatures: multimer background binding gives an isolated
+  outlier that density catches; α-chain mispairing gives a typical β with a random
+  α; single-base sequencing error or V-gene misannotation puts the TCR
+  <em>immediately adjacent to a true positive</em>; and genuine low affinity below
+  the Jurkat threshold does the same. The last two are the same population as our
+  near-positive discordant clonotypes, but their frame explains <em>why</em> that
+  population must exist and why no sequence method can reach it.</div>
+</article>
+
+<article class="exp" id="e26">
+  <div class="exp-head">
+    <span class="exp-id">E26</span>
+    <div class="exp-title"><h3>Where does the whole-V-domain alignment gain come from?</h3></div>
+    <span class="tag reject">Rejected</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>E25 replicated a teammate's
+  alignment distance over the assembled variable domains and found it the most
+  decorrelated ensemble member, leaving a candidate submission pending on a
+  +0.0026 blend gain. Attribute that gain to a region of the domain, with the
+  <strong>pre-declared criterion</strong> that if framework / V-gene explains all
+  of it, the result is germline confounding rather than recognition signal.</p>
+  <p class="field"><span class="lbl">Method</span>CDR3 is found verbatim inside
+  <span class="mono">full_seq</span> for all 2,636 rows, at a median 79% into the
+  domain and occupying about 12% of it, so the split is clean: full domain, CDR3
+  masked out (framework + CDR1/2, the other 88%), and CDR3 alone.</p>
+  <div class="tw"><table>
+  <thead><tr><th>region</th><th class="n">mean AUC</th><th class="n">within-epitope Spearman with full</th></tr></thead>
+  <tbody>
+  <tr><td>full V domain</td><td class="n">0.8379</td><td class="n">—</td></tr>
+  <tr class="key"><td>CDR3 masked out</td><td class="n">0.8287</td><td class="n">+0.990</td></tr>
+  <tr><td>CDR3 only</td><td class="n">0.7999</td><td class="n">+0.730</td></tr>
+  </tbody></table></div>
+  <p><strong>The full-domain ranking is the CDR3-masked ranking.</strong> CDR3
+  contributes almost nothing to the order; the signal sits in the germline-encoded
+  88%. The decorrelation comes from the same place.</p>
+  <div class="field concl"><span class="lbl">Settled</span>The pre-declared
+  criterion is met, so the honest reading is <strong>germline confounding</strong>,
+  not a new comparison of CDR3 chemistry. There is a second, less comfortable
+  reading: V-gene usage tracks study and donor and correlates with
+  convergent-recombination propensity, so this may be re-encoding "how typical is
+  this TCR" for the <strong>third</strong> time, after density itself and after
+  structure confidence. <strong>Decision:
+  <span class="mono">submissions/density4_struct03.csv</span> is not adopted.</strong>
+  Already below the +0.02 threshold at +0.0026, it now also has a mechanism
+  arguing against it.</div>
+  <blockquote><p><strong>Worth noting what this says about the method, not just
+  the feature:</strong> a result that looked like useful decorrelation survived a
+  correlation check, a nested LOEO check and a 5-of-5 fold-selection check, and
+  <strong>only failed when asked which part of the molecule it came from.
+  Statistical screening did not catch it; biological attribution did.</strong></p></blockquote>
+</article>
+
+<!-- ============ SELF-REVIEW ============ -->
+<h2><span class="count">Part nine</span>Self-review findings</h2>
+<p class="prose lede">Mistakes caught in my own work, listed because several had
+already produced a number that looked like a result. This is the part of the
+record most likely to be useful to someone repeating the work.</p>
+<div class="tw"><table>
+<thead><tr><th>where</th><th>what was wrong</th><th>effect</th></tr></thead>
+<tbody>
+<tr><td class="mono">E6</td><td>density computed on <em>labelled</em> rows only, where inference uses the whole cohort</td><td>reverses that table's operator ordering; conclusion and submissions unaffected</td></tr>
+<tr><td class="mono">E16</td><td>two wrong diagnoses before the right one — scale coupling, then loss shape</td><td>the real cause is that the surrogate only aligns with AUC as it stops being differentiable</td></tr>
+<tr><td class="mono">E19</td><td>claimed 5 diffusion samples were immune to the canonicality confound because they share sequence input</td><td>wrong: they share the computed trunk representation, so consistency is <em>downstream</em> of trunk confidence</td></tr>
+<tr><td class="mono">E20</td><td>leaned on a 3.9% agreement between two rates with different denominators</td><td>coincidence; carries no weight</td></tr>
+<tr><td class="mono">E20</td><td>inferred private AUC from cohort geometry</td><td><strong>disproved by E21</strong>: sparsity does not determine separability</td></tr>
+<tr><td class="mono">E20</td><td>relabelling arithmetic presented without its selection effect</td><td>the rows were chosen <em>because</em> they rank high</td></tr>
+<tr class="key"><td class="mono">E27</td><td>private-gain point estimate computed on a model not submitted</td><td>+0.0013 → <strong>+0.0004</strong>, hiding a 26-fold spread and optimistic subsampling</td></tr>
+<tr><td class="mono">E34</td><td>pooled contact counts and minimum distances into one Spearman</td><td>inflated it; the blocks are inversely related and occupy different ranges</td></tr>
+<tr><td class="mono">E35</td><td>claimed in narration, before measuring, that the gain would be smaller on the organisers' snapshot</td><td>it is 0.0012 smaller — inside the noise</td></tr>
+<tr><td class="mono">E36</td><td>staged phase 2 behind a positive phase 1, then skipped it</td><td>the argument was sound but answered a different question; running it showed the failure is <strong>universal</strong></td></tr>
+<tr><td class="mono">E37</td><td>three rows reported as independent confirmations</td><td>with 77% ties they are substantially one test</td></tr>
+<tr class="key"><td class="mono">E37</td><td>descriptor table computed in an unsaved heredoc</td><td>three of six numbers not reproducible from the CSV</td></tr>
+<tr class="key"><td class="mono">E39</td><td>mutated-site residues taken as the <strong>union</strong> of both pair members</td><td>5 of 40 pairs mis-probed, all discordant; a smoke test showed a clean 6.2 vs 0.0 that was entirely contamination</td></tr>
+<tr><td class="mono">E39</td><td>replica-spread guard compared against the median per-site replica sd</td><td>zero for most sites, so every quantity "exceeded the spread" by construction</td></tr>
+<tr class="key"><td class="mono">E39</td><td>static-to-MD join not deduplicated on the structural key</td><td>126 rows inflated to 150, manufacturing an apparent reversal and a p=0.047</td></tr>
+<tr><td class="mono">E39</td><td>groups not disjoint at site level</td><td>3 of 117 sites are discordant in one pair and control in another; applies to E37 equally</td></tr>
+</tbody></table></div>
+<p class="prose">Three of these had already produced a publishable-looking number.
+The recurring cause is <strong>computation in an unsaved heredoc rather than in
+version control.</strong></p>
+
+<!-- ============ FINAL STATE ============ -->
+<h2><span class="count">Part ten</span>Final state</h2>
+<p class="prose"><strong>46 of 49 plan cards executed.</strong> The three not run
+are wet-lab validation (excluded by the PI) and two cards requiring artifact
+exchange with the teammate (declined).</p>
+<div class="tw"><table>
+<tbody>
+<tr><td>Experiments recorded</td><td class="n">39</td><td>E1–E39, plus two E37 revisions</td></tr>
+<tr><td>Scripts</td><td class="n">36</td><td></td></tr>
+<tr><td>Reports</td><td class="n">14</td><td></td></tr>
+<tr><td>Experiment log</td><td class="n">1,920</td><td>lines</td></tr>
+<tr class="key"><td>Data-layer audit</td><td class="n">57</td><td>checks, all passing</td></tr>
+<tr><td>GPU work</td><td class="n"></td><td>2,636 single-sample folds (7.4 h), 2,636 five-sample folds (13.2 h), 2,706 decoy folds (7 h), 414 ns MD (14 h)</td></tr>
+</tbody></table></div>
+
+<div class="prose-wide">
+<h4>The central scientific finding</h4>
+<p>The extractable signal is <strong>local neighbourhood density inside the
+epitope cohort</strong>, and it saturates at 0.83–0.84 in every representation
+tried. Roughly 24 negative results, each with an identified mechanism rather than
+merely a number.</p>
+
+<h4>Two positive mechanistic results</h4>
+<p><a href="#e31">E31</a>/<a href="#e37">E37</a>, now restated as positional:
+discordant pairs differ at a peptide-facing position about twice as often, which
+gives sequence methods a biologically grounded ceiling. And
+<a href="#e38">E38</a>: pool expansion carries real antigen-specific information,
+since all three size-matched negative controls actively <em>hurt</em>.</p>
+
+<h4>The headline revision</h4>
+<p><a href="#e30">E30</a> — LOEO holds out epitope identity but not cohort
+structure. <strong>Private estimate 0.80 central, 0.67–0.91 plausible</strong>,
+not the 0.846 that nested LOEO reports.</p>
+
+<h4>One item outstanding</h4>
+<p>Verify in the Kaggle UI that the final selected submission is
+<span class="mono">density3_struct03.csv</span> and not the earlier density-only
+file.</p>
+</div>
+
+<footer>
+  <p><strong>Data provenance and licensing.</strong> TCRvdb functional-validation
+  labels are request-only from <span class="mono">tcrvdb.nkiai.nl</span>.
+  <strong>Redistribution or public sharing of the dataset, in whole or in part, is
+  not permitted</strong> — the file is gitignored and never committed. Work using
+  it must cite <span class="mono">doi:10.1016/j.immuni.2026.09.007</span>.</p>
+  <p>VDJdb releases 2024-06-13, 2025-02-21 and 2026-06-03; IMGT/HLA allele
+  sequences; RCSB PDB for the 14 solved complexes in E34.</p>
+</footer>
+
+</div>
+</body>
+</html>
