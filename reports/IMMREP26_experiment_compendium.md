@@ -1515,6 +1515,72 @@ clonotype family as the sampling unit the enrichment is significant in one
 reading per sample and the two samples disagree on which, so the effect size is
 not established and causality is not demonstrated.*
 
+## E42 — Framework or CDR1/2? The last low-cost exploration
+
+**Goal.** The reviewer objected that E26's germline-confounding reading is not
+forced: CDR1 and CDR2 are germline-encoded **and** genuinely contact
+peptide-MHC. Separate the two. `scripts/39_v_region_ablation.py`.
+
+**Method.** Split the CDR3-masked region into the part that cannot touch the
+interface (framework) and the part that can (CDR1 + CDR2 + CDR2.5). The loops
+come from tcrdist3's IMGT-derived reference keyed on the V gene, so no numbering
+scheme is invented: 0 genes absent, CDR1 located verbatim in 99.5% of chains,
+CDR2 98.0%, CDR2.5 99.98%. E26's own split was another unsaved heredoc, so all
+four regions are recomputed over a common σ grid.
+
+| region | mean α length | σ=0.02 | 0.05 | 0.10 | 0.20 | best |
+|---|---:|---:|---:|---:|---:|---:|
+| full V domain | 111 | 0.8243 | 0.8304 | **0.8354** | 0.8343 | 0.8354 |
+| CDR3 masked | 98 | 0.8199 | 0.8260 | **0.8276** | 0.8264 | 0.8276 |
+| **framework only** | 79 | 0.8154 | 0.8246 | **0.8270** | 0.8223 | **0.8270** |
+| loops only | 18 | 0.8074 | 0.8092 | 0.8122 | **0.8173** | 0.8173 |
+
+Within-epitope Spearman against the CDR3-masked ranking: **framework +0.994**,
+loops +0.970.
+
+**Conclusion — the alternative is tested and rejected.** Framework alone
+recovers 0.8270 of 0.8276 at rank agreement +0.994, from a region that makes
+**no contact with peptide or MHC**. The loops, which do contact both, recover
+less and agree less. E26's reading is now demonstrated rather than inferred:
+the ranking reads V-gene identity through the scaffold, not recognition
+chemistry. This does not say CDR1/CDR2 are biologically unimportant — it says
+*this feature's ranking* is explained by a region that cannot participate in
+recognition at all.
+
+---
+
+# Predictor frozen — 2026-10-25
+
+No further feature search, configuration selection or submissions.
+
+| | |
+|---|---|
+| submitted file | `submissions/density3_struct03.csv` |
+| sha256 (first 16) | `523a4692df02467b` |
+| built by | `scripts/18_final_submission.py` |
+| fitted parameters | none |
+| public score | 0.8498 (leaderboard 0.849) |
+| private estimate | **0.846**, downside risk real but unquantified |
+| deadline | 2026-11-02 15:00 UTC |
+
+**Why freeze here.** Every remaining avenue is closed on evidence rather than
+judgement: the signal saturates at 0.83–0.84 in every representation (E6, E16,
+E17, E18); supervised routes lose to variance on five folds (E10, E13, E32);
+pool expansion has no measurable gain on this configuration (E27, E33, E35,
+E38); the structural line is closed with its mechanism identified (E36) and its
+one mechanistic lead reduced to an unestablished effect size (E41). E15 priced
+further configuration selection at −0.0048, so additional search has negative
+expected value.
+
+**What remains open is not a modelling question.** Whether substitutions at
+peptide-facing positions *cause* the functional discordance cannot be settled by
+more computation on this dataset — E41 showed the statistical support does not
+survive consistently at the clonotype-family level, and E34 showed the
+structures it rests on are validated only in a memorised regime. That question
+is left to independent data or functional experiments.
+
+---
+
 ## Other corrections from the same review
 
 - **E20's "zero fitted parameters, so nothing to overfit" is too strong.** There
@@ -1522,12 +1588,9 @@ not established and causality is not demonstrated.*
   choices made against the public epitopes, and E15 priced that at 0.0048.
 - **E21's "cost of 0.3 is bounded at 0.0002"** applies to the five measured
   epitopes, not in general.
-- **E26's germline-confounding reading is one of two live explanations.**
-  Germline-encoded CDR1 and CDR2 residues genuinely contact pMHC, so a V-region
-  signal is not automatically confounding. A cheap untried test: split the
-  CDR3-masked distance into framework-only and CDR1/2-only. Signal in framework,
-  which contacts nothing, would be confounding; signal in CDR1/2 would be
-  compatible with real recognition.
+- **E26's germline-confounding reading was one of two live explanations** —
+  **settled by E42 above**, in E26's favour: framework alone, which contacts
+  nothing, recovers the ranking at Spearman +0.994.
 - **E39's "no further structural dynamics will add to it" overreaches.** What
   was shown is that 2 ns of implicit-solvent dynamics around the predicted pose
   adds nothing beyond the static facing rate.
@@ -1572,15 +1635,15 @@ cause is computation in an unsaved heredoc rather than in version control.
 
 # Final state
 
-**46 of 49 plan cards executed.** The three not run are wet-lab validation
+**Predictor frozen 2026-10-25. 46 of 49 plan cards executed.** The three not run are wet-lab validation
 (excluded by the PI) and two cards requiring artifact exchange with the teammate
 (declined).
 
 | | |
 |---|---|
-| experiments recorded | **41** (E1–E41, plus two E37 revisions) |
-| scripts | 38 |
-| reports | 16 |
+| experiments recorded | **42** (E1–E42, plus two E37 revisions) |
+| scripts | 39 |
+| reports | 17 |
 | experiment log | 1,920 lines |
 | data-layer audit | 57 checks, **all passing** |
 | GPU work | 2,636 single-sample folds (7.4 h), 2,636 five-sample folds (13.2 h), 2,706 decoy folds (7 h), 414 ns MD (14 h) |

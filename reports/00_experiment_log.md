@@ -2093,3 +2093,86 @@ shown is that 2 ns of implicit-solvent dynamics around the predicted pose adds
 nothing beyond the static facing rate. Longer timescales, explicit solvent and
 larger rearrangements were not sampled.
 
+
+## E42 — Framework or CDR1/2? The last low-cost exploration (reviewer's point on E26)
+
+E26 read the whole-V-domain alignment signal as germline confounding. The
+reviewer correctly objected that the reading is not forced: CDR1 and CDR2 are
+germline-encoded **and** genuinely contact peptide-MHC, so a V-region signal can
+be real recognition. The two were never separated. Separating them is cheap, and
+this is the experiment the review implied without proposing.
+`scripts/39_v_region_ablation.py`.
+
+**Design.** Split the CDR3-masked region into the part that cannot touch the
+interface and the part that can. CDR1, CDR2 and CDR2.5 come from tcrdist3's
+IMGT-derived reference keyed on the V gene, so no numbering scheme is invented:
+0 genes absent, CDR1 located verbatim in 99.5% of chains, CDR2 98.0%, CDR2.5
+99.98%. E26's own split was another unsaved heredoc -- the fifth -- so all four
+regions are recomputed, and since its bandwidth is lost the comparison runs over
+a common sigma grid and rests on ordering rather than on an absolute value.
+
+| region | mean alpha length | sigma=0.02 | 0.05 | 0.10 | 0.20 | best |
+|---|---:|---:|---:|---:|---:|---:|
+| full V domain | 111 | 0.8243 | 0.8304 | **0.8354** | 0.8343 | 0.8354 |
+| CDR3 masked | 98 | 0.8199 | 0.8260 | **0.8276** | 0.8264 | 0.8276 |
+| **framework only** | 79 | 0.8154 | 0.8246 | **0.8270** | 0.8223 | **0.8270** |
+| loops only (CDR1+2+2.5) | 18 | 0.8074 | 0.8092 | 0.8122 | **0.8173** | 0.8173 |
+
+Within-epitope Spearman against the CDR3-masked ranking: **framework +0.994**,
+loops +0.970.
+
+**Framework carries essentially all of it.** 0.8270 of 0.8276, at a rank
+agreement of +0.994, from a region that makes **no contact with peptide or
+MHC**. The loops, which do contact both, recover less on their own and agree
+less with the combined ranking.
+
+**So the reviewer's alternative is tested and rejected, and E26's reading is now
+demonstrated rather than inferred.** The ranking is not reading recognition
+chemistry; it is reading V-gene identity through the scaffold. This does not say
+CDR1/CDR2 are biologically unimportant -- they obviously are important -- it says
+*this feature's ranking* is explained by a region that cannot participate in
+recognition at all.
+
+Recomputation also re-checks E26: full 0.8354 here against its 0.8379, CDR3
+masked 0.8276 against 0.8287. The ordering reproduces; the small absolute
+differences are the lost bandwidth.
+
+---
+
+## Predictor frozen — 2026-10-25
+
+The competition predictor is frozen as of this entry. No further feature search,
+no further configuration selection, no further submissions.
+
+| | |
+|---|---|
+| submitted file | `submissions/density3_struct03.csv` |
+| sha256 (first 16) | `523a4692df02467b` |
+| built by | `scripts/18_final_submission.py` |
+| model | rank average of SCEPTR `default` + `small` kernel density (cosine sigma=0.1) and tcrdist3 alpha+beta (sigma=20), blended 0.7/0.3 with Boltz-2 `pae_tcr_pep_min` |
+| fitted parameters | none |
+| public score | 0.8498 (leaderboard 0.849) |
+| private estimate | **0.846**, downside risk real but unquantified; 0.67-0.91 is a scenario range, not an interval |
+| deadline | 2026-11-02 15:00 UTC |
+
+**Why freeze here rather than keep searching.** Every remaining avenue is closed
+on evidence rather than on judgement: the signal saturates at 0.83-0.84 in every
+representation (E6, E16, E17, E18), supervised routes lose to variance on five
+folds (E10, E13, E32), pool expansion has no measurable gain on this
+configuration (E27, E33, E35, E38), and the structural line is closed with its
+mechanism identified (E36) and its one mechanistic lead reduced to an
+unestablished effect size (E41). E15 priced further configuration selection at
+-0.0048, so additional search has negative expected value.
+
+**What remains open is not a modelling question.** The molecular mechanism --
+whether substitutions at peptide-facing positions cause the functional
+discordance -- cannot be settled by more computation on this dataset. E41 showed
+the statistical evidence does not survive consistently once the clonotype family
+is the sampling unit, and E34 showed the structures it rests on are validated
+only in a memorised regime. That question needs independent data or functional
+experiments, which is where it is left.
+
+**One item outstanding, and it is not a computation.** Verify in the Kaggle UI
+that the selected final submission is `density3_struct03.csv` and not the
+earlier density-only file.
+

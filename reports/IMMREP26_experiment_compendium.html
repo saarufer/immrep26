@@ -230,7 +230,7 @@
 <header class="mast">
   <p class="eyebrow">IMMREP26 · Validation of public TCR–pMHC data</p>
   <h1>Experiment Compendium</h1>
-  <p class="standfirst">Forty-one experiments on whether a published TCR–epitope
+  <p class="standfirst">Forty-two experiments on whether a published TCR–epitope
   annotation will survive functional re-screening — what each one asked, how it
   was measured, and what it settled.</p>
   <div class="mast-meta">
@@ -244,7 +244,7 @@
   <div class="fig"><dt>Submitted · public</dt><dd>0.8498<span class="sub">leaderboard showed 0.849</span></dd></div>
   <div class="fig hi"><dt>Private estimate</dt><dd>0.846<span class="sub">E40 withdrew the 0.80 projection</span></dd></div>
   <div class="fig"><dt>Organisers' baseline</dt><dd>0.8247<span class="sub">tcrdist3 nearest-neighbour</span></dd></div>
-  <div class="fig"><dt>Experiments</dt><dd>41<span class="sub">19 rejections, 3 adopted components</span></dd></div>
+  <div class="fig"><dt>Experiments</dt><dd>42<span class="sub">19 rejections, 3 adopted components</span></dd></div>
 </dl>
 
 <section class="prose-wide">
@@ -288,12 +288,12 @@ real; its size is not measurable with five epitopes. Treat 0.67–0.91 as a
 scenario range, never a confidence interval.</p>
 </section>
 
-<h2><span class="count">Index · 41 experiments by outcome</span>All experiments</h2>
+<h2><span class="count">Index · 42 experiments by outcome</span>All experiments</h2>
 <div class="legend">
   <span><i class="dot found"></i> Foundation — settled a ground rule (3)</span>
   <span><i class="dot adopt"></i> Adopted into the submission (3)</span>
   <span><i class="dot reject"></i> Rejected (19)</span>
-  <span><i class="dot diag"></i> Diagnostic — changed understanding (16)</span>
+  <span><i class="dot diag"></i> Diagnostic — changed understanding (17)</span>
 </div>
 <div class="idx">
   <a class="chip" href="#e1"><i class="dot found"></i>E1 Metric</a>
@@ -337,6 +337,7 @@ scenario range, never a confidence interval.</p>
   <a class="chip" href="#e39"><i class="dot diag"></i>E39 Dynamics</a>
   <a class="chip" href="#e40"><i class="dot diag"></i>E40 Projection</a>
   <a class="chip" href="#e41"><i class="dot diag"></i>E41 Family CIs</a>
+  <a class="chip" href="#e42"><i class="dot diag"></i>E42 V regions</a>
 </div>
 
 <!-- ============ FOUNDATIONS ============ -->
@@ -1955,6 +1956,76 @@ both_singleton   = (1−a)(1−b)   clustered-both   = ab</pre>
   demonstrated.</em></div>
 </article>
 
+<article class="exp" id="e42">
+  <div class="exp-head">
+    <span class="exp-id">E42</span>
+    <div class="exp-title"><h3>Framework or CDR1/2? The last low-cost exploration</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>The reviewer objected that E26's
+  germline-confounding reading is not forced: CDR1 and CDR2 are germline-encoded
+  <strong>and</strong> genuinely contact peptide–MHC. Separate the two.</p>
+  <p class="field"><span class="lbl">Method</span>Split the CDR3-masked region
+  into the part that cannot touch the interface (framework) and the part that
+  can (CDR1 + CDR2 + CDR2.5). The loops come from tcrdist3's IMGT-derived
+  reference keyed on the V gene, so no numbering scheme is invented: 0 genes
+  absent, CDR1 located verbatim in 99.5% of chains, CDR2 98.0%, CDR2.5 99.98%.
+  E26's own split was another unsaved heredoc, so all four regions are
+  recomputed over a common σ grid.</p>
+  <div class="tw"><table>
+  <thead><tr><th>region</th><th class="n">mean α length</th><th class="n">σ=0.02</th><th class="n">0.05</th><th class="n">0.10</th><th class="n">0.20</th><th class="n">best</th></tr></thead>
+  <tbody>
+  <tr><td>full V domain</td><td class="n">111</td><td class="n">0.8243</td><td class="n">0.8304</td><td class="n">0.8354</td><td class="n">0.8343</td><td class="n">0.8354</td></tr>
+  <tr><td>CDR3 masked</td><td class="n">98</td><td class="n">0.8199</td><td class="n">0.8260</td><td class="n">0.8276</td><td class="n">0.8264</td><td class="n">0.8276</td></tr>
+  <tr class="key"><td>framework only</td><td class="n">79</td><td class="n">0.8154</td><td class="n">0.8246</td><td class="n">0.8270</td><td class="n">0.8223</td><td class="n">0.8270</td></tr>
+  <tr><td>loops only (CDR1+2+2.5)</td><td class="n">18</td><td class="n">0.8074</td><td class="n">0.8092</td><td class="n">0.8122</td><td class="n">0.8173</td><td class="n">0.8173</td></tr>
+  </tbody></table></div>
+  <p>Within-epitope Spearman against the CDR3-masked ranking:
+  <strong>framework +0.994</strong>, loops +0.970.</p>
+  <div class="field concl"><span class="lbl">Settled — the alternative is
+  rejected</span>Framework alone recovers 0.8270 of 0.8276 at rank agreement
+  +0.994, from a region that makes <strong>no contact with peptide or
+  MHC</strong>. The loops, which do contact both, recover less and agree less.
+  E26's reading is now demonstrated rather than inferred: the ranking reads
+  V-gene identity through the scaffold, not recognition chemistry. This does not
+  say CDR1/CDR2 are biologically unimportant — it says <em>this feature's
+  ranking</em> is explained by a region that cannot participate in recognition
+  at all.</div>
+</article>
+
+<h2><span class="count">Frozen</span>Predictor frozen — 2026-10-25</h2>
+<p class="prose lede">No further feature search, configuration selection or
+submissions.</p>
+<div class="tw"><table>
+<tbody>
+<tr><td>submitted file</td><td class="mono">submissions/density3_struct03.csv</td></tr>
+<tr><td>sha256 (first 16)</td><td class="mono">523a4692df02467b</td></tr>
+<tr><td>built by</td><td class="mono">scripts/18_final_submission.py</td></tr>
+<tr><td>fitted parameters</td><td>none</td></tr>
+<tr><td>public score</td><td class="mono">0.8498 (leaderboard 0.849)</td></tr>
+<tr class="key"><td>private estimate</td><td>0.846, downside risk real but unquantified</td></tr>
+<tr><td>deadline</td><td class="mono">2026-11-02 15:00 UTC</td></tr>
+</tbody></table></div>
+<p class="prose-wide"><strong>Why freeze here.</strong> Every remaining avenue is
+closed on evidence rather than judgement: the signal saturates at 0.83–0.84 in
+every representation (<a href="#e6">E6</a>, <a href="#e16">E16</a>,
+<a href="#e17">E17</a>, <a href="#e18">E18</a>); supervised routes lose to
+variance on five folds (<a href="#e10">E10</a>, <a href="#e13">E13</a>,
+<a href="#e32">E32</a>); pool expansion has no measurable gain on this
+configuration (<a href="#e27">E27</a>, <a href="#e33">E33</a>,
+<a href="#e35">E35</a>, <a href="#e38">E38</a>); the structural line is closed
+with its mechanism identified (<a href="#e36">E36</a>) and its one mechanistic
+lead reduced to an unestablished effect size (<a href="#e41">E41</a>).
+<a href="#e15">E15</a> priced further configuration selection at −0.0048, so
+additional search has negative expected value.</p>
+<p class="prose-wide"><strong>What remains open is not a modelling
+question.</strong> Whether substitutions at peptide-facing positions
+<em>cause</em> the functional discordance cannot be settled by more computation
+on this dataset — E41 showed the statistical support does not survive
+consistently at the clonotype-family level, and <a href="#e34">E34</a> showed
+the structures it rests on are validated only in a memorised regime. That
+question is left to independent data or functional experiments.</p>
+
 <h4>Other corrections from the same review</h4>
 <ul class="prose-wide">
   <li><strong>E20's "zero fitted parameters, so nothing to overfit" is too
@@ -2016,9 +2087,9 @@ are wet-lab validation (excluded by the PI) and two cards requiring artifact
 exchange with the teammate (declined).</p>
 <div class="tw"><table>
 <tbody>
-<tr><td>Experiments recorded</td><td class="n">41</td><td>E1–E41, plus two E37 revisions</td></tr>
-<tr><td>Scripts</td><td class="n">38</td><td></td></tr>
-<tr><td>Reports</td><td class="n">16</td><td></td></tr>
+<tr><td>Experiments recorded</td><td class="n">42</td><td>E1–E41, plus two E37 revisions</td></tr>
+<tr><td>Scripts</td><td class="n">39</td><td></td></tr>
+<tr><td>Reports</td><td class="n">17</td><td></td></tr>
 <tr><td>Experiment log</td><td class="n">1,920</td><td>lines</td></tr>
 <tr class="key"><td>Data-layer audit</td><td class="n">57</td><td>checks, all passing</td></tr>
 <tr><td>GPU work</td><td class="n"></td><td>2,636 single-sample folds (7.4 h), 2,636 five-sample folds (13.2 h), 2,706 decoy folds (7 h), 414 ns MD (14 h)</td></tr>

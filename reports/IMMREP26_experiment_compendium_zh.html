@@ -198,7 +198,7 @@
 <header class="mast">
   <p class="eyebrow">IMMREP26 · 公开 TCR–pMHC 数据的功能验证</p>
   <h1>实验全录</h1>
-  <p class="standfirst">四十一个实验，围绕一个问题：一条已发表的 TCR–表位注释，能否经受住功能性再筛选。每个实验问了什么、怎么测的、最后定下了什么。</p>
+  <p class="standfirst">四十二个实验，围绕一个问题：一条已发表的 TCR–表位注释，能否经受住功能性再筛选。每个实验问了什么、怎么测的、最后定下了什么。</p>
   <div class="mast-meta">
     <span>编纂于 2026-10-23</span>
     <span>底稿：reports/00_experiment_log.md</span>
@@ -210,7 +210,7 @@
   <div class="fig"><dt>已提交模型 · 公榜</dt><dd>0.8498<span class="sub">榜单显示 0.849</span></dd></div>
   <div class="fig hi"><dt>私榜估计</dt><dd>0.846<span class="sub">E40 撤回了 0.80 的投影</span></dd></div>
   <div class="fig"><dt>主办方基线</dt><dd>0.8247<span class="sub">tcrdist3 最近邻</span></dd></div>
-  <div class="fig"><dt>实验数</dt><dd>41<span class="sub">19 个否决，3 个组件被采纳</span></dd></div>
+  <div class="fig"><dt>实验数</dt><dd>42<span class="sub">19 个否决，3 个组件被采纳</span></dd></div>
 </dl>
 
 <section class="prose-wide">
@@ -238,12 +238,12 @@
 <p><strong>0.846</strong>，并带有一个已记录但无法量化的下行风险。<a href="#e30">E30</a> 曾主张 0.80；<a href="#e40">E40</a> 在它未能通过留一表位迁移检验（MAE 0.083，几乎是它声称探测到的那个偏差的两倍）之后<strong>撤回了这个数字</strong>。E30 发现的分布偏移是真实的，但用五个表位无法测量它的大小。请把 0.67–0.91 当作情景范围，而非置信区间。</p>
 </section>
 
-<h2><span class="count">索引 · 按结论状态</span>全部 41 个实验</h2>
+<h2><span class="count">索引 · 按结论状态</span>全部 42 个实验</h2>
 <div class="legend">
   <span><i class="dot found"></i> 基础——定下了一条地基规则（3）</span>
   <span><i class="dot adopt"></i> 采纳进提交模型（3）</span>
   <span><i class="dot reject"></i> 否决（19）</span>
-  <span><i class="dot diag"></i> 诊断——改变了认识（16）</span>
+  <span><i class="dot diag"></i> 诊断——改变了认识（17）</span>
 </div>
 <div class="idx">
   <a class="chip" href="#e1"><i class="dot found"></i><span class="num">E1</span>度量</a>
@@ -287,6 +287,7 @@
   <a class="chip" href="#e39"><i class="dot diag"></i><span class="num">E39</span>分子动力学</a>
   <a class="chip" href="#e40"><i class="dot diag"></i><span class="num">E40</span>投影迁移</a>
   <a class="chip" href="#e41"><i class="dot diag"></i><span class="num">E41</span>家族级 CI</a>
+  <a class="chip" href="#e42"><i class="dot diag"></i><span class="num">E42</span>V 区消融</a>
 </div>
 
 <!-- ===== 一、基础 ===== -->
@@ -1183,6 +1184,41 @@ both_singleton   = (1−a)(1−b)   clustered-both   = ab</pre>
   <div class="field concl"><span class="lbl">E31 的修订措辞</span><em>功能标签不一致的近似 TCR 配对，相比标签一致的对照，在预测为朝向肽的位点上发生替换的频率更高。该方向在各表位之间、以及在两套结构样本之间都是一致的。但以克隆型家族为抽样单位时，这种富集在每个样本中只有一种读法显著，而两个样本对是哪一种读法的结论相反；因此效应大小未被确立，因果性也未被证明。</em></div>
 </article>
 
+<article class="exp" id="e42">
+  <div class="exp-head">
+    <span class="exp-id">E42</span>
+    <div class="exp-title"><h3>框架区还是 CDR1/2？最后一项低成本探索</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>评审反对 E26 的种系混杂读法是唯一解：CDR1 与 CDR2 既是种系编码的，<strong>又</strong>确实接触 pMHC。把两者分开。</p>
+  <p class="field"><span class="lbl">方法</span>把"屏蔽 CDR3"后的区域再拆成不可能接触界面的部分（框架区）与能够接触的部分（CDR1 + CDR2 + CDR2.5）。环区取自 tcrdist3 以 V 基因为键的 IMGT 衍生参考，因此不需要自造编号方案：零基因缺失，CDR1 在 99.5% 的链中逐字定位，CDR2 为 98.0%，CDR2.5 为 99.98%。E26 自己的拆分又是一个未保存的 heredoc，所以四个区域全部重算，并在共同的 σ 网格上比较。</p>
+  <div class="tw"><table>
+  <thead><tr><th>区域</th><th class="n">α 链平均长度</th><th class="n">σ=0.02</th><th class="n">0.05</th><th class="n">0.10</th><th class="n">0.20</th><th class="n">最佳</th></tr></thead>
+  <tbody>
+  <tr><td>完整 V 区</td><td class="n">111</td><td class="n">0.8243</td><td class="n">0.8304</td><td class="n">0.8354</td><td class="n">0.8343</td><td class="n">0.8354</td></tr>
+  <tr><td>屏蔽 CDR3</td><td class="n">98</td><td class="n">0.8199</td><td class="n">0.8260</td><td class="n">0.8276</td><td class="n">0.8264</td><td class="n">0.8276</td></tr>
+  <tr class="key"><td>仅框架区</td><td class="n">79</td><td class="n">0.8154</td><td class="n">0.8246</td><td class="n">0.8270</td><td class="n">0.8223</td><td class="n">0.8270</td></tr>
+  <tr><td>仅环区（CDR1+2+2.5）</td><td class="n">18</td><td class="n">0.8074</td><td class="n">0.8092</td><td class="n">0.8122</td><td class="n">0.8173</td><td class="n">0.8173</td></tr>
+  </tbody></table></div>
+  <p>与"屏蔽 CDR3"排序的表位内 Spearman：<strong>框架区 +0.994</strong>，环区 +0.970。</p>
+  <div class="field concl"><span class="lbl">定论——备择解释被检验并否决</span>仅框架区就回收了 0.8276 中的 0.8270，排序一致性 +0.994，而这个区域<strong>与肽和 MHC 都不发生接触</strong>。真正接触两者的环区，单独回收得更少、与合并排序也更不一致。E26 的读法现在是被证明而非被推断：这个排序读的是通过骨架体现的 V 基因身份，不是识别化学。这并不是说 CDR1/CDR2 在生物学上不重要——而是说<em>这个特征的排序</em>可以由一个根本无法参与识别的区域解释。</div>
+</article>
+
+<h2><span class="count">冻结</span>预测器已冻结 —— 2026-10-25</h2>
+<p class="prose lede">不再做特征搜索、配置选择或提交。</p>
+<div class="tw"><table>
+<tbody>
+<tr><td>提交文件</td><td class="mono">submissions/density3_struct03.csv</td></tr>
+<tr><td>sha256（前 16 位）</td><td class="mono">523a4692df02467b</td></tr>
+<tr><td>生成脚本</td><td class="mono">scripts/18_final_submission.py</td></tr>
+<tr><td>拟合参数</td><td>无</td></tr>
+<tr><td>公榜分数</td><td class="mono">0.8498（榜单 0.849）</td></tr>
+<tr class="key"><td>私榜估计</td><td>0.846，下行风险真实但无法量化</td></tr>
+<tr><td>截止</td><td class="mono">2026-11-02 15:00 UTC</td></tr>
+</tbody></table></div>
+<p class="prose-wide"><strong>为什么在此冻结。</strong>剩下的每一条路都是靠证据而非判断关闭的：信号在每一种表示下都饱和在 0.83–0.84（<a href="#e6">E6</a>、<a href="#e16">E16</a>、<a href="#e17">E17</a>、<a href="#e18">E18</a>）；监督路线在五折上输给方差（<a href="#e10">E10</a>、<a href="#e13">E13</a>、<a href="#e32">E32</a>）；候选池扩充在当前配置上没有可测量的增益（<a href="#e27">E27</a>、<a href="#e33">E33</a>、<a href="#e35">E35</a>、<a href="#e38">E38</a>）；结构线已关闭且机制查明（<a href="#e36">E36</a>），其唯一的机制线索也被降格为未确立的效应量（<a href="#e41">E41</a>）。<a href="#e15">E15</a> 把进一步的配置选择定价为 −0.0048，因此继续搜索的期望收益为负。</p>
+<p class="prose-wide"><strong>仍然开放的那个问题不是建模问题。</strong>朝向肽位点上的替换是否<em>导致</em>功能不一致，无法靠在这份数据上做更多计算来解决——E41 表明，一旦以克隆型家族为抽样单位，统计支持无法一致地存活；<a href="#e34">E34</a> 表明它所依赖的结构只在记忆化范围内被验证过。这个问题留给独立数据或功能实验。</p>
+
 <h4>同一份评审带来的其他更正</h4>
 <ul class="prose-wide">
   <li><strong>E20 的"零拟合参数，所以没有东西可过拟合"说得太满。</strong>确实没有拟合系数，但特征与配置的选择仍然是对着公开表位做出的选择，而 <a href="#e15">E15</a> 把这件事的代价定价为 0.0048。</li>
@@ -1227,9 +1263,9 @@ both_singleton   = (1−a)(1−b)   clustered-both   = ab</pre>
 <p class="prose"><strong>49 张计划卡片执行了 46 张。</strong>未执行的三张分别是湿实验验证（由 PI 排除）和两张需要与队友交换产物的卡片（已谢绝）。</p>
 <div class="tw"><table>
 <tbody>
-<tr><td>已记录实验</td><td class="n">41</td><td>E1–E41，外加 E37 的两次修订</td></tr>
-<tr><td>脚本</td><td class="n">38</td><td></td></tr>
-<tr><td>报告</td><td class="n">16</td><td></td></tr>
+<tr><td>已记录实验</td><td class="n">42</td><td>E1–E41，外加 E37 的两次修订</td></tr>
+<tr><td>脚本</td><td class="n">39</td><td></td></tr>
+<tr><td>报告</td><td class="n">17</td><td></td></tr>
 <tr><td>实验日志</td><td class="n">1,920</td><td>行</td></tr>
 <tr class="key"><td>数据层审计</td><td class="n">57</td><td>项检查，全部通过</td></tr>
 <tr><td>GPU 工作量</td><td class="n"></td><td>2,636 次单样本折叠（7.4 h）、2,636 次五样本折叠（13.2 h）、2,706 次诱饵折叠（7 h）、414 ns 分子动力学（14 h）</td></tr>
