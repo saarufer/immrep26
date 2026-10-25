@@ -1,0 +1,39 @@
+[project]
+name = "immrep26"
+version = "1.0.0"
+description = "IMMREP26: predicting which published TCR-pMHC annotations survive functional re-screening"
+requires-python = "==3.12.*"
+
+# Pinned to what the recorded results were produced with. These are the direct
+# imports of scripts/ and src/, derived by AST scan rather than pip freeze, so
+# the list is the project's actual surface rather than its transitive closure.
+dependencies = [
+    "numpy==1.26.4",          # <2 is required: boltz pins it, and pyarrow conflicts
+    "pandas==2.3.3",
+    "scipy==1.13.1",
+    "scikit-learn==1.6.1",
+    "biopython==1.84",
+    "parasail==1.3.4",        # Needleman-Wunsch for the V-domain alignment distance
+    "lightgbm==4.7.0",        # E13 only
+    "freesasa==2.2.1",        # buried-area descriptor, E37
+    "pdbfixer==1.12.0",
+    "sceptr==1.2.0",
+    "libtcrlm==1.1.3",        # SCEPTR's gene vocabulary
+    "tcrdist3==0.3",          # distances, OLGA Pgen, and the IMGT CDR1/2 reference
+    "torch==2.11.0",
+]
+
+[project.optional-dependencies]
+# Structure prediction. Installed separately because it pins numpy<2 and drags
+# in CUDA wheels; see docs/REPRODUCING.md.
+fold = ["boltz==2.2.1", "cuequivariance-torch"]
+# Only needed to re-submit, which the frozen predictor does not require.
+kaggle = ["kaggle==2.2.4"]
+dev = ["pytest==8.3.4"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -2176,3 +2176,58 @@ experiments, which is where it is left.
 that the selected final submission is `density3_struct03.csv` and not the
 earlier density-only file.
 
+
+## Pipeline delivered — 2026-10-26
+
+Freezing the predictor closed one half of the brief; the other half -- a
+pipeline someone else can run -- was not actually delivered. Before today the
+repository had **no environment specification of any kind**: no pyproject, no
+requirements file, no lockfile, 41 scripts with no entry point and no tests.
+Nothing here was reproducible by anyone but this machine.
+
+**Dependency manifest.** `pyproject.toml`, pinned to what produced the recorded
+results. The 14 direct dependencies were derived by AST-scanning every import
+in `scripts/` and `src/`, not by `pip freeze`, so the list is the project's
+actual surface rather than its transitive closure. Boltz-2 and the Kaggle CLI
+are optional extras; OpenMM is deliberately **absent**, because the PyPI wheel
+ships no CUDA plugin and the working build has to come from conda-forge.
+
+**Reproducibility, stated as a checkable claim rather than a hope.**
+`make submission` rebuilds the entered file and verifies it against its
+sha256. It does: the regenerated file is **byte-identical** to the frozen
+`523a4692...`. That is the strongest available statement that the freeze is
+real, and it had never been tested.
+
+**Tests.** `tests/test_frozen.py`, 16 guards that run in seconds: the frozen
+file's hash and score, the metric reproducing the organisers' 0.8247, the
+mean-per-epitope-versus-pooled distinction E1 turned on, single-class folds
+returning NaN rather than raising, the data invariants including that no
+private row carries a label, and that `submission.validate` actually rejects
+each failure it claims to. Tests needing TCRvdb skip rather than fail, so a
+clone without the licensed data still checks what it can.
+
+**`make`** encodes the stage graph with honest costs: `check` is five CPU
+minutes, while `fold-main` is 7.4 GPU-hours and `md` is ten. None of the
+expensive tiers is needed to rebuild the submission.
+
+**One committed cache, after checking what it contains.**
+`data/interim/boltz_features.csv` is 1.8 MB of `tcr_id` plus 34 numeric
+descriptors -- no sequences, no labels -- and costs 7.4 GPU-hours to
+regenerate, so it is committed to remove that barrier. The 29 MB of SCEPTR and
+tcrdist caches are not, because they rebuild in under ten CPU minutes. Writing
+this up caught a false claim in my own first draft, which asserted the cache
+was already committed when `git ls-files data/interim/` was empty.
+
+**`docs/REPRODUCING.md`** carries the two-environment setup, the stage costs,
+and a section of traps that each cost real time here: the gene-name format, the
+single ORF SCEPTR rejects, OpenMM renaming chains on write, density reference
+sets, the two incompatible clustering bases behind E40, the five unsaved
+heredocs, and `pgrep -f` matching its own command line.
+
+**Also closed today, and it should not have been left open.** The last entry
+asked the user to verify the selected submission in the Kaggle UI. That was
+answerable from the API: only two submissions exist, `density3_struct03.csv`
+at public 0.849 and the earlier density-only file at 0.839. The higher public
+score is auto-selected absent a manual override, so the risk I flagged does
+not exist.
+

@@ -15,3 +15,9 @@ submissions/
 
 # conda-forge env for the OpenMM CUDA plugin, which the PyPI wheel lacks
 .mmenv-openmm/
+
+# The one derived cache that is committed. It costs 7.4 GPU-hours to rebuild,
+# and carries only tcr_id plus 34 numeric structural descriptors -- no
+# sequences and no TCRvdb labels -- so `make submission` works from a fresh
+# clone without a GPU.
+!data/interim/boltz_features.csv
