@@ -230,7 +230,7 @@
 <header class="mast">
   <p class="eyebrow">IMMREP26 · Validation of public TCR–pMHC data</p>
   <h1>Experiment Compendium</h1>
-  <p class="standfirst">Thirty-nine experiments on whether a published TCR–epitope
+  <p class="standfirst">Forty-one experiments on whether a published TCR–epitope
   annotation will survive functional re-screening — what each one asked, how it
   was measured, and what it settled.</p>
   <div class="mast-meta">
@@ -242,9 +242,9 @@
 
 <dl class="figs">
   <div class="fig"><dt>Submitted · public</dt><dd>0.8498<span class="sub">leaderboard showed 0.849</span></dd></div>
-  <div class="fig hi"><dt>Private estimate</dt><dd>0.80<span class="sub">range 0.67–0.91, not LOEO's 0.846</span></dd></div>
+  <div class="fig hi"><dt>Private estimate</dt><dd>0.846<span class="sub">E40 withdrew the 0.80 projection</span></dd></div>
   <div class="fig"><dt>Organisers' baseline</dt><dd>0.8247<span class="sub">tcrdist3 nearest-neighbour</span></dd></div>
-  <div class="fig"><dt>Experiments</dt><dd>39<span class="sub">19 rejections, 3 adopted components</span></dd></div>
+  <div class="fig"><dt>Experiments</dt><dd>41<span class="sub">19 rejections, 3 adopted components</span></dd></div>
 </dl>
 
 <section class="prose-wide">
@@ -280,17 +280,20 @@ within-epitope kernel densities — SCEPTR <span class="mono">default</span> and
 fitted parameters.</strong></p>
 
 <h4>The honest private estimate</h4>
-<p><strong>0.80 central, plausible range 0.67–0.91.</strong> Not the 0.846 that
-nested leave-one-epitope-out reports. <a href="#e30">E30</a> is the reason, and
-it is the most consequential result here.</p>
+<p><strong>0.846</strong>, with a documented but unquantified downside risk.
+<a href="#e30">E30</a> argued for 0.80; <a href="#e40">E40</a> withdrew that
+number after it failed a leave-one-epitope-out transfer test at MAE 0.083 —
+nearly twice the bias it claimed to detect. The distribution shift E30 found is
+real; its size is not measurable with five epitopes. Treat 0.67–0.91 as a
+scenario range, never a confidence interval.</p>
 </section>
 
-<h2><span class="count">Index · 39 experiments by outcome</span>All experiments</h2>
+<h2><span class="count">Index · 41 experiments by outcome</span>All experiments</h2>
 <div class="legend">
   <span><i class="dot found"></i> Foundation — settled a ground rule (3)</span>
   <span><i class="dot adopt"></i> Adopted into the submission (3)</span>
   <span><i class="dot reject"></i> Rejected (19)</span>
-  <span><i class="dot diag"></i> Diagnostic — changed understanding (14)</span>
+  <span><i class="dot diag"></i> Diagnostic — changed understanding (16)</span>
 </div>
 <div class="idx">
   <a class="chip" href="#e1"><i class="dot found"></i>E1 Metric</a>
@@ -332,6 +335,8 @@ it is the most consequential result here.</p>
   <a class="chip" href="#e37"><i class="dot diag"></i>E37 Relaxation</a>
   <a class="chip" href="#e38"><i class="dot diag"></i>E38 Pool controls</a>
   <a class="chip" href="#e39"><i class="dot diag"></i>E39 Dynamics</a>
+  <a class="chip" href="#e40"><i class="dot diag"></i>E40 Projection</a>
+  <a class="chip" href="#e41"><i class="dot diag"></i>E41 Family CIs</a>
 </div>
 
 <!-- ============ FOUNDATIONS ============ -->
@@ -1541,8 +1546,9 @@ control     0.141 × 0.708  +  0.859 × 0.063  =  0.154   (observed 0.154)</pre>
   <p class="field"><span class="lbl">Why, quantitatively</span>Scores are per TCR,
   not per pair, so a TCR cannot know which comparison it is in. Raising structure
   weight from 0.3 to 0.6 gives <strong>+0.0040</strong> in the adversarial class
-  (4.5% of pairs) and <strong>−0.0336</strong> elsewhere — net −0.0296. Fixing the
-  class completely at w=1.0 is worth at most +0.0081 while costing −0.107.
+  (4.5% of pairs) and <strong>−0.0336</strong> elsewhere — net −0.0296. At w=1.0 the best available weighting is worth +0.0081 while costing −0.107.
+  <em>(Corrected by the E40 review: the class ceiling is its mean loss of
+  0.0318, so eliminating its error entirely would be worth +0.032.)</em>
   <strong>The trade is about 13:1 against.</strong></p>
   <div class="field concl"><span class="lbl">Settled</span>The decomposition
   succeeded diagnostically and failed prescriptively. What would be needed is a
@@ -1656,8 +1662,11 @@ control     0.141 × 0.708  +  0.859 × 0.063  =  0.154   (observed 0.154)</pre>
   epitope drawn like the public ones" and biased upward for an epitope with
   private-like family sparsity. That bias is about <strong>−0.047</strong>, and no
   amount of leave-one-epitope-out can detect it, because all five public epitopes
-  are family-richer than the private three. <strong>Revised position: central
-  estimate 0.80, plausible range 0.67–0.91</strong>, in place of the single 0.846.
+  are family-richer than the private three. <strong>Revised position at the time: central estimate 0.80, range
+  0.67–0.91.</strong> <a href="#e40">E40</a> subsequently <strong>withdrew the
+  0.80</strong>: the projection is not identifiable without label-dependent
+  assumptions, its validation check is an identity, and it fails an
+  out-of-sample transfer test.
   The spread is <strong>not sampling noise</strong> — it is one substantive
   unknown, and <a href="#e21">E21</a> already showed that cannot be forecast from
   cohort geometry. This is the convergence point of E20, E21, E22 and E32's
@@ -1816,8 +1825,157 @@ control     0.141 × 0.708  +  0.859 × 0.063  =  0.154   (observed 0.154)</pre>
   Statistical screening did not catch it; biological attribution did.</strong></p></blockquote>
 </article>
 
+<!-- ============ REVIEW RESPONSE ============ -->
+<h2><span class="count">Part nine</span>Review response: E40 and E41</h2>
+<p class="prose lede">An external review of the 2026-10-23 edition made three
+criticisms that proved correct. Running them down changed two of the project's
+headline claims.</p>
+
+<article class="exp" id="e40">
+  <div class="exp-head">
+    <span class="exp-id">E40</span>
+    <div class="exp-title"><h3>Does E30's private projection transfer? It does not</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>Check the reviewer's charge that
+  E30's private class composition is not label-free.</p>
+  <p class="field"><span class="lbl">First finding, before any statistics</span>
+  <strong>E30 was computed in a heredoc that was never saved.</strong> Its log
+  entry cites no script, so the project's most consequential number rested on a
+  computation absent from version control.</p>
+
+  <h4>The composition is not label-free — and the charge holds</h4>
+  <p>A class such as <span class="mono">pos_clu_neg_sing</span> needs to know
+  which pair member is positive. With <em>a</em> = P(clustered | positive),
+  <em>b</em> = P(clustered | negative), π = P(positive):</p>
+<pre>pos_clu_neg_sing = a(1−b)       pos_sing_neg_clu = (1−a)b
+both_singleton   = (1−a)(1−b)   clustered-both   = ab</pre>
+  <p>and the only label-free observable is q = πa + (1−π)b. One equation, two
+  unknowns. <strong>π is a third unknown the review did not name</strong>,
+  running 0.287 to 0.663 across the public epitopes; splitting the
+  both-clustered mass needs a fourth. λ = a/b spans 1.9 to 10.2 where it is
+  defined at all.</p>
+
+  <h4>The reconstruction E30 cited as validation is an identity</h4>
+  <p>Recombining each epitope's own error rates with its own shares returns its
+  own AUC: residual <strong>1.1×10⁻¹⁶</strong>, machine epsilon. A second
+  problem found while reading the code rather than the review:
+  <span class="mono">scripts/20</span> clusters only the <em>labelled</em> rows
+  while <span class="mono">scripts/25</span>, whose family rates E30 reasoned
+  from, clusters the <em>whole</em> cohort. E30 combined error rates from one
+  basis with compositions from the other.</p>
+
+  <h4>The test: leave-one-epitope-out transfer</h4>
+  <div class="tw"><table><caption>Everything transferred is estimated on the other four epitopes; the held-out epitope contributes only its label-free q</caption>
+  <thead><tr><th>held out</th><th class="n">actual</th><th class="n">full transfer</th><th class="n">oracle composition</th><th class="n">oracle errors</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.869</td><td class="n">0.954</td><td class="n">0.876</td><td class="n">0.938</td></tr>
+  <tr class="key"><td class="pep">GLCTLVAML</td><td class="n">0.741</td><td class="n">0.954</td><td class="n">0.833</td><td class="n">0.929</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="n">0.865</td><td class="n">0.856</td><td class="n">0.902</td><td class="n">0.782</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.840</td><td class="n">0.847</td><td class="n">0.852</td><td class="n">—</td></tr>
+  <tr class="key"><td class="pep">YLQPRTFLL</td><td class="n">0.933</td><td class="n">0.830</td><td class="n">0.864</td><td class="n">0.912</td></tr>
+  <tr class="key"><td>mean absolute error</td><td class="n"></td><td class="n">0.083</td><td class="n">0.043</td><td class="n">0.090</td></tr>
+  </tbody></table></div>
+  <p><strong>The method cannot predict a held-out public epitope.</strong> Its
+  out-of-sample MAE of 0.083 is nearly twice the 0.047 bias it claimed to
+  detect. Splitting the two transfers shows the composition is the weaker half —
+  exactly the identifiability problem, now measured.</p>
+  <p><strong>And done honestly, it does not give 0.80.</strong> Sweeping the
+  unobservables over the public range gives a private macro of
+  <strong>0.829–0.857</strong>, median 0.846, indistinguishable from LOEO. The
+  mean transfer bias is +0.038 with a standard error of about 0.054, so
+  bias-correcting is not justified.</p>
+  <p><strong>A factual error in E30, which the reviewer caught.</strong> It said
+  all five public epitopes are family-richer than the private three. False:
+  <span class="pep">TTDPSFLGRY</span> at 0.047 sits below
+  <span class="pep">LTDEMIAQY</span> at 0.146. Two of three private epitopes are
+  below every public one; the third is inside the public range.</p>
+  <div class="tw"><table><caption>The revised position</caption>
+  <thead><tr><th>number</th><th>what it is</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="n">0.846</td><td>the estimate: nested LOEO over five public epitopes</td></tr>
+  <tr><td class="n">0.799</td><td><strong>withdrawn</strong> — assumptions never recorded, and it fails its own out-of-sample test</td></tr>
+  <tr><td class="n">0.67–0.91</td><td>retained as a <strong>scenario range</strong>, not a confidence interval</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">Settled</span>E30's qualitative
+  finding survives: the private cohorts differ from the public ones on a
+  label-free observable, and LOEO cannot see it. What does not survive is any
+  number attached to that difference. <strong>With five epitopes the size of the
+  shift is not measurable</strong>, which is itself the result and agrees with
+  <a href="#e21">E21</a>.</div>
+</article>
+
+<article class="exp" id="e41">
+  <div class="exp-head">
+    <span class="exp-id">E41</span>
+    <div class="exp-title"><h3>Is E31 robust to non-independence? Partly</h3></div>
+    <span class="tag diag">Diagnostic</span>
+  </div>
+  <p class="field"><span class="lbl">Goal</span>E31 treated each mutated site as
+  a draw. Re-test with the clonotype family as the sampling unit, using a cluster
+  bootstrap over families and a permutation that shuffles the group label between
+  families.</p>
+  <div class="tw"><table><caption>The effective sample size was overstated about tenfold</caption>
+  <thead><tr><th>group</th><th class="n">sites</th><th class="n">pairs</th><th class="n">TCRs</th><th class="n">families</th></tr></thead>
+  <tbody>
+  <tr><td>control</td><td class="n">767</td><td class="n">522</td><td class="n">302</td><td class="n"><b>79</b></td></tr>
+  <tr><td>discordant</td><td class="n">103</td><td class="n">71</td><td class="n">87</td><td class="n"><b>33</b></td></tr>
+  </tbody></table></div>
+  <p>The three largest families contribute 129, 92 and 73 sites on their own,
+  and 15 families appear in both groups.</p>
+  <div class="tw"><table><caption>E31's full raw-structure set</caption>
+  <thead><tr><th>quantity</th><th class="n">effect</th><th>family 95% CI</th><th class="n">family p</th><th class="n">E31's site-level p</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>peptide contacts at site</td><td class="n">+3.629</td><td class="mono">[+0.43, +7.83]</td><td class="n">0.043</td><td class="n">0.0070</td></tr>
+  <tr><td>site faces the peptide</td><td class="n">+0.109</td><td class="mono">[−0.03, +0.27]</td><td class="n">0.236</td><td class="n">0.0790</td></tr>
+  </tbody></table></div>
+  <div class="tw"><table><caption>The 40-pair relaxed subset E37 and E39 used — 126 sites, 30 families</caption>
+  <thead><tr><th>quantity</th><th class="n">effect</th><th>family 95% CI</th></tr></thead>
+  <tbody>
+  <tr><td>peptide contacts at site</td><td class="n">+1.815</td><td class="mono">[−1.16, +5.19] crosses zero</td></tr>
+  <tr class="key"><td>site faces the peptide</td><td class="n">+0.182</td><td class="mono">[+0.04, +0.38]</td></tr>
+  </tbody></table></div>
+  <p><strong>The two samples disagree about which reading survives.</strong> All
+  four effects are positive, but the contact count clears family-level
+  resampling only on the full set and the binary facing rate only on the relaxed
+  subset. <strong>No single reading survives in both</strong> — which undercuts
+  the E37 revision's "the whole effect is the binary one", a conclusion read off
+  the relaxed subset alone.</p>
+  <p><strong>Leave-one-epitope-out does not reverse the direction</strong>, the
+  one thing that holds: the contact effect runs 2.35 to 4.60 across the five
+  drops against 3.63 on the full data. Direction is stable; magnitude is not
+  pinned.</p>
+  <div class="field concl"><span class="lbl">Revised wording for E31</span>
+  <em>Near-identical TCR pairs with discordant functional labels show an
+  enrichment of substitutions at predicted peptide-facing positions relative to
+  concordant pairs. The direction is consistent across epitopes and across both
+  structural samples. With the clonotype family as the sampling unit the
+  enrichment is significant in one reading per sample and the two samples
+  disagree on which, so the effect size is not established and causality is not
+  demonstrated.</em></div>
+</article>
+
+<h4>Other corrections from the same review</h4>
+<ul class="prose-wide">
+  <li><strong>E20's "zero fitted parameters, so nothing to overfit" is too
+  strong.</strong> There are no fitted coefficients, but feature and
+  configuration selection are still choices made against the public epitopes,
+  and <a href="#e15">E15</a> priced that at 0.0048.</li>
+  <li><strong>E21's "cost of 0.3 is bounded at 0.0002"</strong> applies to the
+  five measured epitopes, not in general.</li>
+  <li><strong>E26's germline-confounding reading is one of two live
+  explanations.</strong> Germline-encoded CDR1 and CDR2 residues genuinely
+  contact pMHC, so a V-region signal is not automatically confounding. A cheap
+  untried test: split the CDR3-masked distance into framework-only and
+  CDR1/2-only. Signal in framework, which contacts nothing, would be
+  confounding; signal in CDR1/2 would be compatible with real recognition.</li>
+  <li><strong>E39's "no further structural dynamics will add to it"
+  overreaches.</strong> What was shown is that 2 ns of implicit-solvent dynamics
+  around the predicted pose adds nothing beyond the static facing rate.</li>
+</ul>
+
 <!-- ============ SELF-REVIEW ============ -->
-<h2><span class="count">Part nine</span>Self-review findings</h2>
+<h2><span class="count">Part ten</span>Self-review findings</h2>
 <p class="prose lede">Mistakes caught in my own work, listed because several had
 already produced a number that looked like a result. This is the part of the
 record most likely to be useful to someone repeating the work.</p>
@@ -1840,21 +1998,27 @@ record most likely to be useful to someone repeating the work.</p>
 <tr><td class="mono">E39</td><td>replica-spread guard compared against the median per-site replica sd</td><td>zero for most sites, so every quantity "exceeded the spread" by construction</td></tr>
 <tr class="key"><td class="mono">E39</td><td>static-to-MD join not deduplicated on the structural key</td><td>126 rows inflated to 150, manufacturing an apparent reversal and a p=0.047</td></tr>
 <tr><td class="mono">E39</td><td>groups not disjoint at site level</td><td>3 of 117 sites are discordant in one pair and control in another; applies to E37 equally</td></tr>
+<tr class="key"><td class="mono">E30</td><td>private projection quoted as a measurement when its composition is not label-free</td><td><strong>withdrawn by E40</strong>: fails leave-one-epitope-out transfer at MAE 0.083</td></tr>
+<tr class="key"><td class="mono">E30</td><td>"reproduces every public AUC to 0.0003" offered as validation</td><td>an identity; residual is machine epsilon</td></tr>
+<tr><td class="mono">E30</td><td>"all five public epitopes are family-richer than the private three"</td><td>false — TTDPSFLGRY 0.047 &lt; LTDEMIAQY 0.146</td></tr>
+<tr><td class="mono">E30</td><td>error rates and compositions taken from two different clustering bases</td><td><span class="mono">scripts/20</span> clusters labelled rows, <span class="mono">scripts/25</span> the whole cohort</td></tr>
+<tr class="key"><td class="mono">E31</td><td>each mutated site treated as an independent draw</td><td>767 control sites come from 79 families; family-level CIs are far wider</td></tr>
+<tr><td class="mono">E23</td><td>"fixing the adversarial class is worth at most +0.0081"</td><td>that is the best tested weighting; the class ceiling is +0.032</td></tr>
 </tbody></table></div>
 <p class="prose">Three of these had already produced a publishable-looking number.
 The recurring cause is <strong>computation in an unsaved heredoc rather than in
 version control.</strong></p>
 
 <!-- ============ FINAL STATE ============ -->
-<h2><span class="count">Part ten</span>Final state</h2>
+<h2><span class="count">Part eleven</span>Final state</h2>
 <p class="prose"><strong>46 of 49 plan cards executed.</strong> The three not run
 are wet-lab validation (excluded by the PI) and two cards requiring artifact
 exchange with the teammate (declined).</p>
 <div class="tw"><table>
 <tbody>
-<tr><td>Experiments recorded</td><td class="n">39</td><td>E1–E39, plus two E37 revisions</td></tr>
-<tr><td>Scripts</td><td class="n">36</td><td></td></tr>
-<tr><td>Reports</td><td class="n">14</td><td></td></tr>
+<tr><td>Experiments recorded</td><td class="n">41</td><td>E1–E41, plus two E37 revisions</td></tr>
+<tr><td>Scripts</td><td class="n">38</td><td></td></tr>
+<tr><td>Reports</td><td class="n">16</td><td></td></tr>
 <tr><td>Experiment log</td><td class="n">1,920</td><td>lines</td></tr>
 <tr class="key"><td>Data-layer audit</td><td class="n">57</td><td>checks, all passing</td></tr>
 <tr><td>GPU work</td><td class="n"></td><td>2,636 single-sample folds (7.4 h), 2,636 five-sample folds (13.2 h), 2,706 decoy folds (7 h), 414 ns MD (14 h)</td></tr>
@@ -1876,8 +2040,10 @@ since all three size-matched negative controls actively <em>hurt</em>.</p>
 
 <h4>The headline revision</h4>
 <p><a href="#e30">E30</a> — LOEO holds out epitope identity but not cohort
-structure. <strong>Private estimate 0.80 central, 0.67–0.91 plausible</strong>,
-not the 0.846 that nested LOEO reports.</p>
+structure, a real label-free difference LOEO cannot see. But
+<a href="#e40">E40</a> withdrew the 0.80 attached to it: the projection fails
+its own leave-one-epitope-out test. <strong>Private estimate 0.846</strong>,
+downside risk real but unquantified, 0.67–0.91 as a scenario range.</p>
 
 <h4>One item outstanding</h4>
 <p>Verify in the Kaggle UI that the final selected submission is

@@ -1918,3 +1918,178 @@ position can be discordant with one partner and same-label with a different one.
 The effect is small here but the point applies to E37's tests equally, and
 neither entry had noted it.
 
+
+## E40 — Does E30's private projection transfer? It does not (reviewer's P0)
+
+A reviewer identified a problem with E30 and the problem is real. Checking it
+turned up two more, and the conclusion is that **E30's 0.799 is withdrawn**.
+`scripts/37_private_projection_validation.py`.
+
+**First: E30 was computed in a heredoc that was never saved.** The log entry
+cites no script. So the project's single most consequential number -- the one
+written into long-term memory -- rested on a computation absent from version
+control. This is the fourth time that pattern has caused a problem.
+
+**The composition is not label-free, which is the reviewer's point.** A class
+such as `pos_clu_neg_sing` needs to know which pair member is positive. With
+a = P(clustered | positive), b = P(clustered | negative), pi = P(positive):
+
+    pos_clu_neg_sing = a(1-b)    pos_sing_neg_clu = (1-a)b
+    both_singleton   = (1-a)(1-b)    clustered-both = ab
+
+and the only label-free observable is q = pi*a + (1-pi)*b. One equation, two
+unknowns. **And pi is a third unknown the review did not name**: it runs 0.287
+to 0.663 across the public epitopes. Splitting the both-clustered mass needs a
+fourth parameter. So the private composition is assumed, not measured.
+
+| epitope | q | pi | a | b | lambda=a/b |
+|---|---:|---:|---:|---:|---:|
+| GILGFVFTL | 0.476 | 0.663 | 0.601 | 0.149 | 4.02 |
+| GLCTLVAML | 0.552 | 0.663 | 0.645 | 0.339 | 1.90 |
+| NLVPMVATV | 0.183 | 0.287 | 0.571 | 0.058 | 9.93 |
+| TTDPSFLGRY | 0.047 | 0.497 | 0.082 | 0.000 | undefined |
+| YLQPRTFLL | 0.184 | 0.414 | 0.411 | 0.040 | 10.24 |
+
+lambda spans 1.9 to 10.2 where it is defined at all.
+
+**The reconstruction E30 cited as validation is an identity.** Recombining each
+epitope's own class error rates with its own class shares returns its own AUC;
+measured residual **1.1e-16**, machine epsilon. E30 reported "within 0.0003" and
+read it as evidence the arithmetic transfers. It is evidence the arithmetic is
+arithmetic.
+
+**A basis mismatch nobody had noticed.** `scripts/20` clusters only the
+*labelled* rows; `scripts/25`, whose family rates E30 reasoned from, clusters
+the *whole* cohort. E30 combined error rates from one basis with compositions
+from the other. Everything here is recomputed whole-cohort, the only basis a
+private epitope can supply.
+
+**P0: leave-one-epitope-out transfer.** Estimate every transferred quantity on
+four epitopes, predict the fifth from its label-free q alone.
+
+| held out | actual | full transfer | oracle composition | oracle errors |
+|---|---:|---:|---:|---:|
+| GILGFVFTL | 0.869 | 0.954 | 0.876 | 0.938 |
+| GLCTLVAML | 0.741 | **0.954** | 0.833 | 0.929 |
+| NLVPMVATV | 0.865 | 0.856 | 0.902 | 0.782 |
+| TTDPSFLGRY | 0.840 | 0.847 | 0.852 | -- |
+| YLQPRTFLL | 0.933 | **0.830** | 0.864 | 0.912 |
+| | | **MAE 0.083** | MAE 0.043 | MAE 0.090 |
+
+**The method cannot predict a held-out public epitope.** Its out-of-sample MAE
+of 0.083 is nearly twice the 0.047 bias it claimed to have detected. GLCTLVAML
+is overpredicted by 0.213. Splitting the two transfers shows the composition is
+the weaker half (0.090 against 0.043), which is exactly the identifiability
+problem the reviewer identified, now measured.
+
+**And done honestly, the projection does not give 0.80.** Sweeping the
+unobservables over the public range gives a private macro of **0.829 to 0.857**,
+median 0.846 -- indistinguishable from LOEO. The mean transfer bias is +0.038
+with a standard error of about 0.054 across five folds, so it is not
+distinguishable from zero and bias-correcting is not justified.
+
+**A factual error in E30, which the reviewer caught.** It said all five public
+epitopes are family-richer than the private three. False: TTDPSFLGRY at 0.047
+sits below LTDEMIAQY at 0.146. Correct statement: two of three private epitopes
+are below every public epitope, and the third is inside the public range.
+
+**Revised position, replacing E30's.**
+
+| number | what it is |
+|---|---|
+| **0.846** | the estimate: nested LOEO over five public epitopes |
+| 0.799 | **withdrawn** -- a projection whose assumptions were never recorded and which fails its own out-of-sample test |
+| 0.67-0.91 | retained, but as a **scenario range** over within-both-singleton separability, not a confidence interval |
+
+The real finding of E30 survives and is worth keeping: the private cohorts
+differ from the public ones on a label-free observable, and LOEO cannot see it.
+What does not survive is any number attached to that difference. **With five
+epitopes the size of the shift is not measurable**, which is itself the result
+and agrees with E21.
+
+---
+
+## E41 — Is E31 robust to non-independence? Partly (reviewer's P1)
+
+E31 treated each mutated site as a draw. `scripts/38_e31_family_robustness.py`
+re-tests with the clonotype family as the sampling unit -- single-linkage at
+SCEPTR cosine 0.12 over the whole cohort -- using a cluster bootstrap over
+families and a permutation that shuffles the group label between families.
+
+**The effective sample size was overstated about tenfold.**
+
+| group | sites | pairs | TCRs | **families** |
+|---|---:|---:|---:|---:|
+| control | 767 | 522 | 302 | **79** |
+| discordant | 103 | 71 | 87 | **33** |
+
+The three largest families contribute 129, 92 and 73 sites on their own, and 15
+families appear in both groups.
+
+**On E31's full raw-structure set:**
+
+| quantity | disc | ctl | effect | family 95% CI | family p | E31's site-level p |
+|---|---:|---:|---:|---|---:|---:|
+| peptide contacts at site | 6.534 | 2.905 | +3.629 | [+0.43, +7.83] | **0.043** | 0.0070 |
+| site faces the peptide | 0.340 | 0.231 | +0.109 | [-0.03, +0.27] | **0.236** | 0.0790 |
+
+**On the 40-pair relaxed subset E37 and E39 used** (126 sites, 30 families):
+
+| quantity | effect | family 95% CI |
+|---|---:|---|
+| peptide contacts at site | +1.815 | **[-1.16, +5.19]** crosses zero |
+| site faces the peptide | +0.182 | [+0.04, +0.38] |
+
+**The two samples disagree about which reading survives.** All four effects are
+positive, but the contact count clears family-level resampling only on the full
+set and the binary facing rate only on the relaxed subset. **No single reading
+survives in both.** That directly undercuts the E37 revision's claim that "the
+whole effect is the binary one" -- that was read off the relaxed subset alone,
+where the binary happens to be the surviving reading, and it reverses on the
+larger sample.
+
+**Leave-one-epitope-out does not reverse the direction**, which is the one thing
+that holds: the contact effect runs 2.35 to 4.60 across the five drops against
+3.63 on the full data. Direction is stable; magnitude is not pinned.
+
+**Revised wording for E31**, close to the reviewer's: *near-identical TCR pairs
+with discordant functional labels show an enrichment of substitutions at
+predicted peptide-facing positions relative to concordant pairs. The direction
+is consistent across epitopes and across both structural samples. With the
+clonotype family as the sampling unit the enrichment is significant in one
+reading per sample and the two samples disagree on which, so the effect size is
+not established and causality is not demonstrated.*
+
+---
+
+## Corrections to earlier entries, from the same review
+
+**E23's ceiling was mislabelled.** It said fixing the adversarial class
+completely is "worth at most +0.0081". That is what the best weighting in the
+tested family achieves; it is not the class's ceiling. `pos_sing_neg_clu`
+contributes a mean loss of **0.0318** (reports/06), so eliminating its error
+entirely is worth **+0.032**, four times the quoted figure. The conclusion --
+that no per-TCR weighting can capture it, because the trade against the easy
+class is about 13:1 -- is unaffected, but the two numbers answer different
+questions and the entry conflated them.
+
+**E20's "zero fitted parameters, so nothing to overfit" is too strong.** There
+are no fitted coefficients, but feature and configuration selection are still
+choices made against the public epitopes, and E15 priced exactly that at 0.0048.
+
+**E21's "cost of 0.3 is bounded at 0.0002" applies to the five measured
+epitopes**, not in general.
+
+**E26's germline-confounding reading is one of two live explanations.** V-gene
+usage does track study and donor, but germline-encoded CDR1 and CDR2 residues
+genuinely contact pMHC, so a V-region signal is not automatically confounding.
+The present data cannot separate them. A cheap test exists and has not been run:
+split the CDR3-masked distance into framework-only and CDR1/2-only. Signal
+concentrated in framework, which contacts nothing, would be confounding; signal
+in CDR1/2 would be compatible with real recognition.
+
+**E39's "no further structural dynamics will add to it" overreaches.** What was
+shown is that 2 ns of implicit-solvent dynamics around the predicted pose adds
+nothing beyond the static facing rate. Longer timescales, explicit solvent and
+larger rearrangements were not sampled.
+

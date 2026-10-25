@@ -198,7 +198,7 @@
 <header class="mast">
   <p class="eyebrow">IMMREP26 · 公开 TCR–pMHC 数据的功能验证</p>
   <h1>实验全录</h1>
-  <p class="standfirst">三十九个实验，围绕一个问题：一条已发表的 TCR–表位注释，能否经受住功能性再筛选。每个实验问了什么、怎么测的、最后定下了什么。</p>
+  <p class="standfirst">四十一个实验，围绕一个问题：一条已发表的 TCR–表位注释，能否经受住功能性再筛选。每个实验问了什么、怎么测的、最后定下了什么。</p>
   <div class="mast-meta">
     <span>编纂于 2026-10-23</span>
     <span>底稿：reports/00_experiment_log.md</span>
@@ -208,9 +208,9 @@
 
 <dl class="figs">
   <div class="fig"><dt>已提交模型 · 公榜</dt><dd>0.8498<span class="sub">榜单显示 0.849</span></dd></div>
-  <div class="fig hi"><dt>私榜估计</dt><dd>0.80<span class="sub">区间 0.67–0.91，而非 LOEO 的 0.846</span></dd></div>
+  <div class="fig hi"><dt>私榜估计</dt><dd>0.846<span class="sub">E40 撤回了 0.80 的投影</span></dd></div>
   <div class="fig"><dt>主办方基线</dt><dd>0.8247<span class="sub">tcrdist3 最近邻</span></dd></div>
-  <div class="fig"><dt>实验数</dt><dd>39<span class="sub">19 个否决，3 个组件被采纳</span></dd></div>
+  <div class="fig"><dt>实验数</dt><dd>41<span class="sub">19 个否决，3 个组件被采纳</span></dd></div>
 </dl>
 
 <section class="prose-wide">
@@ -235,15 +235,15 @@
 <p><span class="mono">submissions/density3_struct03.csv</span>，由 <span class="mono">scripts/18_final_submission.py</span> 生成：三个表位内核密度的秩平均——SCEPTR <span class="mono">default</span> 与 <span class="mono">small</span>（余弦 σ=0.1）、tcrdist3 α+β（σ=20）——再与 Boltz-2 的 TCR–肽最小 PAE 按 0.7 / 0.3 融合。<strong>完全无监督，零拟合参数。</strong></p>
 
 <h4>诚实的私榜估计</h4>
-<p><strong>中心 0.80，合理区间 0.67–0.91。</strong>不是嵌套留一表位交叉验证（LOEO）报出的 0.846。<a href="#e30">E30</a> 是原因所在，也是本项目最有分量的结果。</p>
+<p><strong>0.846</strong>，并带有一个已记录但无法量化的下行风险。<a href="#e30">E30</a> 曾主张 0.80；<a href="#e40">E40</a> 在它未能通过留一表位迁移检验（MAE 0.083，几乎是它声称探测到的那个偏差的两倍）之后<strong>撤回了这个数字</strong>。E30 发现的分布偏移是真实的，但用五个表位无法测量它的大小。请把 0.67–0.91 当作情景范围，而非置信区间。</p>
 </section>
 
-<h2><span class="count">索引 · 按结论状态</span>全部 39 个实验</h2>
+<h2><span class="count">索引 · 按结论状态</span>全部 41 个实验</h2>
 <div class="legend">
   <span><i class="dot found"></i> 基础——定下了一条地基规则（3）</span>
   <span><i class="dot adopt"></i> 采纳进提交模型（3）</span>
   <span><i class="dot reject"></i> 否决（19）</span>
-  <span><i class="dot diag"></i> 诊断——改变了认识（14）</span>
+  <span><i class="dot diag"></i> 诊断——改变了认识（16）</span>
 </div>
 <div class="idx">
   <a class="chip" href="#e1"><i class="dot found"></i><span class="num">E1</span>度量</a>
@@ -285,6 +285,8 @@
   <a class="chip" href="#e37"><i class="dot diag"></i><span class="num">E37</span>能量最小化</a>
   <a class="chip" href="#e38"><i class="dot diag"></i><span class="num">E38</span>池阴性对照</a>
   <a class="chip" href="#e39"><i class="dot diag"></i><span class="num">E39</span>分子动力学</a>
+  <a class="chip" href="#e40"><i class="dot diag"></i><span class="num">E40</span>投影迁移</a>
+  <a class="chip" href="#e41"><i class="dot diag"></i><span class="num">E41</span>家族级 CI</a>
 </div>
 
 <!-- ===== 一、基础 ===== -->
@@ -966,7 +968,7 @@
   <tr class="key"><td>结构 min-PAE</td><td class="n">0.422</td><td class="n">0.156</td></tr>
   </tbody></table></div>
   <p class="field"><span class="lbl">尝试</span>簇状态是无标签可得的，所以对成簇与孤立的 TCR 采用不同的结构权重，在推理时是合法的。在两个权重上做严格嵌套 LOEO：<strong>0.8418，对照扁平权重的 0.8486，低 0.0068。</strong>而在整个 8×8 网格上的先知峰值是 0.8486、出现在 (0.2, 0.3)——<em>与扁平 w=0.3 完全相同</em>。即便拥有完美知识，条件化也买不到任何东西。</p>
-  <p class="field"><span class="lbl">定量的原因</span>分数是按 TCR 给的而不是按配对给的，所以一条 TCR 无从知道自己正处在哪一种比较里。把结构权重从 0.3 提到 0.6，在对抗类（占 4.5% 配对）上带来 <strong>+0.0040</strong>，在其余地方带来 <strong>−0.0336</strong>——净值 −0.0296。在 w=1.0 处彻底修好这个类最多值 +0.0081，代价却是 −0.107。<strong>这笔交易大约是 13:1 的逆差。</strong></p>
+  <p class="field"><span class="lbl">定量的原因</span>分数是按 TCR 给的而不是按配对给的，所以一条 TCR 无从知道自己正处在哪一种比较里。把结构权重从 0.3 提到 0.6，在对抗类（占 4.5% 配对）上带来 <strong>+0.0040</strong>，在其余地方带来 <strong>−0.0336</strong>——净值 −0.0296。在 w=1.0 处，已测试加权族能达到的最好结果是 +0.0081，代价是 −0.107。<em>（经 E40 的评审更正：该类别的真正天花板是它 0.0318 的平均损失，完全消除其错误应值 +0.032。）</em><strong>这笔交易大约是 13:1 的逆差。</strong></p>
   <div class="field concl"><span class="lbl">定论</span>这个分解在诊断上成功、在处方上失败。真正需要的是一个在成簇子集<em>内部</em>有信息、而在子集<em>之间</em>大致无信息的特征。结构不是这样的东西：它到处都有信息，只是在大多数地方比密度更差。</div>
 </article>
 
@@ -1040,7 +1042,7 @@
   <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.830</td><td class="n">0.832</td></tr>
   <tr class="key"><td class="pep">YLQPRTFLL</td><td class="n">0.915</td><td class="n">0.907</td></tr>
   </tbody></table></div>
-  <div class="field concl"><span class="lbl">定论</span><strong>LOEO 留出了表位身份，却没有留出队列结构。</strong>对"一个像公开表位那样抽出来的表位"它是无偏的，而对一个具有私有式家族稀疏性的表位它是向上偏的。这个偏差约为 <strong>−0.047</strong>，而且任何形式的留一表位交叉验证都探测不到它，因为五个公开表位在家族丰富度上全都高于私有三个。<strong>修订后的立场：中心估计 0.80，合理区间 0.67–0.91</strong>，取代原先单一的 0.846。这个跨度<strong>不是抽样噪声</strong>——它是一个实质性的未知量，而 <a href="#e21">E21</a> 已经证明这个量无法从队列几何预报。这是 E20、E21、E22 与 E32 的 D10 共同汇聚的地方。</div>
+  <div class="field concl"><span class="lbl">定论</span><strong>LOEO 留出了表位身份，却没有留出队列结构。</strong>对"一个像公开表位那样抽出来的表位"它是无偏的，而对一个具有私有式家族稀疏性的表位它是向上偏的。这个偏差约为 <strong>−0.047</strong>，而且任何形式的留一表位交叉验证都探测不到它，因为五个公开表位在家族丰富度上全都高于私有三个。<strong>当时修订后的立场：中心估计 0.80，区间 0.67–0.91。</strong><a href="#e40">E40</a> 随后<strong>撤回了 0.80</strong>：该投影在没有依赖标签的假设时不可识别，它用作验证的那次重构是一个恒等式，而且它通不过样本外迁移检验。这个跨度<strong>不是抽样噪声</strong>——它是一个实质性的未知量，而 <a href="#e21">E21</a> 已经证明这个量无法从队列几何预报。这是 E20、E21、E22 与 E32 的 D10 共同汇聚的地方。</div>
 </article>
 
 <!-- ===== 七、不可消除误差的机制 ===== -->
@@ -1104,8 +1106,93 @@
   <blockquote><p><strong>值得注意的是这件事说明了方法，而不只是说明了这个特征：</strong>一个看起来像是有用的去相关性的结果，通过了相关性检查、通过了嵌套 LOEO 检查、通过了五折全中的选择检查，<strong>唯独在被追问"它来自分子的哪一部分"时才失败。统计筛查没有抓住它；生物学归因抓住了。</strong></p></blockquote>
 </article>
 
-<!-- ===== 九、自查发现 ===== -->
-<h2><span class="count">第九部分</span>自查发现</h2>
+<!-- ===== 九、评审回应 ===== -->
+<h2><span class="count">第九部分</span>评审回应：E40 与 E41</h2>
+<p class="prose lede">2026-10-23 版收到的一份外部评审提出了三条批评，经核查全部成立。把它们查到底之后，项目有两个标志性结论被改写。</p>
+
+<article class="exp" id="e40">
+  <div class="exp-head">
+    <span class="exp-id">E40</span>
+    <div class="exp-title"><h3>E30 的私榜投影能迁移吗？不能</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>核查评审的指控：E30 的私有类别组成并非无标签可得。</p>
+  <p class="field"><span class="lbl">在做任何统计之前的第一个发现</span><strong>E30 是在一个从未保存的 heredoc 里算的。</strong>它的日志条目没有引用任何脚本——也就是说，本项目最有分量的那个数字，其计算过程根本不在版本控制里。</p>
+
+  <h4>类别组成不是无标签可得的——这条指控成立</h4>
+  <p>像 <span class="mono">pos_clu_neg_sing</span> 这样的类别，需要知道配对中哪一方是阳性。记 <em>a</em> = P(成簇 | 阳性)、<em>b</em> = P(成簇 | 阴性)、π = P(阳性)：</p>
+<pre>pos_clu_neg_sing = a(1−b)       pos_sing_neg_clu = (1−a)b
+both_singleton   = (1−a)(1−b)   clustered-both   = ab</pre>
+  <p>而唯一无标签可观测的量是 q = πa + (1−π)b。一个方程，两个未知数。<strong>而 π 是评审没有点出的第三个未知量</strong>：它在公开表位上从 0.287 跨到 0.663；再把 both-clustered 的质量拆成同簇与异簇，还需要第四个参数。λ = a/b 在它有定义的地方跨越 1.9 到 10.2。</p>
+
+  <h4>E30 用作验证的那次重构其实是恒等式</h4>
+  <p>用每个表位自己的类内错误率与自己的类别份额重新组合，当然返回它自己的 AUC：残差 <strong>1.1×10⁻¹⁶</strong>，机器精度。另有一个在读代码而非读评审时发现的问题：<span class="mono">scripts/20</span> 只对<em>有标签</em>的行聚类，而 E30 据以推理的家族率来自 <span class="mono">scripts/25</span>，那是对<em>整个队列</em>聚类的。E30 把一个基准下的错误率与另一个基准下的组成混用了。</p>
+
+  <h4>检验：留一表位迁移</h4>
+  <div class="tw"><table><caption>所有被迁移的量都在另外四个表位上估计；留出的表位只贡献它无标签的 q</caption>
+  <thead><tr><th>留出表位</th><th class="n">实际</th><th class="n">全迁移</th><th class="n">组成用真值</th><th class="n">错误率用真值</th></tr></thead>
+  <tbody>
+  <tr><td class="pep">GILGFVFTL</td><td class="n">0.869</td><td class="n">0.954</td><td class="n">0.876</td><td class="n">0.938</td></tr>
+  <tr class="key"><td class="pep">GLCTLVAML</td><td class="n">0.741</td><td class="n">0.954</td><td class="n">0.833</td><td class="n">0.929</td></tr>
+  <tr><td class="pep">NLVPMVATV</td><td class="n">0.865</td><td class="n">0.856</td><td class="n">0.902</td><td class="n">0.782</td></tr>
+  <tr><td class="pep">TTDPSFLGRY</td><td class="n">0.840</td><td class="n">0.847</td><td class="n">0.852</td><td class="n">—</td></tr>
+  <tr class="key"><td class="pep">YLQPRTFLL</td><td class="n">0.933</td><td class="n">0.830</td><td class="n">0.864</td><td class="n">0.912</td></tr>
+  <tr class="key"><td>平均绝对误差</td><td class="n"></td><td class="n">0.083</td><td class="n">0.043</td><td class="n">0.090</td></tr>
+  </tbody></table></div>
+  <p><strong>这个方法连一个留出的公开表位都预测不了。</strong>它的样本外 MAE 为 0.083，几乎是它声称探测到的那个 0.047 偏差的两倍。把两种迁移拆开可见，<strong>组成迁移是更弱的那一半</strong>——正是那个可识别性问题，现在被量化了。</p>
+  <p><strong>而且诚实地做，它根本不给出 0.80。</strong>把不可观测量在公开侧范围内扫描，私榜宏平均落在 <strong>0.829–0.857</strong>，中位数 0.846，与 LOEO 无法区分。平均迁移偏差为 +0.038，标准误约 0.054，因此做偏差修正并不正当。</p>
+  <p><strong>评审抓到的一处事实错误。</strong>E30 称五个公开表位全都比私有三个家族更丰富。这是假的：<span class="pep">TTDPSFLGRY</span> 的 0.047 低于 <span class="pep">LTDEMIAQY</span> 的 0.146。正确说法是：三个私有表位中有两个低于所有公开表位，第三个落在公开范围之内。</p>
+  <div class="tw"><table><caption>修订后的立场</caption>
+  <thead><tr><th>数字</th><th>它到底是什么</th></tr></thead>
+  <tbody>
+  <tr class="key"><td class="n">0.846</td><td>估计值：五个公开表位上的嵌套 LOEO</td></tr>
+  <tr><td class="n">0.799</td><td><strong>撤回</strong>——假设从未被记录，且它通不过自己的样本外检验</td></tr>
+  <tr><td class="n">0.67–0.91</td><td>保留，但作为<strong>情景范围</strong>，不是置信区间</td></tr>
+  </tbody></table></div>
+  <div class="field concl"><span class="lbl">定论</span>E30 的定性发现存活：私有队列在一个无标签可观测的量上确实不同于公开队列，而 LOEO 看不见这一点。不存活的是任何附加在这个差异上的数字。<strong>用五个表位无法测量这个偏移的大小</strong>——这本身就是结果，而且与 <a href="#e21">E21</a> 一致。</div>
+</article>
+
+<article class="exp" id="e41">
+  <div class="exp-head">
+    <span class="exp-id">E41</span>
+    <div class="exp-title"><h3>E31 对非独立性稳健吗？部分稳健</h3></div>
+    <span class="tag diag">诊断</span>
+  </div>
+  <p class="field"><span class="lbl">目标</span>E31 把每个突变位点当作一次独立抽样。改以克隆型家族为抽样单位重新检验，用家族级的 cluster bootstrap，以及在家族之间（而非位点之间）置换组标签的置换检验。</p>
+  <div class="tw"><table><caption>有效样本量被高估了约十倍</caption>
+  <thead><tr><th>组</th><th class="n">位点</th><th class="n">配对</th><th class="n">TCR</th><th class="n">家族</th></tr></thead>
+  <tbody>
+  <tr><td>对照</td><td class="n">767</td><td class="n">522</td><td class="n">302</td><td class="n"><b>79</b></td></tr>
+  <tr><td>不一致</td><td class="n">103</td><td class="n">71</td><td class="n">87</td><td class="n"><b>33</b></td></tr>
+  </tbody></table></div>
+  <p>仅最大的三个家族就各自贡献 129、92、73 个位点，另有 15 个家族同时出现在两组中。</p>
+  <div class="tw"><table><caption>E31 的完整原始结构集</caption>
+  <thead><tr><th>量</th><th class="n">效应</th><th>家族级 95% CI</th><th class="n">家族级 p</th><th class="n">E31 的位点级 p</th></tr></thead>
+  <tbody>
+  <tr class="key"><td>位点肽接触数</td><td class="n">+3.629</td><td class="mono">[+0.43, +7.83]</td><td class="n">0.043</td><td class="n">0.0070</td></tr>
+  <tr><td>位点是否朝向肽</td><td class="n">+0.109</td><td class="mono">[−0.03, +0.27]</td><td class="n">0.236</td><td class="n">0.0790</td></tr>
+  </tbody></table></div>
+  <div class="tw"><table><caption>E37 与 E39 使用的 40 对弛豫子集——126 个位点，30 个家族</caption>
+  <thead><tr><th>量</th><th class="n">效应</th><th>家族级 95% CI</th></tr></thead>
+  <tbody>
+  <tr><td>位点肽接触数</td><td class="n">+1.815</td><td class="mono">[−1.16, +5.19] 跨零</td></tr>
+  <tr class="key"><td>位点是否朝向肽</td><td class="n">+0.182</td><td class="mono">[+0.04, +0.38]</td></tr>
+  </tbody></table></div>
+  <p><strong>两个样本对"哪一种读法存活"的结论相反。</strong>四个效应方向全为正，但接触计数只在完整集上通过家族级重抽样，二元朝向率只在弛豫子集上通过。<strong>没有任何一种读法在两个样本里都存活</strong>——这直接削弱了 E37 修订的那句"全部效应都在二元量上"，那是只看弛豫子集得出的结论。</p>
+  <p><strong>留一表位不会反转方向</strong>，这是唯一站得住的一点：接触效应在五次剔除中落在 2.35 到 4.60 之间，完整数据为 3.63。方向稳定，量级没有钉住。</p>
+  <div class="field concl"><span class="lbl">E31 的修订措辞</span><em>功能标签不一致的近似 TCR 配对，相比标签一致的对照，在预测为朝向肽的位点上发生替换的频率更高。该方向在各表位之间、以及在两套结构样本之间都是一致的。但以克隆型家族为抽样单位时，这种富集在每个样本中只有一种读法显著，而两个样本对是哪一种读法的结论相反；因此效应大小未被确立，因果性也未被证明。</em></div>
+</article>
+
+<h4>同一份评审带来的其他更正</h4>
+<ul class="prose-wide">
+  <li><strong>E20 的"零拟合参数，所以没有东西可过拟合"说得太满。</strong>确实没有拟合系数，但特征与配置的选择仍然是对着公开表位做出的选择，而 <a href="#e15">E15</a> 把这件事的代价定价为 0.0048。</li>
+  <li><strong>E21 的"0.3 的代价上限只有 0.0002"</strong>只适用于已测量的那五个表位，不具普遍性。</li>
+  <li><strong>E26 的"种系混杂"读法只是两种并存解释之一。</strong>种系编码的 CDR1 与 CDR2 残基确实会接触 pMHC，所以 V 区信号并不自动等于混杂。有一个便宜且尚未做的检验：把屏蔽 CDR3 后的距离再拆成"仅框架区"与"仅 CDR1/2"。若信号集中在不接触任何东西的框架区，那是混杂；若集中在 CDR1/2，则与真实识别相容。</li>
+  <li><strong>E39 的"更多结构动力学不会再增加什么"说过头了。</strong>已证明的是：围绕预测位姿的 2 ns 隐式溶剂动力学，在静态朝向率之外没有增加信息。</li>
+</ul>
+
+<!-- ===== 十、自查发现 ===== -->
+<h2><span class="count">第十部分</span>自查发现</h2>
 <p class="prose lede">在我自己的工作中抓到的错误。之所以列出，是因为其中有几个已经产出过看起来像结果的数字。这一部分大概是整份记录里对重复这项工作的人最有用的。</p>
 <div class="tw"><table>
 <thead><tr><th>位置</th><th>错在哪里</th><th>影响</th></tr></thead>
@@ -1126,17 +1213,23 @@
 <tr><td class="mono">E39</td><td>replica 离散度 guard 拿组均值差去比"每位点 replica 标准差的中位数"</td><td>该值对多数位点恒为零，于是任何量都必然"超出离散度"</td></tr>
 <tr class="key"><td class="mono">E39</td><td>静态表与 MD 表的连接未按结构键去重</td><td>126 行被放大成 150 行，伪造出一次方向反转和一个 p=0.047</td></tr>
 <tr><td class="mono">E39</td><td>两组在位点层面并不互斥</td><td>117 个位点中有 3 个在一个配对里是不一致、在另一个里是对照；同样适用于 E37</td></tr>
+<tr class="key"><td class="mono">E30</td><td>把私榜投影当成测量值来引用，而它的类别组成并非无标签可得</td><td><strong>已被 E40 撤回</strong>：留一表位迁移检验 MAE 0.083</td></tr>
+<tr class="key"><td class="mono">E30</td><td>拿"能把每个公开表位的 AUC 重构到 0.0003 以内"当作验证</td><td>那是恒等式；残差是机器精度</td></tr>
+<tr><td class="mono">E30</td><td>"五个公开表位全都比私有三个家族更丰富"</td><td>假——TTDPSFLGRY 0.047 &lt; LTDEMIAQY 0.146</td></tr>
+<tr><td class="mono">E30</td><td>错误率与类别组成取自两个不同的聚类基准</td><td><span class="mono">scripts/20</span> 聚有标签行，<span class="mono">scripts/25</span> 聚整个队列</td></tr>
+<tr class="key"><td class="mono">E31</td><td>把每个突变位点当作一次独立抽样</td><td>767 个对照位点仅来自 79 个家族；家族级 CI 要宽得多</td></tr>
+<tr><td class="mono">E23</td><td>"彻底修复对抗类最多值 +0.0081"</td><td>那是已测试加权族能达到的；该类别的天花板是 +0.032</td></tr>
 </tbody></table></div>
 <p class="prose">其中有三个已经产出过看起来可以发表的数字。反复出现的原因是：<strong>在未进版本控制的 heredoc 里做计算。</strong></p>
 
 <!-- ===== 十、最终状态 ===== -->
-<h2><span class="count">第十部分</span>最终状态</h2>
+<h2><span class="count">第十一部分</span>最终状态</h2>
 <p class="prose"><strong>49 张计划卡片执行了 46 张。</strong>未执行的三张分别是湿实验验证（由 PI 排除）和两张需要与队友交换产物的卡片（已谢绝）。</p>
 <div class="tw"><table>
 <tbody>
-<tr><td>已记录实验</td><td class="n">39</td><td>E1–E39，外加 E37 的两次修订</td></tr>
-<tr><td>脚本</td><td class="n">36</td><td></td></tr>
-<tr><td>报告</td><td class="n">14</td><td></td></tr>
+<tr><td>已记录实验</td><td class="n">41</td><td>E1–E41，外加 E37 的两次修订</td></tr>
+<tr><td>脚本</td><td class="n">38</td><td></td></tr>
+<tr><td>报告</td><td class="n">16</td><td></td></tr>
 <tr><td>实验日志</td><td class="n">1,920</td><td>行</td></tr>
 <tr class="key"><td>数据层审计</td><td class="n">57</td><td>项检查，全部通过</td></tr>
 <tr><td>GPU 工作量</td><td class="n"></td><td>2,636 次单样本折叠（7.4 h）、2,636 次五样本折叠（13.2 h）、2,706 次诱饵折叠（7 h）、414 ns 分子动力学（14 h）</td></tr>
@@ -1150,7 +1243,7 @@
 <p><a href="#e31">E31</a>/<a href="#e37">E37</a>，现已重述为位置性的：标签不一致的配对在朝向肽的位点上发生差异的概率约为两倍，这给序列方法划出了一个有生物学依据的天花板。以及 <a href="#e38">E38</a>：候选池扩充携带真实的抗原特异信息，因为三组规模匹配的阴性对照全都造成了<em>损害</em>。</p>
 
 <h4>最重要的修订</h4>
-<p><a href="#e30">E30</a>——LOEO 留出了表位身份，却没有留出队列结构。<strong>私榜估计中心 0.80、合理区间 0.67–0.91</strong>，而不是嵌套 LOEO 报出的 0.846。</p>
+<p><a href="#e30">E30</a>——LOEO 留出了表位身份，却没有留出队列结构，这是一个 LOEO 看不见的、无标签可观测的真实差异。但 <a href="#e40">E40</a> 撤回了附加其上的 0.80：该投影通不过自己的留一表位检验。<strong>私榜估计 0.846</strong>，下行风险真实但无法量化，0.67–0.91 作为情景范围。</p>
 
 <h4>一项待办</h4>
 <p>请在 Kaggle 界面中确认最终选定的提交是 <span class="mono">density3_struct03.csv</span>，而不是更早那个纯密度文件。</p>

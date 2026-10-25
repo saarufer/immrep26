@@ -37,9 +37,11 @@ TCR–peptide minimum PAE. **Fully unsupervised, zero fitted parameters.** Publi
 
 ### The honest private estimate
 
-**0.80 central, plausible range 0.67–0.91.** Not the 0.846 that nested
-leave-one-epitope-out reports. E30 is the reason, and it is the single most
-consequential result in this project.
+**0.846**, with a documented but unquantified downside risk. E30 argued for
+0.80; **E40 withdrew that number** after it failed a leave-one-epitope-out
+transfer test at MAE 0.083 — nearly twice the bias it claimed to detect. The
+distribution shift E30 found is real; its size is not measurable with five
+epitopes. Treat 0.67–0.91 as a scenario range, never a confidence interval.
 
 ---
 
@@ -1123,8 +1125,10 @@ buys nothing.
 **Why, quantitatively.** Scores are per TCR, not per pair, so a TCR cannot know
 which comparison it is in. Raising structure weight from 0.3 to 0.6 gives
 **+0.0040** in the adversarial class (4.5% of pairs) and **−0.0336** elsewhere —
-net −0.0296. Fixing the class completely at w=1.0 is worth at most +0.0081 while
-costing −0.107. **The trade is about 13:1 against.**
+net −0.0296. At w=1.0 the best available weighting is worth +0.0081
+while costing −0.107. *(Corrected in E40's review: the class's actual ceiling is
+its mean loss of 0.0318, so eliminating its error entirely would be worth
++0.032. The +0.0081 is what the tested weighting family achieves.)* **The trade is about 13:1 against.**
 
 **Conclusion.** The decomposition succeeded diagnostically and failed
 prescriptively. What would be needed is a feature informative *within* the
@@ -1229,8 +1233,11 @@ epitope with private-like family sparsity. That bias is about **−0.047**, and 
 amount of leave-one-epitope-out can detect it, because all five public epitopes
 are family-richer than the private three.
 
-**Revised position: central estimate 0.80, plausible range 0.67–0.91**, in place
-of the single 0.846. The spread is **not sampling noise** — it is one substantive
+**Revised position at the time: central estimate 0.80, plausible range
+0.67–0.91.** **E40 subsequently withdrew the 0.80**: the projection is not
+identifiable without label-dependent assumptions, its "reproduces every public
+AUC" check is an identity, and it fails an out-of-sample transfer test. The
+qualitative finding stands; the number does not. The spread is **not sampling noise** — it is one substantive
 unknown, how separable the private epitopes' isolated TCRs are, and E21 already
 showed that cannot be forecast from cohort geometry. This is the convergence
 point of E20, E21, E22 and E32's D10.
@@ -1383,6 +1390,150 @@ attribution did.**
 
 ---
 
+# Review response: E40 and E41
+
+An external review of the 2026-10-23 edition made three criticisms that proved
+correct, and running them down changed two of the project's headline claims.
+
+## E40 — Does E30's private projection transfer? It does not
+
+**Goal.** Check the reviewer's charge that E30's private composition is not
+label-free. `scripts/37_private_projection_validation.py`.
+
+**First finding, before any statistics: E30 was computed in a heredoc that was
+never saved.** Its log entry cites no script, so the project's most consequential
+number rested on a computation absent from version control.
+
+**The composition is not label-free — and the charge holds.** A class such as
+`pos_clu_neg_sing` needs to know which pair member is positive. With
+*a* = P(clustered | positive), *b* = P(clustered | negative), π = P(positive):
+
+```
+pos_clu_neg_sing = a(1−b)       pos_sing_neg_clu = (1−a)b
+both_singleton   = (1−a)(1−b)   clustered-both   = ab
+```
+
+and the only label-free observable is q = πa + (1−π)b. One equation, two
+unknowns. **π is a third unknown the review did not name**, running 0.287 to
+0.663 across the public epitopes; splitting the both-clustered mass needs a
+fourth. λ = a/b spans 1.9 to 10.2 where it is defined at all.
+
+**The reconstruction E30 cited as validation is an identity.** Recombining each
+epitope's own error rates with its own shares returns its own AUC: residual
+**1.1×10⁻¹⁶**, machine epsilon.
+
+**A basis mismatch nobody had noticed.** `scripts/20` clusters only the
+*labelled* rows; `scripts/25`, whose family rates E30 reasoned from, clusters
+the *whole* cohort. E30 combined error rates from one basis with compositions
+from the other.
+
+**The test: leave-one-epitope-out transfer.** Estimate everything transferred on
+four epitopes, predict the fifth from its label-free q alone.
+
+| held out | actual | full transfer | oracle composition | oracle errors |
+|---|---:|---:|---:|---:|
+| GILGFVFTL | 0.869 | 0.954 | 0.876 | 0.938 |
+| GLCTLVAML | 0.741 | **0.954** | 0.833 | 0.929 |
+| NLVPMVATV | 0.865 | 0.856 | 0.902 | 0.782 |
+| TTDPSFLGRY | 0.840 | 0.847 | 0.852 | — |
+| YLQPRTFLL | 0.933 | **0.830** | 0.864 | 0.912 |
+| | | **MAE 0.083** | MAE 0.043 | MAE 0.090 |
+
+**The method cannot predict a held-out public epitope.** Its out-of-sample MAE
+of 0.083 is nearly twice the 0.047 bias it claimed to detect. Splitting the two
+transfers shows the composition is the weaker half — exactly the
+identifiability problem, now measured.
+
+**And done honestly, it does not give 0.80.** Sweeping the unobservables over
+the public range gives a private macro of **0.829–0.857**, median 0.846,
+indistinguishable from LOEO. The mean transfer bias is +0.038 with a standard
+error of about 0.054, so bias-correcting is not justified.
+
+**A factual error in E30, which the reviewer caught.** It said all five public
+epitopes are family-richer than the private three. False: TTDPSFLGRY at 0.047
+sits below LTDEMIAQY at 0.146. Two of three private epitopes are below every
+public one; the third is inside the public range.
+
+**Conclusion — the revised position.**
+
+| number | what it is |
+|---|---|
+| **0.846** | the estimate: nested LOEO over five public epitopes |
+| 0.799 | **withdrawn** — assumptions never recorded, and it fails its own out-of-sample test |
+| 0.67–0.91 | retained as a **scenario range**, not a confidence interval |
+
+E30's qualitative finding survives: the private cohorts differ from the public
+ones on a label-free observable, and LOEO cannot see it. What does not survive
+is any number attached to that difference. **With five epitopes the size of the
+shift is not measurable**, which is itself the result and agrees with E21.
+
+## E41 — Is E31 robust to non-independence? Partly
+
+**Goal.** E31 treated each mutated site as a draw. Re-test with the clonotype
+family as the sampling unit. `scripts/38_e31_family_robustness.py`.
+
+**The effective sample size was overstated about tenfold.**
+
+| group | sites | pairs | TCRs | **families** |
+|---|---:|---:|---:|---:|
+| control | 767 | 522 | 302 | **79** |
+| discordant | 103 | 71 | 87 | **33** |
+
+The three largest families contribute 129, 92 and 73 sites on their own, and 15
+families appear in both groups.
+
+**On E31's full raw-structure set**, with a cluster bootstrap over families and
+a permutation that shuffles the group label between families:
+
+| quantity | effect | family 95% CI | family p | E31's site-level p |
+|---|---:|---|---:|---:|
+| peptide contacts at site | +3.629 | [+0.43, +7.83] | **0.043** | 0.0070 |
+| site faces the peptide | +0.109 | [−0.03, +0.27] | **0.236** | 0.0790 |
+
+**On the 40-pair relaxed subset E37 and E39 used** (126 sites, 30 families):
+
+| quantity | effect | family 95% CI |
+|---|---:|---|
+| peptide contacts at site | +1.815 | **[−1.16, +5.19]** crosses zero |
+| site faces the peptide | +0.182 | [+0.04, +0.38] |
+
+**The two samples disagree about which reading survives.** All four effects are
+positive, but the contact count clears family-level resampling only on the full
+set and the binary facing rate only on the relaxed subset. **No single reading
+survives in both** — which undercuts the E37 revision's "the whole effect is the
+binary one", a conclusion read off the relaxed subset alone.
+
+**Leave-one-epitope-out does not reverse the direction**, the one thing that
+holds: the contact effect runs 2.35 to 4.60 across the five drops against 3.63
+on the full data. Direction is stable; magnitude is not pinned.
+
+**Conclusion, revised wording for E31.** *Near-identical TCR pairs with
+discordant functional labels show an enrichment of substitutions at predicted
+peptide-facing positions relative to concordant pairs. The direction is
+consistent across epitopes and across both structural samples. With the
+clonotype family as the sampling unit the enrichment is significant in one
+reading per sample and the two samples disagree on which, so the effect size is
+not established and causality is not demonstrated.*
+
+## Other corrections from the same review
+
+- **E20's "zero fitted parameters, so nothing to overfit" is too strong.** There
+  are no fitted coefficients, but feature and configuration selection are still
+  choices made against the public epitopes, and E15 priced that at 0.0048.
+- **E21's "cost of 0.3 is bounded at 0.0002"** applies to the five measured
+  epitopes, not in general.
+- **E26's germline-confounding reading is one of two live explanations.**
+  Germline-encoded CDR1 and CDR2 residues genuinely contact pMHC, so a V-region
+  signal is not automatically confounding. A cheap untried test: split the
+  CDR3-masked distance into framework-only and CDR1/2-only. Signal in framework,
+  which contacts nothing, would be confounding; signal in CDR1/2 would be
+  compatible with real recognition.
+- **E39's "no further structural dynamics will add to it" overreaches.** What
+  was shown is that 2 ns of implicit-solvent dynamics around the predicted pose
+  adds nothing beyond the static facing rate.
+
+---
+
 # Self-review findings
 
 Mistakes caught in my own work, listed because several of them had already
@@ -1407,6 +1558,12 @@ likely to be useful to someone repeating the work.
 | E39 | replica-spread guard compared against the median per-site replica sd | zero for most sites, so every quantity "exceeded the spread" by construction |
 | E39 | static-to-MD join not deduplicated on the structural key | 126 rows inflated to 150, manufacturing an apparent reversal and a p=0.047 |
 | E39 | groups not disjoint at site level | 3 of 117 sites are discordant in one pair and control in another; applies to E37 equally |
+| E30 | private projection quoted as a measurement when its composition is not label-free | **withdrawn by E40**: fails leave-one-epitope-out transfer at MAE 0.083 |
+| E30 | "reproduces every public AUC to 0.0003" offered as validation | an identity; residual is machine epsilon |
+| E30 | "all five public epitopes are family-richer than the private three" | false — TTDPSFLGRY 0.047 < LTDEMIAQY 0.146 |
+| E30 | error rates and compositions taken from two different clustering bases | `scripts/20` clusters labelled rows, `scripts/25` the whole cohort |
+| E31 | each mutated site treated as an independent draw | 767 control sites come from 79 families; family-level CIs are far wider |
+| E23 | "fixing the adversarial class is worth at most +0.0081" | that is the best tested weighting; the class ceiling is +0.032 |
 
 Three of these had already produced a publishable-looking number. The recurring
 cause is computation in an unsaved heredoc rather than in version control.
@@ -1421,9 +1578,9 @@ cause is computation in an unsaved heredoc rather than in version control.
 
 | | |
 |---|---|
-| experiments recorded | **39** (E1–E39, plus two E37 revisions) |
-| scripts | 36 |
-| reports | 14 |
+| experiments recorded | **41** (E1–E41, plus two E37 revisions) |
+| scripts | 38 |
+| reports | 16 |
 | experiment log | 1,920 lines |
 | data-layer audit | 57 checks, **all passing** |
 | GPU work | 2,636 single-sample folds (7.4 h), 2,636 five-sample folds (13.2 h), 2,706 decoy folds (7 h), 414 ns MD (14 h) |
@@ -1440,8 +1597,10 @@ expansion carries real antigen-specific information, since all three
 size-matched negative controls actively *hurt*.
 
 **The headline revision.** E30 — LOEO holds out epitope identity but not cohort
-structure. **Private estimate 0.80 central, 0.67–0.91 plausible**, not the 0.846
-that nested LOEO reports.
+structure — a real, label-free difference LOEO cannot see. But **E40 withdrew
+the 0.80 attached to it**: the projection fails its own leave-one-epitope-out
+test. **Private estimate 0.846**, downside risk real but unquantified, with
+0.67–0.91 as a scenario range.
 
 **One item outstanding.** Verify in the Kaggle UI that the final selected
 submission is `density3_struct03.csv` and not the earlier density-only file.
