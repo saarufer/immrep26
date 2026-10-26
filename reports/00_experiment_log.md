@@ -3360,6 +3360,17 @@ lowest nn3-alone AUC (0.677) and the weakest published band.
 
 Nothing here changes the predictor; it is a test of the biological reading.
 
+
+**Amended by E58 (independence of the six families).** E58 compared the
+families' CDR3β consensus sequences and found four of the five GILGFVFTL
+families share length 13 and the prefix `CASSIRS`, differing by a median of 2
+residues out of 13. They are sub-clusters of a single public motif that the
+0.12 radius happened to split, not five independent objects. Everything above
+that counts families — "six families hold 2,996 of 3,666 pairs", the p = 0.006
+on the 20+ band — therefore rests on an **effective two or three independent
+motifs**, not six. The direction of the result is unchanged; its weight is
+lower than a count of six families suggests.
+
 ---
 
 ## E55 — How much of "singleton" is sample size?
@@ -3523,6 +3534,13 @@ The chain is runnable on GILGFVFTL and nowhere else. It cannot touch the
 private split, so it carries no competitive value — which the plan states as
 its intent. Nothing here changes the predictor.
 
+
+**Amended by E58.** The donor counts above (50–110 per GILGFVFTL family) are
+correct per family, but the five GILGFVFTL families are sub-clusters of one
+`CASSIRS` motif. Donors are shared across those sub-clusters, so the five
+rows must not be summed or treated as five independent replications of the
+same finding.
+
 ---
 
 ## E57 — Do the six public families persist across independent donors?
@@ -3601,6 +3619,14 @@ measured 0% donor coverage on LLWNGPMAV and LTDEMIAQY and 30.4% on CINGVCWTV,
 with LTD drawing 97.7% of its records from a single reference. The quantity that
 separates real convergence from clonal duplication is unavailable on exactly the
 rows that decide the ranking. The entry is unchanged.
+
+
+**Amended by E58.** "Five of six families show cross-donor support" is five
+sub-clusters of about two motifs. The leave-one-donor-out result is unaffected,
+because it is a within-family statement tested 365 times at the donor level,
+and so is E57.3's odds ratio, which is computed over all GILGFVFTL TCRs rather
+than per family. What must be discounted is any reading that treats the six
+family-level rows as six independent confirmations.
 
 ---
 
@@ -3837,3 +3863,69 @@ flow subset is ~1% of candidates chosen as top hits, so any calibration fitted
 on it describes ranked candidates, not the library, and must say so.
 
 Nothing here touches the frozen predictor; the roadmap excludes it by design.
+
+---
+
+## E61 — F1: does a SEEKER reporter screen predict the flow activation it proxies?
+
+E60 put Gate 0 at PROFILES ONLY, which left exactly one quantitative task open:
+inside SEEKER, the same receptor carries both a screening enrichment and a flow
+readout on the same peptides. `scripts/59_seeker_flow_calibration.py`.
+
+**The conditional sampling, restated with numbers.** Flow was run on 192
+peptides per receptor — 0.99% of TCR59's candidates and 1.17% of TCR63's —
+chosen as top hits. Their median R1/R0 is **125.8 against 14.8** across all
+TCR59 candidates, and **170.2 against 14.4** for TCR63. Everything below
+therefore describes *ranked candidates*, and nothing is inferred about the
+library's activation rate.
+
+**Screening statistic against flow activation**, Spearman on the measured
+subset plus 5-fold cross-validated isotonic and log-linear calibration:
+
+| TCR | predictor | raw ρ | CV isotonic | CV log-linear |
+|---|---|---:|---:|---:|
+| TCR59 | **r2_r1_ratio** | **+0.687** | **+0.635** | +0.682 |
+| TCR59 | count_pct_round1 | **−0.480** | +0.462 | +0.481 |
+| TCR59 | r1_r0_ratio | **−0.450** | +0.448 | +0.448 |
+| TCR59 | count_pct_round2 | +0.378 | +0.345 | +0.372 |
+| TCR63 | count_pct_round2 | +0.537 | +0.488 | +0.521 |
+| TCR63 | r2_r1_ratio | +0.324 | +0.427 | +0.320 |
+| TCR63 | r1_r0_ratio | +0.143 | +0.066 | −0.187 |
+
+**The signs are the result.** On TCR59, first-round abundance runs *negative*
+against flow activation (`count_pct_round1` −0.480, `r1_r0_ratio` −0.450) while
+the second-round gain runs strongly positive (`r2_r1_ratio` +0.687). **Early
+enrichment is not activation strength; the later-round gain is what tracks it.**
+The roadmap warned against reading a final-round abundance as binding strength,
+and this measures the warning: within the top 1%, the round-one signal points
+the wrong way.
+
+A method bug was caught doing this. `sklearn.isotonic.IsotonicRegression`
+defaults to an *increasing* fit, so on the negatively-correlated predictors it
+returned near-zero (−0.059) while the linear model on the same data returned
++0.448. Fixed with `increasing="auto"`; the table above is after the fix.
+
+**Single-copy against high-copy (TCR59 only — E60 found TCR63 ships no
+high-copy column).**
+
+| condition | n | median activation | ρ with r1_r0 |
+|---|---:|---:|---:|
+| single copy | 192 | 22.0% | −0.450 |
+| high copy | 192 | 17.4% | −0.404 |
+
+The two conditions agree at **ρ +0.923**, and **zero of 192** peptides are
+inactive at single copy (<5%) and active at high copy (>25%). Median activation
+is in fact slightly *lower* at high copy. **Within these top-ranked candidates,
+presentation level is not what decides whether a peptide activates** — the
+opposite of the risk the roadmap flagged. The claim is bounded to candidates
+already selected for enrichment; it says nothing about weak or unselected
+peptides, which is exactly where a presentation effect would be expected.
+
+**Settled.** A SEEKER reporter screen does carry rank information about the flow
+activation it proxies — out-of-fold ρ +0.635 on TCR59 — but only through the
+*later-round gain*, and the measured subset is a top-1% slice selected on the
+predictor itself, so the correlation is attenuated by range restriction and
+cannot be extrapolated to the library. Antigen density does not reorder these
+candidates. Both statements are about 192 peptides on two receptors under one
+HLA, and neither is evidence about binding, which SEEKER does not measure.
+Nothing here touches the frozen predictor.
