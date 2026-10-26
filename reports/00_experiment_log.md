@@ -2339,3 +2339,70 @@ private epitopes sit below every public epitope on clustered fraction is
 directly observable and unaffected. So E21's dominance argument for structure
 weight 0.3 over 0.2 still holds, and the weight is not revisited.
 
+
+## E44 — Grantham as a fourth density member: rejected, and completely
+
+E43 tested Grantham blended on top of the finished model. The PI's follow-up
+asks a different question: make it the fourth member *inside* the density rank
+average, before the 0.7/0.3 structure blend -- the slot E25/E26 tried the
+whole-V-domain alignment in. `scripts/41_grantham_fourth_member.py`.
+
+**The mechanistic objection that killed the V-domain version does not transfer.**
+E26 rejected that one as germline confounding, confirmed by E42 showing
+framework alone reproduces its ranking at Spearman +0.994. Grantham scores
+CDR3, the junction, so a gain would be recognition-relevant sequence. If it
+cleared the bar there would be no standing argument against it.
+
+**Members, standalone, with their correlation to the strongest member:**
+
+| member | mean AUC | rho vs SCEPTR default |
+|---|---:|---:|
+| SCEPTR default | 0.8396 | -- |
+| SCEPTR small | 0.8354 | 0.907 |
+| V-domain align | 0.8354 | 0.831 |
+| tcrdist3 | 0.8329 | 0.878 |
+| **Grantham CDR3** | **0.8022** | **0.779** |
+
+**Configurations, blended with structure at 0.3:**
+
+| configuration | density | blended | vs submitted |
+|---|---:|---:|---:|
+| 3 members (submitted) | 0.8430 | **0.8498** | -- |
+| 4 members + Grantham | 0.8405 | 0.8475 | **-0.0024** |
+| 4 members + V-domain (E25/E26) | 0.8460 | 0.8524 | +0.0026 |
+| 5 members | 0.8449 | 0.8505 | +0.0007 |
+| Grantham replaces tcrdist3 | 0.8387 | 0.8469 | -0.0029 |
+
+Grantham is the most decorrelated member available and the weakest by 0.03. An
+unweighted rank average is dragged by its weakest term, and decorrelation does
+not rescue it -- **E28's lesson restated**: orthogonality is necessary and not
+sufficient, because the achievable contribution scales with the margin over
+chance. It is not a substitute for tcrdist3 either.
+
+**The oracle sweep closes it completely.** Unweighted averaging is unfair to a
+weak member, so the weight on Grantham inside the density term was swept with
+hindsight over all five epitopes -- not adoptable under E10's zero-parameter
+rule, but decisive as a bound:
+
+| weight on Grantham | 0 | 0.05 | 0.10 | 0.20 | 0.30 | 0.50 |
+|---|---:|---:|---:|---:|---:|---:|
+| blended AUC | **0.8498** | 0.8494 | 0.8492 | 0.8483 | 0.8467 | 0.8421 |
+
+**The optimum is w=0 and the decline is monotone.** There is no weight at which
+Grantham helps, even tuned on the evaluation set. It carries nothing the three
+existing members do not already have.
+
+**Viability was not the problem.** Grantham takes a distinct value for every
+private-epitope TCR (243/243, 229/229, 130/130), so it passes E3's gate
+comfortably. The rejection is on performance alone.
+
+**A cross-check that fell out.** Nested LOEO over all five configurations
+selects the V-domain 4-member set in **5 of 5 folds** at 0.8524, independently
+reproducing E25's 0.8525 and its 5-of-5 selection on a separately written
+harness. That configuration remains unadopted for the reasons E26 and E42 give,
+but the agreement is a useful check that this harness and the earlier one say
+the same thing.
+
+**Verdict.** -0.0024 against a +0.02 threshold, with an oracle ceiling of
++0.0000. The entry is unchanged.
+
