@@ -2231,3 +2231,111 @@ at public 0.849 and the earlier density-only file at 0.839. The higher public
 score is auto-selected absent a manual override, so the risk I flagged does
 not exist.
 
+
+## Amendment to the freeze — the deadline is the stopping rule, not my judgement
+
+The entry above froze the predictor on 2026-10-25 and treated that as the end
+of the project. That was my decision presented as an evidence-driven one, and
+it was the wrong frame. The brief is to keep trying to do better until
+2026-11-02 15:00 UTC. Freezing is only correct when no hypothesis is left worth
+testing, and four were supplied immediately afterwards.
+
+What the freeze entry got right stands: the submitted file is unchanged, it
+rebuilds byte-identically, and nothing has cleared the inclusion threshold. What
+it got wrong is the inference from "nothing has cleared the bar yet" to "stop
+looking". The file is the **current entry**, not a closed result, and remains so
+until the deadline.
+
+---
+
+## E43 — Four new hypotheses from the PI (H1, H2, H4 run; H3 closed on its own rule)
+
+`scripts/40_new_hypotheses.py`, under the unchanged discipline: E3's viability
+gate first, zero-parameter rank-average fusion, strict nested LOEO, +0.02 to
+enter. Submitted blend baseline 0.8498.
+
+**H3 closed in ten minutes, by the stop condition it came with.** It asked
+whether convergent recombination can be distinguished from repeat curation of
+one clone. VDJdb carries **no nucleotide column at all**, and on the epitopes
+that decide the ranking the donor information is absent:
+
+| epitope | split | subject.id non-null | distinct subjects | clone.id non-null |
+|---|---|---:|---:|---:|
+| CINGVCWTV | PRIVATE | 78.3% | 10 | 3.5% |
+| LLWNGPMAV | PRIVATE | **0.0%** | **0** | 41.3% |
+| LTDEMIAQY | PRIVATE | **0.0%** | **0** | **0.0%** |
+
+Its own rule forbids substituting record count for independent rearrangement,
+and E27 already showed record count is a label proxy. Closed without spending
+compute on it.
+
+**H1 -- biophysical substitution distance. Best of the matrices, still no gain.**
+
+| CDR3 distance | mean AUC |
+|---|---:|
+| **Grantham (composition, polarity, volume)** | **0.8022** |
+| identity (D04's reference) | 0.7989 |
+| BLOSUM62 (D04's reference) | 0.7984 |
+
+Grantham is the best of the three, which sharpens D04 rather than contradicting
+it: the physicochemical axis is worth a little more than the evolutionary one,
+and the whole spread is 0.004. Within-epitope rho against the blend is +0.773,
+more decorrelated than SCEPTR against tcrdist3 at +0.909 -- but nested-LOEO
+blend gain is **-0.0022**. Rejected.
+
+**H2 -- alpha-chain partner diversity. Beaten by its own trivial confound.**
+
+| feature | mean AUC |
+|---|---:|
+| alpha-led partner diversity, r=0.2 | 0.7038 |
+| **alpha neighbour count alone, r=0.2** | **0.7493** |
+| alpha-led partner diversity, r=0.1 | 0.6465 |
+| alpha neighbour count alone, r=0.1 | 0.6952 |
+| beta-led partner diversity, r=0.2 (control) | 0.6637 |
+| beta-led partner diversity, r=0.1 (control) | 0.5981 |
+
+Diversity scores **below** simply counting the neighbours, at both radii, so it
+adds nothing over density. The mechanism is visible in the cohort structure: the
+median TCR has **zero** alpha-chain neighbours at r=0.2, and only 36.3% have the
+two neighbours the diversity measure needs to be defined at all. The
+alpha-metaclone structure the hypothesis requires is largely absent here.
+
+One thing it does confirm, through a measure entirely unlike E6's: alpha-led
+beats beta-led at both radii (0.6465/0.7038 against 0.5981/0.6637). The
+alpha-over-beta asymmetry replicates on a bipartite-graph statistic, not just on
+distance. Nested gain -0.0003. Rejected as a feature, kept as a replication.
+
+**H4 -- expression and assembly liabilities. The liabilities are not there.**
+
+| indicator | prevalence | AUC |
+|---|---:|---:|
+| non-canonical CDR3 termini | **0.0%** | undefined |
+| N-glycosylation sequon in CDR3 | 0.4% | 0.5013 |
+| extra cysteine beyond the anchor | 1.3% | 0.5106 |
+| length deviation from the modal CDR3 | 93.2% | 0.5128 |
+| sequon anywhere in the V domain | 100% | 0.5121 |
+| hydrophobic fraction of CDR3 | -- | 0.4958 |
+| combined liability count | 25.0% | 0.5155 |
+
+**Every one of 5,272 chains has a canonical CDR3**: starts with C, ends with F
+or W, verified directly (beta is 100% F-ending, alpha has 83 W-endings, also
+canonical). Extra cysteines appear in 34 TCRs and CDR3 sequons in about ten.
+Two indicators were discarded by the viability gate for being constant inside a
+private epitope.
+
+So the hypothesis is not merely unsupported, its premise is absent: **this
+dataset contains essentially no gross, sequence-visible assembly liabilities.**
+Either curation removed them upstream or they do not occur at this rate. If
+expression failure produces negatives here, it is not through anything these
+indicators can see. That is a clean first test of a mechanism nobody had
+examined, and it is worth more as a closed door than as a feature.
+
+**Verdict.** Best nested gain across all three is **+0.0000** against a +0.02
+threshold. The entry is unchanged.
+
+**One thing to state so E40 is not misread.** E40 withdrew E30's *projected
+private AUC*, not the sparsity observation underneath it. That two of three
+private epitopes sit below every public epitope on clustered fraction is
+directly observable and unaffected. So E21's dominance argument for structure
+weight 0.3 over 0.2 still holds, and the weight is not revisited.
+
