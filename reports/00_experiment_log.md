@@ -3601,3 +3601,102 @@ measured 0% donor coverage on LLWNGPMAV and LTDEMIAQY and 30.4% on CINGVCWTV,
 with LTD drawing 97.7% of its records from a single reference. The quantity that
 separates real convergence from clonal duplication is unavailable on exactly the
 rows that decide the ranking. The entry is unchanged.
+
+---
+
+## E58 — Are the public motifs enriched beyond what rearrangement explains?
+
+E57 showed the six families are reproduced across 12–112 independent donors.
+That says they are real observations, not one cohort propagated; it does not say
+why they recur. V(D)J recombination makes some CDR3s far easier to produce, and
+a motif that is simply easy to generate will be found repeatedly with no antigen
+preferring it. `scripts/56_generation_adjusted_motif.py`.
+
+**Two limits fixed before the numbers.** OLGA generates CDR3s without a V gene,
+so a motif here is defined on **CDR3β only** and the families' TRBV19
+restriction is reported separately rather than folded into the enrichment. And
+*any* cohort motif beats a naive generation model, because the cohort is
+antigen-selected to begin with — so the informative number is not the raw
+enrichment but the comparison with the plan's required control: same epitope,
+same TRBV19, matched size, not in a large family.
+
+The motif definition is fixed before any enrichment is computed and uses no
+labels: modal CDR3β length, position-wise consensus, radius = rounded-up median
+within-family Hamming distance to that consensus.
+
+**Part 1 — generation explains part of it.** Within GILGFVFTL:
+
+| group | n | median log10 Pgen(β) | median CDR3β length |
+|---|---:|---:|---:|
+| in a large TRBV19 family | 205 | **−9.19** | 13 |
+| TRBV19, no large family | 318 | −9.74 | 13 |
+| other V, no large family | 147 | −10.26 | 14 |
+
+Family CDR3βs are **+0.555 log10 units (3.6×) easier to generate** than matched
+TRBV19 non-family ones at the same length. So "easy to produce" is part of why
+they recur, and the enrichment below must be read against that.
+
+**Part 2 — enrichment over a 200,000-sequence OLGA background.**
+
+| family | L | r | consensus | cohort | OLGA | enrichment |
+|---|---:|---:|---|---:|---:|---:|
+| GILGFVFTL#36 | 13 | 1 | CASSIRSAYEQYF | 0.1597 | 3.5e-05 | **4563×** |
+| GILGFVFTL#27 | 13 | 1 | CASSIRSTDTQYF | 0.0806 | 2.0e-05 | 4030× |
+| GILGFVFTL#30 | 13 | 1 | CASSIRSSYEQYF | 0.2060 | 5.5e-05 | 3745× |
+| GLCTLVAML#2 | 13 | 3 | CSARDGTGNGYTF | 0.1250 | 7.5e-05 | 1667× |
+| GILGFVFTL#1 | 12 | 1 | CASSIGSYGYTF | 0.0418 | 4.0e-05 | 1045× |
+| GILGFVFTL#5 | 13 | 3 | CASSIRSTGEQYF | 0.4090 | 5.5e-04 | 744× |
+
+A first version scored **every** family against GILGFVFTL's cohort, which gave
+the GLCTLVAML motif an observed frequency of exactly zero and an enrichment of
+0.0. Fixed: a motif's observed frequency is measured in its own epitope's
+cohort.
+
+**Part 3 — against the matched control, which is the number that counts.**
+
+| family | enrichment | control median | control p95 | p |
+|---|---:|---:|---:|---:|
+| GILGFVFTL#36 | 4563× | 34× | 130× | 0.005 |
+| GILGFVFTL#27 | 4030× | 37× | 314× | 0.005 |
+| GILGFVFTL#30 | 3745× | 34× | 130× | 0.005 |
+| GILGFVFTL#1 | 1045× | 38× | 369× | 0.005 |
+| GILGFVFTL#5 | 744× | 34× | 79× | 0.005 |
+| GLCTLVAML#2 | 1667× | — | — | **not estimable** |
+
+The control confirms the warning: a random same-size set of TRBV19 non-family
+GIL sequences already shows ~34× enrichment over OLGA. The real motifs run
+744–4563×, 20–130× above the control median, and all five estimable families
+clear p = 0.005. **GLCTLVAML#2 is reported not estimable rather than forced**,
+because E56 found only 13 matched controls and loosening the matching to rescue
+it is what the plan forbids.
+
+**The qualification that matters most, and it came out of the output itself.**
+The five GILGFVFTL families are separate only because the 0.12 radius split
+them. Their consensus sequences:
+
+```
+CASSIRSTGEQYF   .   L   2   2   2
+CASSIGSYGYTF    L   .   L   L   L
+CASSIRSTDTQYF   2   L   .   3   3
+CASSIRSAYEQYF   2   L   3   .   1
+CASSIRSSYEQYF   2   L   3   1   .
+```
+
+Four of the five share length 13 and the prefix `CASSIRS`, differing by a
+**median of 2 residues out of 13**. They are sub-clusters of a single
+CASSIRS-type public motif — the known TRBV19 influenza M1 response — not five
+independent discoveries. **Five p-values of 0.005 are not five independent
+pieces of evidence; the effective number of distinct GILGFVFTL motifs tested
+here is about 2**, and every statement about "five families" in E54, E56 and
+E57 carries the same qualification retroactively.
+
+**Settled.** Enrichment beyond the rearrangement model is real and large
+(20–130× above a matched control that already corrects for cohort selection),
+and it is not explained by generation probability — though generation does
+contribute, since family members are 3.6× more generatable than matched
+controls. The evidence rests on roughly **two** independent motifs, one of them
+the textbook CASSIRS/TRBV19 M1 response, plus one GLCTLVAML motif whose control
+is not estimable. That is consistent with antigen-associated selection and does
+not demonstrate it: the plan's own boundary, that a naive repertoire or
+functional experiment is required, still stands. Nothing here changes the
+predictor.
