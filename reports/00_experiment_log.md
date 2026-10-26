@@ -2956,3 +2956,98 @@ ranking objective by surrogate–metric mismatch on a heavy-tailed score
 distribution (E16), the pointwise learners by five folds (E10, E13), and
 pair-conditioned weights by the loss sitting in the one class that reweighting
 cannot improve (here). The entry is unchanged.
+
+---
+
+## E51 — A public-maximising configuration, and where its gain actually sits
+
+**Why.** The rules permit several teams and several submissions, which changes
+what is worth building. The frozen entry maximises *expected private* score and
+deliberately carries no pool expansion, because E27 priced the public gain
+(+0.0112) as almost entirely unavailable to the private epitopes (+0.0013
+realisable). A second entry is how to take the other side of that measurement.
+`scripts/48_public_maximum.py`.
+
+The opportunity was visible in E48 and nobody had measured it: **HeidAI's
+configuration is pool-expanded density + whole-V-domain alignment; the frozen
+entry is three-space density + Boltz structure. Neither holds the other's term.**
+
+**Public macro, equal-weight rank averages throughout.**
+
+| configuration | public | realisable | pool-dependent | vs frozen (public / realisable) |
+|---|---:|---:|---:|---|
+| **D  density3 + pooled m30 + m50 + structure** | **0.8601** | **0.8561** | 0.0039 | **+0.0102 / +0.0063** |
+| C  HeidAI rebuild + structure 0.3 | 0.8588 | 0.8534 | 0.0055 | +0.0090 / +0.0035 |
+| A  frozen, density3 → pooled m30 | 0.8583 | 0.8499 | 0.0084 | +0.0085 / +0.0001 |
+| E  (density3 + pooled m30 + m50)/3 + str 0.3 | 0.8582 | 0.8548 | 0.0034 | +0.0083 / +0.0050 |
+| B  pooled m30 + m50 + structure | 0.8572 | 0.8521 | 0.0052 | +0.0074 / +0.0023 |
+| F  **D with no pool at all** | 0.8557 | — | — | +0.0059 / — |
+| HeidAI rebuild (m30 pooled + m50) | 0.8549 | 0.8476 | 0.0073 | +0.0051 / **−0.0022** |
+| frozen entry | 0.8498 | 0.8498 | 0.0000 | 0 / 0 |
+
+`realisable` thins every public pool to the private multipliers (1.038, 1.045,
+1.834), 20 repeats, exactly as E27 and E48 priced the discount.
+
+**The column that decides transfer is not the public macro.** The private split
+is 61–93% pairs where neither member has relatives, and E30 showed the projected
+private macro tracks the within-both-singleton AUC almost exactly.
+
+| configuration | both-singleton AUC | vs frozen | worst per-epitope delta |
+|---|---:|---:|---:|
+| **D** | **0.8084** | **+0.0143** | **+0.0021** |
+| C | 0.8083 | +0.0143 | −0.0004 |
+| B | 0.8075 | +0.0134 | −0.0056 |
+| E | 0.8056 | +0.0115 | +0.0026 |
+| **F (no pool)** | 0.8027 | **+0.0087** | +0.0007 |
+| A | 0.8005 | +0.0064 | −0.0038 |
+| HeidAI rebuild | 0.7984 | +0.0043 | −0.0076 |
+| frozen entry | 0.7941 | 0 | 0 |
+
+Three findings, in order of importance.
+
+1. **The gain is concentrated where the private score is decided.** D improves
+   both-singleton AUC by +0.0143 against its +0.0102 public macro — a *larger*
+   improvement in the harder class than overall, which is the opposite of the
+   pool-expansion pattern E27 rejected.
+2. **It holds on every epitope with no sign flip** (worst delta +0.0021). D, E
+   and F are the only candidates with that property; C, B, A and HeidAI's own
+   configuration each make at least one epitope worse. Sign instability across
+   epitopes is the exact failure that killed `vdjdb_score` (E4), Pgen (E7) and
+   the specificity model (E13), so its absence here matters more than the macro.
+3. **Most of it is not the pool.** F — the same four members with the pool
+   deleted entirely — still carries +0.0059 public and **+0.0087 of the
+   both-singleton gain, 61% of D's**. So the advantage is mainly the V-domain
+   term and the top-8 aggregation, neither of which needs a pool, and the
+   transfer argument that rejected pool expansion does not apply to most of it.
+
+On E26/E42's objection that whole-V-domain alignment tracks typicality at rho
++0.994 through framework that contacts nothing: that argued m50 carries no new
+*biological* information, and it still stands. What m50 contributes here is a
+structurally different *metric* — global alignment rather than embedding cosine
+— at a standalone 0.8319, well above chance. That distinguishes it from Grantham
+(E44), which had decorrelation but no margin, and is consistent with E28's rule
+rather than contrary to it.
+
+**Selection cost, measured.** Nested LOEO over the candidate *choice*: D is
+picked in 4 of 5 folds, nested 0.8577 against the fixed candidate's 0.8601, so
+selection costs **−0.0024** here rather than E15's −0.0048, because the
+candidates are so similar.
+
+**Under E47's published anchor.** D projects to private **0.802** on its public
+margin and **0.798** on its realisable margin, against the frozen entry's 0.792.
+
+**Settled, and deliberately not a replacement.** +0.0102 does not clear the
++0.02 bar adopted in E10, so under this project's own standing rule the frozen
+entry stays as entered. But the bar was set for a component justified by its
+LOEO macro, and this evidence is of a different kind — right class, every
+epitope, mostly pool-free. Two additional submission files were written and
+validated, with the frozen entry untouched and its byte-identical guard still
+passing:
+
+| file | configuration | public | sha256 (first 16) |
+|---|---|---:|---|
+| `d_density3_m30pool_m50_struct.csv` | D, takes the pool bet | 0.8601 | `64b3dd4076a51fbd` |
+| `f_density3_m30_m50_struct_nopool.csv` | F, no pool anywhere | 0.8557 | `3314b7d6319d17b9` |
+
+D passes both standing gates (private variance 236/220/126; typicality
+"carries something typicality does not", 0.8601 against 0.6378 at rho +0.265).
