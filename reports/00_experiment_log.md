@@ -3769,3 +3769,71 @@ functional experiment, and the evidence here rests on about two independent
 motifs within a single epitope. Nothing in E56–E59 changes the predictor, and
 nothing in it can: E56 measured 0% donor coverage on two of three private
 epitopes.
+
+---
+
+## E60 — Gate 0 of the recognition-profile roadmap: the external data audit
+
+Implements Gate 0 of `IMMREP26_Recognition_Profile_to_Functional_Activation_Roadmap_2026-10-26.md`.
+Both datasets downloaded and audited: PRP (Dryad 10.5061/dryad.h70rxwdzk, v5,
+183,881,424 B) and SEEKER (10.5061/dryad.79cnp5jct, v3, 27,946,775 B) — both
+**CC0-1.0**, both exactly the sizes the roadmap stated. 76 files, 273.5 MB,
+manifest with sha256 at `data/derived/external_manifest.tsv`.
+`scripts/58_gate0_external_audit.py`. Gitignored like TCRvdb.
+
+### Two data quirks that would have corrupted a naive pipeline
+
+**`TCR4.2`, `TCR4.3` and `TCR4.4` ship with no header row** — their first line
+is already data — and they are *exactly* the three P2/P9-anchor files. Globbing
+the directory with pandas defaults eats one peptide from each and gives them
+different column names from the other eighteen.
+
+**`TCR63` carries no `add_flow_high_copy` column.** The two SEEKER receptors do
+not hold the same flow conditions, so the roadmap's F1 — fit single- against
+high-copy antigen density and compare — is available on **one** receptor, not
+two.
+
+### What the audit found
+
+| check | result |
+|---|---|
+| PRP anchor libraries | P2_P8 272,888 peptides, P2_P9 151,914, sharing 256 (0.17%) — genuinely different panels, kept apart |
+| **PRP input coverage** | median **8.9%** of selected peptides appear in their own naive library; **0.2%** for the three P2/P9 files |
+| SEEKER R0 | present for **100%** of candidates (19,322 TCR59, 16,369 TCR63) |
+| SEEKER flow | 192 peptides per receptor, **~1%** of candidates, selected as top hits |
+| top-10,000 tables | 6 of them; absence from one is **not** a measured negative |
+| PRP ∩ SEEKER peptides | 19 of 6,313,097 and 35,374 |
+| PRP ∩ SEEKER TCRs | **0** |
+
+**The PRP input-coverage number is the one that bites.** The roadmap's
+enrichment formula needs an input count in its denominator, and 91% of selected
+peptides do not have one — the selections contain far more distinct peptides
+(6.3M) than the two naive library files list (425k combined). For the P2/P9
+receptors it is 99.8% missing. Input-corrected enrichment is therefore
+computable on a small minority of the data, and any per-TCR profile built
+without it is a within-receptor rank, not a calibrated quantity.
+
+### Gate 0 verdict: **PROFILES ONLY**
+
+| | |
+|---|---|
+| [FAIL] | PRP input library available for the enrichment denominator |
+| [PASS] | SEEKER R0 exists |
+| [PASS] | SEEKER flow measurements exist |
+| [FAIL] | same TCR × same peptide × same HLA across the two sources |
+
+Both studies use HLA-B\*27:05, so peptide overlap was possible and was measured:
+**19 shared peptides and zero shared TCRs.** PRP measures yeast binding on 21
+receptors (16 patient + 5 engineered variants of TCR19.2); SEEKER measures NFAT
+activation on TCR59 and TCR63. **No pair carries both readouts**, so a
+cross-source binding → activation map is not estimable, and the roadmap's rule
+applies: report that rather than stitch the two into one label.
+
+**What remains available**, and it is not nothing: per-receptor recognition
+profiles from each source, and the within-SEEKER screen-to-flow calibration
+(F1), where the same receptor has both an R1/R0 ratio and a flow readout — on
+TCR59 with both copy conditions and TCR63 with single-copy only. The measured
+flow subset is ~1% of candidates chosen as top hits, so any calibration fitted
+on it describes ranked candidates, not the library, and must say so.
+
+Nothing here touches the frozen predictor; the roadmap excludes it by design.
