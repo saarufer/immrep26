@@ -3133,3 +3133,128 @@ here. **E51 was already the correct exploitation of this finding, arrived at
 from the other direction.**
 
 Gain +0.0012 against the +0.02 bar. The entry is unchanged.
+
+---
+
+## E53 — Why a TCR is a singleton, and whether the radius is principled
+
+Both questions are the user's, and they turn out to have one answer.
+`scripts/50_singleton_cause_and_cutoff.py`.
+
+### Part 1 — why a singleton?
+
+Three causes make opposite predictions, and the target — *is this TCR a
+singleton* — carries no label, so it can be predicted from features directly and
+measured **within each epitope**, which holds cohort size fixed.
+
+| feature | proposed cause | AUC for "is a singleton" | inverted |
+|---|---|---:|---:|
+| cdr3_len_total | chain atypicality | **0.635** | — |
+| ms_iptm_sd | — | 0.370 | 0.630 |
+| typicality | chain atypicality | 0.364 | 0.636 |
+| complex_plddt | structurally odd | 0.363 | 0.637 |
+| consist_tcr_rmsd_mean | — | 0.357 | 0.643 |
+| log10_pgen_paired | hard to generate | 0.335 | **0.665** |
+| pae_tcr_pep_min | structurally odd | 0.318 | 0.682 |
+| ms_iptm_mean | structurally odd | 0.305 | 0.695 |
+| iptm | structurally odd | 0.299 | **0.701** |
+
+All nine together, in-sample within epitope: **0.850** — an upper bound, but it
+settles the first question: **singleton status is substantially a property of the
+TCR, not only of what was collected.**
+
+**The structural reading is directionally right, and it is not a separate cause.**
+Singletons have lower interface confidence (ipTM inverted 0.701), worse PAE
+(0.682), lower Pgen (0.665), more atypical chain features (0.636) and longer
+CDR3s (0.635). But these are facets of one quantity, not independent evidence:
+E14 and E36 established that Boltz interface confidence *is* a canonicality
+measure, and here `ms_iptm_sd` correlates with `ms_iptm_mean` at Spearman
+**+0.843** and `consist_tcr_rmsd_mean` with it at **+0.676** — so the two
+features that look like reproducibility measures are attenuated copies of the
+confidence mean, not counter-evidence to it. A first reading of the output
+treated them as contradicting the confidence features; they do not.
+
+The unified reading: **a long CDR3 is improbable to generate, docks less
+canonically, looks atypical in chain features, and has few convergent
+relatives.** "Its structure is odd so it cannot make neighbours" and "it is hard
+to generate so the relatives do not exist" are the same explanation from two
+sides.
+
+**Sampling is refuted at the epitope level.** Singleton rate against cohort
+size: rho **−0.214** (n=8), and the extremes run the wrong way — GLCTLVAML has
+the *smallest* cohort (192) and the *fewest* singletons (44.8%), while
+CINGVCWTV has 243 rows and 97.5%.
+
+| epitope | n | singleton rate | split |
+|---|---:|---:|---|
+| CINGVCWTV | 243 | **97.5%** | private |
+| LLWNGPMAV | 229 | 95.6% | private |
+| **TTDPSFLGRY** | 387 | **95.3%** | public |
+| LTDEMIAQY | 130 | 85.4% | private |
+| NLVPMVATV | 366 | 81.7% | public |
+| YLQPRTFLL | 419 | 81.6% | public |
+| GILGFVFTL | 670 | 52.4% | public |
+| GLCTLVAML | 192 | 44.8% | public |
+
+**Worth keeping: TTDPSFLGRY at 95.3% is the public epitope most like the private
+ones.** It is the best single-epitope proxy for private transfer, which is
+useful because LOEO weights all five equally and E30 showed LOEO is biased
+upward precisely by family richness.
+
+### Part 2 — is the radius principled? No.
+
+**Smooth, no knee.** Validation rate by nn3 decile, taking each epitope's own
+rate and averaging epitopes so the fourfold base-rate differences cannot mix:
+
+| decile | nn3 mean | rate (per-epitope mean) |
+|---:|---:|---:|
+| 0 | 0.078 | 0.906 |
+| 2 | 0.220 | 0.787 |
+| 4 | 0.351 | 0.517 |
+| 6 | 0.474 | 0.231 |
+| 8 | 0.576 | 0.197 |
+| 9 | 0.634 | 0.117 |
+
+Largest single step **−0.216** against a mean absolute step of **0.107** — a
+ratio of 2.0. A real threshold would put one step far above the rest.
+
+**Against a background of other epitopes' TCRs**, within-epitope distance stops
+being special at radius 0.45–0.49 for seven epitopes and at **0.21 for
+CINGVCWTV**. At the radius in use, CIN has **zero** TCRs with a within-cohort
+nn3 ≤ 0.12 while 0.41% have a cross-epitope neighbour that close — enrichment
+**0.0**. A private epitope with no convergent structure at all at this radius,
+published nonetheless at 0.80–0.83, because the continuous variable still ranks.
+
+**The decisive sweep.** Binary clustered indicator at every radius 0.02–0.40,
+against the continuous `nn3_dist` it is a threshold of:
+
+| | mean per-epitope AUC |
+|---|---:|
+| **continuous nn3_dist** | **0.8334** |
+| best binary, radius 0.36 (47.8% clustered) | 0.7544 |
+| binary at the radius in use, 0.12 | 0.6725 |
+
+**No radius recovers what the continuous variable carries — the best possible
+binary loses 0.0790, and 0.12 loses 0.1609.** "Singleton" is a lossy summary of
+`nn3_dist`, not a category.
+
+This does not mean the model leaves 0.16 on the table: 0.12 is used for analysis
+bookkeeping — defining families and pair classes — not as a predictor. But it
+does mean every class-based analysis here (E22, E50, E52) rests on a lossy
+summary, which is a limitation worth recording rather than a result to act on.
+
+**A negative worth stating.** Enrichment is label-free, so unlike E49 this gives
+all eight epitopes an x value against E47's published AUROC. It does not predict
+difficulty: rho **+0.309, p 0.457**, broken by GLCTLVAML — second-highest
+enrichment (2.020) and the lowest published band (0.67). Same outlier structure
+as E49. The mechanism candidate is E9's: a tight cluster can be a knot of
+co-annotated near-duplicates rather than a real motif family.
+
+### Settled
+
+Singleton status is intrinsic and the structural hypothesis is one face of it;
+the radius is arbitrary and strictly lossy. **The practical consequence is
+already banked**: candidate D's top-8 members read the continuous variable
+directly, which is why E51 measured +0.0143 on both-singleton pairs where
+reweighting (E50) and a singleton-only classifier (E52) each got about +0.001.
+The entry is unchanged.
