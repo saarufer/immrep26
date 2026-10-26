@@ -2638,3 +2638,71 @@ Nobody read the results section for it. **Before modelling an unknown, check
 whether the literature has already measured it** -- especially the literature
 the dataset comes from.
 
+
+## E48 — Rebuilding the rival configuration: the public lead is pool, and pool does not transfer
+
+`scripts/44_rival_configuration.py`. A parallel effort reports public macro
+0.8552 against our 0.8498, from pool-expanded top-8 density rank-averaged with
+whole-V-domain alignment top-8. Both components are ones we measured and
+rejected, so the question is not whether they lift the public score -- E27 and
+E25 say they do -- but whether the lead survives transfer.
+
+Rebuilt entirely from our own implementations: the pool machinery from
+`scripts/33`, the V-domain distances cached by `scripts/22`, our metric and our
+downsampling protocol.
+
+**The harnesses agree, which is what makes the comparison mean anything.**
+
+| configuration | public |
+|---|---:|
+| m30 pool-expanded top-8 | 0.8526 |
+| m50 V-domain top-8 | 0.8319 |
+| **m30 + m50** | **0.8549** (reported 0.8552, gap -0.0003) |
+| top-8 with no pool | 0.8414 |
+| our frozen entry | 0.8498 |
+| tcrdist3 baseline | 0.8247 |
+
+Their public advantage is **+0.0051**.
+
+**After the private-realisable downsampling E27 applied to our own pool gain** --
+each public pool cut to the private epitopes' own distinct-clonotype
+multipliers, 20 repeats:
+
+| | |
+|---|---:|
+| their configuration, full public pool | 0.8549 |
+| **their configuration, private pool density** | **0.8476** |
+| pool advantage that cannot transfer | **+0.0073** |
+| our frozen entry, which uses no pool at all | 0.8498 |
+| **advantage that survives** | **-0.0022** |
+
+**Their entire public lead, and more, is pool.** At the pool density the private
+epitopes can actually supply, the two configurations swap places.
+
+**Under E47's published anchor:**
+
+| configuration | margin carried | private |
+|---|---:|---:|
+| our frozen entry | +0.0251 | **0.792** |
+| theirs, public margin | +0.0302 | 0.797 |
+| theirs, realisable margin | +0.0229 | **0.790** |
+
+0.790 against 0.792 is far inside the +/-0.023 standard error of a
+three-epitope estimate. **The two configurations are indistinguishable on the
+private split**, and the public gap that looks decisive is an artefact of a
+resource the private epitopes do not have.
+
+Their own private estimate is 0.775, more conservative than the anchor gives,
+the difference being that they take the baseline at 0.76 where E47's published
+midpoint is 0.767. The direction agrees: every team's private score will sit
+well below its public one.
+
+**One thing this leaves open rather than settles.** Their second component, the
+V-domain alignment, carries **no pool discount** -- it changes how two TCRs are
+compared, not how many there are to compare against, so it transfers in full.
+E44 measured it as a fourth density member at +0.0026 with nested LOEO selecting
+it in 5 of 5 folds. That is below the +0.02 threshold and E26 and E42 showed its
+ranking comes from framework, a region that contacts nothing. But "below
+threshold" and "transfers without discount" are different properties, and the
+frozen entry was not changed on the strength of this.
+

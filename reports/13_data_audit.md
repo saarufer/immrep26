@@ -60,4 +60,4 @@
 | submissions | density4_struct03.csv: validates                                     | PASS     | 2636 rows, public 0.8525                                 |
 | submissions | density_sceptr_default_sigma0.1.csv: validates                       | PASS     | 2636 rows, public 0.8396                                 |
 | reports     | every report a script declares exists                                | PASS     | all present                                              |
-| reports     | report files on disk                                                 | NOTE     | 21 files, 17 declared by scripts                         |
+| reports     | report files on disk                                                 | NOTE     | 23 files, 19 declared by scripts                         |
