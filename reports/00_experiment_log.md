@@ -3359,3 +3359,82 @@ family is uniformly TRBV20-1 at 96.3% validated, and GLCTLVAML still has the
 lowest nn3-alone AUC (0.677) and the weakest published band.
 
 Nothing here changes the predictor; it is a test of the biological reading.
+
+---
+
+## E55 — How much of "singleton" is sample size?
+
+E53 showed singleton status is predictable from the TCR itself — CDR3 length,
+Pgen, interface confidence. That says *which* TCRs lose their neighbours first.
+It does not say whether they would have neighbours in a larger sample, and the
+AIRR literature is explicit that publicness tracks sample size, donor count and
+sequencing depth. E21 already thinned the public cohorts but measured the AUC;
+the statistic that answers this directly was never extracted.
+`scripts/53_singleton_is_sampling.py`, 200 draws per size, graph rebuilt on the
+thinned **full** cohort with the positive/negative split read off the labelled
+survivors.
+
+### The decisive comparison: public cohorts thinned to the private sizes
+
+| private epitope | n | actual singleton rate | public thinned to that n | verdict |
+|---|---:|---:|---|---|
+| LTDEMIAQY | 130 | 85.4% | GLC 50.5%, GIL 69.7%, NLV 89.4%, YLQ 90.4%, TTD 97.6% | **inside** |
+| LLWNGPMAV | 229 | 95.6% | GIL 63.2%, NLV 85.4%, YLQ 85.9%, TTD 96.4% | **inside** |
+| CINGVCWTV | 243 | 97.5% | GIL 62.5%, NLV 85.3%, YLQ 85.8%, TTD 96.3% | outside, by **1.2 pp** |
+
+**Two of three private cohorts are no sparser than a public cohort cut to the
+same size, and the third exceeds the public range by 1.2 percentage points.**
+The anchor throughout is TTDPSFLGRY, which at its own size is already 95.3%
+singleton and at 243 reaches 96.3% — indistinguishable from CINGVCWTV's 97.5%.
+And TTD's nn3-alone AUC is **0.860** (E53), so a cohort this sparse can still be
+ranked well.
+
+### But sample size is not the main thing
+
+| | spread |
+|---|---:|
+| across epitopes at a fixed n = 130 | **47.0%** |
+| within an epitope across the whole sweep (80 → full) | 12.1% |
+
+**Which epitope it is moves the singleton rate 3.9× further than an eightfold
+change in cohort size.** So "it is just sampling" is the wrong summary: sampling
+fully accounts for the private cohorts' *level*, while the between-epitope
+differences it cannot explain are far larger.
+
+### Positives and negatives are structurally different
+
+Going from full size to n = 130, the singleton rate rises **+0.144** for
+positives and **+0.038** for negatives — positives start far more clustered and
+so have more to lose. But conditioning on having *had* a neighbour reverses it:
+
+| epitope | of positives that had a neighbour, lost it at n=130 | of negatives |
+|---|---:|---:|
+| GILGFVFTL | 0.357 | 0.597 |
+| NLVPMVATV | 0.382 | 0.620 |
+| YLQPRTFLL | 0.456 | 0.702 |
+| GLCTLVAML | 0.093 | 0.119 |
+| **mean** | **0.363** | **0.509** |
+
+**Negatives lose their neighbour 1.40× more readily than positives.** A positive
+sits in a family with redundant membership, so subsampling has to remove several
+members before it is isolated; a negative's neighbour is more often a single
+chance edge that one deletion cuts. That is a real structural asymmetry and it
+supports the convergent-family reading over chance proximity — and it is the
+same object E54 found, where the six large TRBV19/TRBV20-1 families carry all
+the excess within-family agreement.
+
+### Settled
+
+Being a singleton *at the observed sample size* is largely a sampling statement
+for the private cohorts — their levels sit inside or 1.2 pp outside what thinned
+public cohorts produce. It is **not** evidence that those TCRs have no relatives
+in a real repertoire. But the robustness of a TCR's neighbourhood to
+subsampling is informative and differs by label, which is the continuous
+`nn3_dist` story of E53 again rather than a new feature.
+
+**Caveat, stated because the design cannot escape it:** this subsamples a finite
+candidate library. It cannot reconstruct a real antigen-specific repertoire, so
+it bounds the sampling explanation **from below**, not from above.
+
+Figure: `reports/singleton_vs_cohort_size.html`. Nothing here changes the
+predictor.
