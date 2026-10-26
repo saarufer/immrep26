@@ -2406,3 +2406,107 @@ the same thing.
 **Verdict.** -0.0024 against a +0.02 threshold, with an oracle ceiling of
 +0.0000. The entry is unchanged.
 
+
+## E45 — H5: antigen-conditioned alpha-beta pairing compatibility. Closed.
+
+`scripts/42_ab_pairing_compatibility.py`. The reviewer's design, run as three
+gates so an early failure closes the branch cheaply. H2 asked how many diverse
+beta partners an alpha has; this asks whether the specific alpha-beta
+combination a TCR actually carries is the kind its epitope's TCRs make.
+
+**Gate A -- cross-chain dependence exists.** Scoring real pairs against pairs
+shuffled inside the epitope, leave-one-out PMI over V/J combinations:
+
+| epitope | n | real | free shuffle | stratified shuffle | strata mobility |
+|---|---:|---:|---:|---:|---:|
+| GILGFVFTL | 670 | 2.127 | 1.013 | 2.097 | 59.6% |
+| GLCTLVAML | 192 | 5.076 | 2.458 | 5.017 | 55.7% |
+| YLQPRTFLL | 419 | 2.644 | 1.774 | 2.622 | 32.0% |
+| NLVPMVATV | 366 | 3.783 | 2.599 | 3.776 | 21.9% |
+| TTDPSFLGRY | 387 | 2.395 | 1.971 | 2.377 | 22.0% |
+| CINGVCWTV | 243 | 3.410 | 2.808 | 3.411 | 23.9% |
+| LLWNGPMAV | 229 | 2.911 | 2.397 | 2.875 | 34.5% |
+| LTDEMIAQY | 130 | 5.331 | 4.557 | 5.331 | 12.3% |
+
+Mean excess over a free shuffle **+1.0126**, so the dependence the 2026 papers
+report is clearly present here.
+
+**Gate A' -- and it is composition.** Mean excess over a shuffle restricted to
+V/J and length strata is **+0.0213**, about 2% of the free-shuffle excess. The
+"mobility" column is the control's own strength and is reported because it
+varies: it is the fraction of TCRs a stratified draw actually moves. On
+LTDEMIAQY only 12.3% move, which is why its stratified score equals its real
+score to three decimals, so that row carries no information. The claim rests on
+GILGFVFTL and GLCTLVAML, where a majority move and the residual is still 0.030
+and 0.059 against free-shuffle excesses of 1.114 and 2.618.
+
+**Gate B -- and it does not separate labels.** PMI scores mean AUC **0.4400**,
+below chance, with the sign flipping across epitopes (GILGFVFTL 0.358,
+NLVPMVATV 0.648) -- the same failure shape as `vdjdb_score` in E4 and the
+specificity model in E13.
+
+The continuous score, which asks how close a TCR sits to its cohort's
+cross-chain regression line, does better: **0.6336**, and above chance on all
+five epitopes, which is rare here. But:
+
+| | mean AUC | GIL | GLC | NLV | TTD | YLQ |
+|---|---:|---:|---:|---:|---:|---:|
+| pairing compatibility | 0.6336 | 0.784 | 0.585 | 0.560 | 0.637 | 0.601 |
+| **plain typicality, no pairing** | **0.6378** | 0.779 | 0.641 | 0.518 | 0.667 | 0.584 |
+
+A score built only from how far a TCR's *own* chain features sit from the
+cohort mean -- involving no pairing whatever -- scores **slightly higher**, and
+the two correlate at Spearman +0.715. So the part of this statistic that
+predicts validation is not measuring pairing.
+
+**That is typicality re-encoded for the fourth time**, after density itself,
+structure confidence (E14) and the whole-V-domain alignment (E26, E42). Both
+scores sit at only +0.26 and +0.27 Spearman against the submitted blend --
+genuinely decorrelated -- and still add nothing, which is E28's lesson again:
+decorrelation without margin over chance buys nothing.
+
+**Gate C.** Both pass E3's viability gate on all three private epitopes. Nested
+LOEO blend gain **-0.0007** and **-0.0013** against a +0.02 threshold. The entry
+is unchanged.
+
+**What the reviewer predicted, and what actually happened.** The predicted
+failure mode was that every TCR here is a historically observed pair, so a
+non-validating one may have ordinary compatibility and the score would not
+separate labels. The PMI score failed exactly that way. The continuous score
+failed differently and more informatively: it did separate labels, but not
+because of pairing.
+
+---
+
+## Two corrections from the same review
+
+**H3's closure was right but its search was not.** E43 closed H3 after grepping
+VDJdb's columns for "nucleotide" and finding none. The reviewer pointed out
+that VDJdb names the field `cdr3nt`, which that grep would miss, and warned
+that where it exists it can be back-inferred from the amino acid sequence by a
+rearrangement model rather than observed. Re-checked against the complete column
+lists of all three files in this release -- `vdjdb.txt` (22 columns),
+`vdjdb.slim.txt` (17) and `vdjdb_full.txt` (35) -- **no `cdr3nt` column exists
+in any of them**. The closure stands and now rests on a full enumeration rather
+than a keyword match. The caveat is recorded for any future release: an
+inferred nucleotide sequence cannot evidence independent rearrangement.
+
+**E43's `liability_sum` was reported in a way that cannot be audited.** Its
+prevalence is 25.0% while the three indicators shown beside it are 0%, 0.4% and
+1.3%, whose union cannot exceed 1.7%. The reviewer caught the arithmetic. The
+cause is that `liability_sum` has a **fourth** term, `len_deviation > 4`, at
+23.9% -- and `len_deviation`'s own prevalence was listed at the *different*
+threshold `> 0`, which is 93.2%. Two thresholds under one name.
+
+| term in `liability_sum` | prevalence |
+|---|---:|
+| extra cysteine beyond the anchor | 1.29% (34) |
+| N-glycosylation sequon in CDR3 | 0.38% (10) |
+| non-canonical CDR3 termini | 0.00% (0) |
+| **length deviation > 4 from modal** | **23.86% (629)** |
+| union | 25.04% |
+
+E43's conclusion that none of these ranks is unaffected -- the combined score
+was 0.5155 -- but the composition should have been stated, and the two
+thresholds should not have shared a label.
+
