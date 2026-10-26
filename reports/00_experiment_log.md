@@ -3051,3 +3051,85 @@ passing:
 
 D passes both standing gates (private variance 236/220/126; typicality
 "carries something typicality does not", 0.8601 against 0.6378 at rho +0.265).
+
+---
+
+## E52 — Classifying singletons only
+
+**Why, and why it is not E10 again.** The idea is the user's. Every supervised
+attempt so far (E10, E13, E50) optimised the *overall* AUC, which the easy class
+dominates: `one_clustered` pairs have within-class AUC 0.903 and 43.6% of the
+mass (E50), so almost all of a fitted model's pressure goes where density
+already works. Restricting the training set to singletons replaces the objective
+with the hard class alone, and that class is 59.8% of all loss and 61-93% of the
+private split's pairs. `scripts/49_singleton_classifier.py`.
+
+**Two pieces of machinery, both validated before use.**
+
+*The splice.* The metric is a per-epitope AUC over all rows, so a separate
+singleton ranking has to be reinserted without disturbing anything else. Within
+an epitope the singletons keep the rank slots they already occupy in the base
+score and only their ordering among themselves is replaced. Splicing a score
+into itself reproduces it to **0.849831 against 0.849831**, so the operation is
+lossless and the only thing a result can move is the both-singleton part.
+
+*The features.* Within-epitope percentile ranks computed **among singletons**,
+so every epitope's feature distribution is uniform on [0,1] and nothing
+epitope-specific can survive into a coefficient. 1,281 labelled singletons:
+GIL 317, TTD 328, YLQ 308, NLV 252, GLC 76.
+
+**Part 1 — single features within labelled singletons.**
+
+| feature | mean AUC | worst epitope | neighbour-free |
+|---|---:|---:|---|
+| the frozen score itself | **0.7941** | 0.6549 | no |
+| nn3_dist | 0.7793 | 0.5994 | no |
+| nn1_dist | 0.7711 | 0.5953 | no |
+| density (kernel) | 0.7702 | 0.6043 | no |
+| cons_ms_iptm_mean | **0.7292** | 0.6440 | **yes** |
+| cons_ms_tcr_pep_iptm_mean | 0.7276 | 0.6373 | yes |
+| complex_ipde | 0.7142 | 0.6259 | yes |
+
+**Part 2 — classifiers, nested LOEO over epitopes.**
+
+| features | model | top-k | singleton AUC | spliced macro |
+|---|---|---|---:|---:|
+| all | logistic L2 | 5 | **0.7949** | **0.8510** |
+| all | logistic L2 (C=1) | 5 | 0.7943 | 0.8492 |
+| all | boosting depth 2 | 5 | 0.7863 | 0.8430 |
+| neighbour-free | logistic L2 | 15 | **0.7277** | 0.7995 |
+| neighbour-free | logistic L2 | 5 | 0.7250 | 0.7990 |
+| neighbour-free | boosting depth 2 | 15 | 0.7034 | 0.7869 |
+| — | the frozen entry | — | 0.7941 | 0.8498 |
+
+**Settled, with three readings in increasing order of interest.**
+
+1. **The restriction buys +0.0012 on the macro and +0.0008 inside the class it
+   was built for.** The best model's feature set contains the frozen score
+   itself, and top-5 selection picks it first, so what the classifier learned is
+   "use the score you were given". Fitting on four epitopes added nothing to it.
+
+2. **Deleting the neighbour features costs −0.069 within singletons** (0.7277
+   against 0.7941), and the fitted neighbour-free model does not even beat the
+   best *single* neighbour-free feature (0.7292, multi-sample ipTM consistency).
+   Fifteen features on four epitope folds is worse than picking one.
+
+3. **The diagnosis, which is the point: "singleton" is not a neighbour-free
+   population.** `nn3_dist` scores 0.7793 and `nn1_dist` 0.7711 *within*
+   singletons -- higher than kernel density's 0.7702. The 0.12 radius creates a
+   category, but the variable underneath it is continuous and keeps ranking
+   below the threshold. **There is no subpopulation of this dataset for which the
+   neighbourhood carries no information**, so "a signal that ranks TCRs with no
+   relatives" was the wrong thing to look for: the TCRs in question do have
+   relatives, just further away.
+
+That closes the loop with E50 from the other side. Reweighting could not improve
+`both_singleton` (oracle +0.0010) because the active signal inside that class is
+still nearest-neighbour distance, which density already carries. And it explains
+E51 mechanistically: candidate D's +0.0143 on both-singleton pairs comes from
+its **top-8** members, and top-k aggregation beats a kernel at sigma=0.1
+precisely where neighbours are far -- exactly what `nn3_dist > density` says
+here. **E51 was already the correct exploitation of this finding, arrived at
+from the other direction.**
+
+Gain +0.0012 against the +0.02 bar. The entry is unchanged.
