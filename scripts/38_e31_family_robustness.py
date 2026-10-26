@@ -122,24 +122,27 @@ def cluster_bootstrap(frame: pd.DataFrame, column: str,
     return out
 
 
-def family_permutation(frame: pd.DataFrame, column: str,
-                       rng: np.random.Generator) -> float:
-    """Shuffle the group label between families, stratified by epitope, so the
-    null keeps family structure instead of breaking it apart."""
-    assignment = (frame.groupby(["epitope", "family"])["group"]
-                  .agg(lambda s: s.iloc[0]).reset_index())
-    observed = effect(frame, column)
-    hits = 0
-    for _ in range(DRAWS):
-        shuffled = assignment.copy()
-        shuffled["group"] = (shuffled.groupby("epitope")["group"]
-                             .transform(lambda s: rng.permutation(s.values)))
-        relabelled = frame.drop(columns="group").merge(
-            shuffled, on=["epitope", "family"], how="left")
-        value = effect(relabelled, column)
-        if not np.isnan(value) and abs(value) >= abs(observed):
-            hits += 1
-    return (hits + 1) / (DRAWS + 1)
+def family_cells(frame: pd.DataFrame) -> pd.DataFrame:
+    """One value per (family, group): the mean over that family's sites in that
+    group. This is the family-as-unit view, with every family weighted equally.
+
+    It replaces a permutation test that was wrong. That test shuffled the group
+    label between families and then applied it to every site, so its null was
+    computed on family-collapsed labels while the observed statistic was
+    computed on site-level labels. Fifteen of 97 families carry both groups,
+    covering 34% of sites, and collapsing them moves the contact effect from
+    +3.63 to -0.15 on its own -- so the null and the observed were not the same
+    statistic and the p-values it produced were not interpretable.
+    """
+    return (frame.groupby(["family", "group"])[["contacts", "facing"]]
+            .mean().reset_index())
+
+
+def paired_within_family(cells: pd.DataFrame, column: str):
+    """Families carrying both groups give a paired comparison that cannot be
+    confounded by which families fall in which group."""
+    wide = cells.pivot(index="family", columns="group", values=column).dropna()
+    return wide["discordant"] - wide["control"]
 
 
 def main() -> int:
@@ -169,26 +172,39 @@ def main() -> int:
     print("  the family, and there are far fewer of those than sites.")
 
     print("\n=== effect, with the family as the sampling unit ===")
+    from scipy.stats import mannwhitneyu, wilcoxon
+
+    cells = family_cells(frame)
     rows = []
     for column, label in (("contacts", "peptide contacts at the site"),
                           ("facing", "site faces the peptide (binary)")):
         observed = effect(frame, column)
         boot = cluster_bootstrap(frame, column, rng)
         lo, hi = np.nanpercentile(boot, [2.5, 97.5])
-        p = family_permutation(frame, column, rng)
-        d = frame.loc[frame["group"] == "discordant", column].mean()
-        c = frame.loc[frame["group"] == "control", column].mean()
-        rows.append({"quantity": label, "discordant": d, "control": c,
-                     "effect": observed, "ci_lo": lo, "ci_hi": hi,
-                     "p_family_perm": p,
-                     "crosses_zero": bool(lo <= 0 <= hi)})
-        print(f"  {label:<34} disc {d:6.3f}  ctl {c:6.3f}  "
-              f"effect {observed:+.3f}  95% CI [{lo:+.3f}, {hi:+.3f}]  "
-              f"p={p:.3f}")
+        d = cells.loc[cells["group"] == "discordant", column]
+        c = cells.loc[cells["group"] == "control", column]
+        p_cell = mannwhitneyu(d, c, alternative="two-sided").pvalue
+        diff = paired_within_family(cells, column)
+        p_pair = wilcoxon(diff).pvalue if len(diff) > 5 else np.nan
+        rows.append({"quantity": label,
+                     "site_effect": observed, "ci_lo": lo, "ci_hi": hi,
+                     "family_disc": d.mean(), "family_ctl": c.mean(),
+                     "p_family_cell": p_cell,
+                     "paired_mean": diff.mean(), "paired_median": diff.median(),
+                     "p_paired": p_pair, "paired_positive": int((diff > 0).sum()),
+                     "paired_n": len(diff)})
+        print(f"  {label}")
+        print(f"    site-weighted effect {observed:+.3f}  "
+              f"cluster-bootstrap 95% CI [{lo:+.3f}, {hi:+.3f}]")
+        print(f"    family as unit       disc {d.mean():.3f} (n={len(d)})  "
+              f"ctl {c.mean():.3f} (n={len(c)})  p={p_cell:.3f}")
+        print(f"    paired within the {len(diff)} mixed families  "
+              f"mean {diff.mean():+.3f}  median {diff.median():+.3f}  "
+              f"p={p_pair:.3f}  positive {int((diff > 0).sum())}/{len(diff)}")
     table = pd.DataFrame(rows)
-    print("\n  E31 reported p=0.0070 for contacts and p=0.0790 for facing, with")
-    print("  the site as the unit. The family-level p-values above are what the")
-    print("  same data support once the unit is the one that is independent.")
+    print("\n  The bootstrap CI is site-weighted, so a few large families carry")
+    print("  it -- three contribute 129, 92 and 73 sites. Weighting families")
+    print("  equally, neither quantity separates the groups.")
 
     print("\n=== leave-one-epitope-out ===")
     loo = []

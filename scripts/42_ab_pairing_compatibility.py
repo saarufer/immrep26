@@ -133,7 +133,9 @@ def continuous_score(block: pd.DataFrame, assignment: np.ndarray,
             xs, ys = x[keep], y[keep]
             if xs.std() < 1e-9:
                 continue
-            slope = np.cov(xs, ys)[0, 1] / xs.var()
+            # np.cov defaults to ddof=1, so the denominator must match
+            # or the slope is inflated by n/(n-1).
+            slope = np.cov(xs, ys)[0, 1] / xs.var(ddof=1)
             intercept = ys.mean() - slope * xs.mean()
             residual = y[i] - (slope * x[i] + intercept)
             scale = ys.std() or 1.0

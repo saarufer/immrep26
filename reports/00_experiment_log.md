@@ -2510,3 +2510,66 @@ E43's conclusion that none of these ranks is unaffected -- the combined score
 was 0.5155 -- but the composition should have been stated, and the two
 thresholds should not have shared a label.
 
+
+## E46 — Code review of E40-E45, and a correction that strengthens E41's negative
+
+A review pass over the six scripts written since the review response. Four
+suspicious constructs were checked by measurement rather than by reading. Two
+were fine, one is immaterial, one was a real defect that invalidated a reported
+p-value and, once fixed, makes E41's conclusion stronger.
+
+**Defect 1, material: E41's permutation null was not its observed statistic.**
+`family_permutation` shuffled the group label between families and then applied
+it to every site in each family, so the null was computed on *family-collapsed*
+labels while the observed effect was computed on *site-level* labels. **Fifteen
+of 97 families carry both groups, covering 34.1% of sites**, and collapsing
+them alone moves the contact effect from **+3.629 to -0.149**. The null and the
+observed were therefore different statistics and the p-values of 0.043 and
+0.236 were not interpretable. Both are withdrawn.
+
+The cluster bootstrap was unaffected -- it resamples whole families while each
+site keeps its own label -- so the confidence intervals stand.
+
+**The corrected family-level analysis, and it goes further than E41 did.**
+Replacing the permutation with two tests that have no collapsing step: each
+family contributing one mean per group, and a paired comparison inside the 15
+families that carry both.
+
+| quantity | site-weighted effect | bootstrap 95% CI | family as unit | paired within mixed families |
+|---|---:|---|---|---|
+| peptide contacts | +3.629 | [+0.426, +7.832] | 9.043 vs 6.192, **p=0.464** | mean +0.087, **median 0.000**, p=0.674, 5/15 positive |
+| site faces peptide | +0.109 | [-0.030, +0.270] | 0.457 vs 0.344, **p=0.249** | mean +0.123, **median 0.000**, p=0.063, 6/15 positive |
+
+**Weighting families equally, neither quantity separates the groups**, and the
+paired comparison -- which cannot be confounded by which families fall in which
+arm -- has a median difference of exactly zero for both, with fewer than half
+the families pointing the right way.
+
+The site-weighted bootstrap CI that excluded zero is explained by the weighting:
+three families contribute 129, 92 and 73 sites on their own, so the
+site-weighted mean is largely theirs. E41 concluded that the contact count
+survives family-level resampling and the binary does not. **The corrected
+reading is that neither survives once families are weighted equally.** E31's
+effect is weaker than E41 said, which is weaker again than E31 said.
+
+**Defect 2, immaterial: a ddof mismatch in E45.** `continuous_score` computed a
+regression slope as `np.cov(xs, ys)[0, 1] / xs.var()`, where `np.cov` defaults
+to ddof=1 and `.var()` to ddof=0, inflating the slope by n/(n-1) -- 0.25% at
+n=400. Fixed. It cannot affect E45's conclusion, which rests on plain typicality
+outscoring the pairing statistic (0.6378 against 0.6336), not on the slope.
+
+**Checked and clean.** `scripts/39` locates CDR1/2/2.5 by substring and removes
+the first occurrence, which would be wrong if a loop appeared twice in its own
+domain: exactly **1** chain of 5,272 has that, and **0** chains fall back to the
+one-residue placeholder, so the V-region ablation is unaffected. `scripts/41`'s
+nested selection and rank-average combination were re-read and are correct.
+
+**What this run of self-review says about the method.** Three of the last four
+material errors in this project -- E39's union of site residues, E39's
+replica-spread guard, and now E41's permutation null -- share one shape: **a
+null or a baseline computed on a different data construction from the thing it
+is compared against.** That is worth naming, because it is not caught by any of
+the checks already in place; the data audit verifies files, the tests verify the
+frozen artifact, and neither looks at whether two numbers in the same sentence
+were produced the same way.
+

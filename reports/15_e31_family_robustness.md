@@ -11,10 +11,10 @@ Families contributing to both groups: 15.
 
 ## Effect with the family as the sampling unit
 
-| quantity                        |   discordant |   control |   effect |   ci_lo |   ci_hi |   p_family_perm | crosses_zero   |
-|:--------------------------------|-------------:|----------:|---------:|--------:|--------:|----------------:|:---------------|
-| peptide contacts at the site    |       6.534  |    2.9048 |   3.6292 |  0.4257 |  7.8319 |          0.043  | False          |
-| site faces the peptide (binary) |       0.3398 |    0.2308 |   0.109  | -0.029  |  0.2745 |          0.2357 | True           |
+| quantity                        |   site_effect |   ci_lo |   ci_hi |   family_disc |   family_ctl |   p_family_cell |   paired_mean |   paired_median |   p_paired |   paired_positive |   paired_n |
+|:--------------------------------|--------------:|--------:|--------:|--------------:|-------------:|----------------:|--------------:|----------------:|-----------:|------------------:|-----------:|
+| peptide contacts at the site    |        3.6292 |  0.4257 |  7.8319 |        9.0432 |       6.1917 |          0.4635 |        0.0874 |               0 |     0.6744 |                 5 |         15 |
+| site faces the peptide (binary) |        0.109  | -0.0302 |  0.2704 |        0.4569 |       0.3443 |          0.2486 |        0.123  |               0 |     0.063  |                 6 |         15 |
 
 ## Leave-one-epitope-out
 
