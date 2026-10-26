@@ -3522,3 +3522,82 @@ confounder to be regressed away blindly).
 The chain is runnable on GILGFVFTL and nowhere else. It cannot touch the
 private split, so it carries no competitive value — which the plan states as
 its intent. Nothing here changes the predictor.
+
+---
+
+## E57 — Do the six public families persist across independent donors?
+
+E56 settled the unit: `meta.study.id` is unusable at 26.4% populated, while
+`meta.subject.id` reaches 91.3% on GILGFVFTL. So the plan's leave-one-study-out
+becomes **leave-one-donor-out**, which is stricter — two papers can share a
+cohort, two donors cannot share a rearrangement event.
+`scripts/55_cross_donor_persistence.py`.
+
+Donor = `reference.id` + `meta.subject.id`. Two exclusions, both from the plan:
+a neighbour sharing any donor with the query is not independent evidence, and
+an identical αβ clonotype is the same receptor recorded twice rather than
+convergence (6 such pairs exist in the cohort and never count). Every statistic
+is computed **conservatively** (a TCR with no resolvable donor cannot supply
+support) and **permissively** (missing donor counts as a different donor); the
+truth is bracketed by the two.
+
+**E57.1 — cross-donor support, against the controls that make it meaningful.**
+
+| group | n | median neighbours | has cross-donor support (cons / perm) | median donors supporting |
+|---|---:|---:|---|---:|
+| GIL large TRBV19 families | 205 | 13 | **97.1% / 99.5%** | 19 |
+| GIL TRBV19, no large family | 318 | 0 | 24.2% / 26.7% | 0 |
+| GIL other V, no large family | 147 | 0 | 1.4% / 2.7% | 0 |
+| GLCTLVAML#2 (12 donors, thin) | 32 | 8 | 90.6% / 100.0% | 4 |
+
+The control does its job: this is not merely "families are dense". Holding the
+epitope fixed, TRBV19 outside a large family reaches 24.2% against the families'
+97.1%, and other V genes 1.4%. The V-gene gradient from E56 reappears.
+
+**E57.2 — leave-one-donor-out. No family depends on any single donor.**
+
+| family | donors | donors tested | TCRs keep a neighbour | worst donor |
+|---|---:|---:|---:|---:|
+| GILGFVFTL#30 | 112 | 112 | 100.0% | 100.0% |
+| GILGFVFTL#36 | 69 | 69 | 100.0% | 100.0% |
+| GILGFVFTL#5 | 68 | 68 | 100.0% | 100.0% |
+| GILGFVFTL#27 | 53 | 53 | 100.0% | 100.0% |
+| GILGFVFTL#1 | 51 | 51 | 99.8% | **90.9%** |
+| GLCTLVAML#2 | 12 | 12 | 100.0% | 100.0% |
+
+Removing every record contributed by any one donor leaves the family's TCRs with
+a neighbour essentially always, and the single worst case across 365 donor
+deletions still leaves 90.9%. **These motifs are reproduced by different people,
+not propagated from one cohort.**
+
+**E57.3 — and one genuinely new thing, after discarding a confounded version.**
+
+The naive comparison — cross-donor support against validation, 94.6% vs 48.3%
+on GIL — **is confounded and was not kept**: having cross-donor support and
+having any neighbour at all are nearly the same condition (median 13 against 0),
+so it restates density. Conditioning on *already having a neighbour* asks the
+real question, whether that neighbour coming from another person adds anything:
+
+| epitope | cross-donor neighbour | only same-donor neighbours | odds ratio | Fisher p |
+|---|---|---|---:|---:|
+| GILGFVFTL | **94.6%** (n=223) | **51.4%** (n=35) | 16.6 | 5.9e-10 |
+| GLCTLVAML | **94.0%** (n=50) | **60.0%** (n=40) | 10.4 | 1.5e-04 |
+
+**Among TCRs that already have relatives, whether those relatives come from a
+different person separates validation at odds 10–17.** A TCR whose only
+neighbours come from the same donor is not showing convergence — it is a clonal
+expansion or a within-experiment duplicate — and density cannot tell the two
+apart. This is the sharpest mechanistic result the project has on why density
+works and where it misfires.
+
+**Settled.** The six families are supported across 12–112 independent donors,
+survive the deletion of any one of them, and the V-gene control shows the effect
+is motif-level rather than germline-level alone. Combined with E56, the "these
+are reproduced across studies" claim now rests on donors rather than on paper
+counts.
+
+**It cannot be used competitively**, and that is not a judgement call: E56
+measured 0% donor coverage on LLWNGPMAV and LTDEMIAQY and 30.4% on CINGVCWTV,
+with LTD drawing 97.7% of its records from a single reference. The quantity that
+separates real convergence from clonal duplication is unavailable on exactly the
+rows that decide the ranking. The entry is unchanged.
