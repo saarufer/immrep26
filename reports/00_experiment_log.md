@@ -3438,3 +3438,87 @@ it bounds the sampling explanation **from below**, not from above.
 
 Figure: `reports/singleton_vs_cohort_size.html`. Nothing here changes the
 predictor.
+
+---
+
+## E56 — Provenance audit: the gate on the study-aware plan (E56–E59)
+
+Implements the first decision gate of the supplied plan
+(`IMMREP26_E56-E59_Study-aware_TCR_Convergence_Analysis.md`), which states that
+if sources are insufficient or inseparable, the later experiments must be
+reported **not estimable** rather than run on defaults.
+`scripts/54_provenance_audit.py`. Script numbering is offset from the plan's
+(`54_*` implements E56.1); the predictor is untouched.
+
+2,472 of 2,636 competition TCRs (93.8%) match a VDJdb record on
+(cdr3 alpha, cdr3 beta, epitope), giving 3,638 records.
+
+**The first version of this gate asked the wrong question** and failed the whole
+plan because `meta.study.id` is only 26.4% populated. That is the wrong field.
+The independence question the plan actually poses — *a clonotype in 12 papers is
+not 12 rearrangements* — is answered by **donor**, which is stricter than a
+study identifier, and `meta.subject.id` is well populated where it matters.
+
+**Per epitope, can independent donors be resolved?**
+
+| epitope | split | subject populated | donors | refs | largest ref share | |
+|---|---|---:|---:|---:|---:|---|
+| GILGFVFTL | public | 91.3% | **158** | 21 | 20.2% | yes |
+| NLVPMVATV | public | 89.3% | 43 | 24 | 54.3% | yes |
+| GLCTLVAML | public | 66.4% | 20 | 14 | 30.2% | yes |
+| YLQPRTFLL | public | 38.4% | 39 | 10 | 42.9% | partial |
+| TTDPSFLGRY | public | 35.4% | 8 | 2 | 61.8% | partial |
+| CINGVCWTV | private | 30.4% | 5 | 2 | 69.6% | partial |
+| LLWNGPMAV | private | **0.0%** | 0 | 3 | 77.8% | **no** |
+| LTDEMIAQY | private | **0.0%** | 0 | 2 | **97.7%** | **no** |
+
+**E54's six families, recounted in donors rather than papers.**
+
+| family | refs | subject field | donors |
+|---|---:|---:|---:|
+| GILGFVFTL#30 | 17 | 96.1% | **110** |
+| GILGFVFTL#36 | 14 | 97.5% | 68 |
+| GILGFVFTL#5 | 13 | 92.0% | 67 |
+| GILGFVFTL#27 | 10 | 96.0% | 52 |
+| GILGFVFTL#1 | 12 | 88.5% | 50 |
+| GLCTLVAML#2 | 11 | 60.7% | **12** |
+
+**This strengthens E54 rather than qualifying it.** E54 argued the six families
+are not a provenance artifact from 10–19 distinct references; the five
+GILGFVFTL families in fact draw on **50–110 distinct donors**. Only 7.8% of all
+clonotypes carry more than one reference, and 80.9% of those resolve to ≥2
+donors, so reference counts are not systematically inflated by shared raw data.
+GLCTLVAML#2 at 12 donors and 60.7% coverage is the one family where the
+argument is thin, and it must be reported separately rather than pooled.
+
+### The verdict, by object
+
+| item | status |
+|---|---|
+| E57 cross-source persistence, **donor** as the unit | **estimable** on all six families; GLC#2 separately |
+| E56.2 study-block resampling **as literally written** | **not estimable** — study id 26.4% populated; substitute donor blocks and say so |
+| E59 matched control on **GILGFVFTL** | **estimable** — 278 labelled TRBV19 TCRs outside the big families |
+| E59 matched control on **GLCTLVAML** | **not estimable** — 13 controls; loosening the matching to rescue it is what the plan forbids |
+| any provenance-aware method on the **private split** | **not estimable** — LLW and LTD have zero donor coverage and LTD draws 97.7% of its records from one reference |
+
+### A result that falls out of the feasibility probe
+
+Decomposing GILGFVFTL's labelled TCRs three ways:
+
+| group | n | validated |
+|---|---:|---:|
+| in a large TRBV19 family | 158 | **96.2%** |
+| TRBV19, not in a large family | 278 | **74.5%** |
+| other V gene, not in a large family | 139 | **15.8%** |
+
+**Most of the work is done by the V gene, not by family membership.** Being
+TRBV19 moves validation from 15.8% to 74.5%; being in one of the large TRBV19
+families adds a further 21.7 points to 96.2% (Fisher p 6.4e-10, **uncontrolled
+for density**, which the plan correctly identifies as a mediator rather than a
+confounder to be regressed away blindly).
+
+### Standing
+
+The chain is runnable on GILGFVFTL and nowhere else. It cannot touch the
+private split, so it carries no competitive value — which the plan states as
+its intent. Nothing here changes the predictor.
