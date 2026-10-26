@@ -7,14 +7,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>*{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#2a3133}
-/* The Slides runtime treats margin as a no-op; a browser does not, and the
-   default margins on p/h2 alone add ~60px per block. */
+/* The slide runtime treats margin as a no-op; a browser does not, and the
+   default margins on p/h2 add ~60px per block. */
 p,h1,h2,h3,ul,ol,table{margin:0}
 section{width:1920px;height:1080px;overflow:hidden;position:relative;
   display:flex;flex-direction:column;margin:0 auto 24px;
   box-shadow:0 2px 24px rgba(0,0,0,.35)}
 table{border-collapse:collapse;width:100%}
 th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
+sup{font-size:.65em;vertical-align:super}
 @media screen{body{padding:24px 0}.stage{display:flex;flex-direction:column;align-items:center}}
 @page{size:1920px 1080px;margin:0}
 @media print{html,body{background:#fff}body{padding:0}.stage{zoom:1 !important}
@@ -60,33 +61,65 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </div>
 <div style="background:#11181b;border-radius:14px;padding:44px 48px;display:flex;flex-direction:column;gap:16px">
 <p style="font-size:36px;color:#e7edeb;line-height:1.6;font-weight:500">比赛由 <b style="color:#5fc2b4">Schumacher 实验室</b>主办，配套论文已发表在 <i>Immunity</i>（2026）。</p>
-<p style="font-size:30px;color:#b6c3c1;line-height:1.6">IMMREP 是一个系列赛；上一届 IMMREP25 由 AlphaFold 类方法主导，所以主办方特别想知道：更新的模型能不能超过他们已有的两个强基线。</p>
+<p style="font-size:30px;color:#b6c3c1;line-height:1.6">IMMREP 是一个系列赛；上一届 IMMREP25 由 AlphaFold 类方法主导，所以主办方想知道的是：更新的模型能不能超过已有的两个强基线。</p>
 </div>
 
 </section>
-<section id="metric" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:44px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:76px;font-weight:600;line-height:1.2">评分：只有三个表位真正算数</h2>
-<div style="display:flex;gap:48px">
-<div style="flex:1;display:flex;flex-direction:column;gap:22px">
-<p style="font-size:34px;line-height:1.75">打分方式是 <b>按表位分组算 ROC AUC，再取非加权平均</b>，歧义样本剔除。</p>
-<p style="font-size:30px;line-height:1.75;color:#5d6b6e">这意味着两件事：度量<b style="color:#11181b">只看组内排序</b>，所以各表位验证率差多少都不用校准；每个表位<b style="color:#11181b">权重相同</b>，130 行的小表位和 243 行的大表位一样重。</p>
-<div style="background:#f6e8e4;border-left:4px solid #8f4a3c;border-radius:10px;padding:32px 36px;display:flex;flex-direction:column;gap:10px">
-<p style="font-size:32px;font-weight:700;color:#8f4a3c">公开榜已经失效</p>
-<p style="font-size:28px;line-height:1.65;color:#11181b">5 个公开表位的答案随论文一起公开了。用数据库做一次精确 join 就能得 1.000。公榜名次<b>不反映任何能力</b>。</p>
+<section id="biology" data-section="比赛的规则，以及它背后的分子系统" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:34px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:66px;font-weight:600;line-height:1.2">先把分子系统说清楚</h2>
+<div style="display:flex;gap:30px">
+<div style="flex:1;background:#f2f4f3;border-radius:12px;padding:32px 34px;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c">T 细胞受体（TCR）</p>
+<p style="font-size:27px;line-height:1.7">T 细胞表面的异二聚体，由 <b>α 链</b>和 <b>β 链</b>组成。两条链在 T 细胞发育时各自经 <b>V(D)J 重组</b>随机拼接，所以一个人体内的 TCR 多样性在 10<sup>8</sup> 量级——每个人的 TCR 库都不一样。</p>
+</div>
+<div style="flex:1;background:#f2f4f3;border-radius:12px;padding:32px 34px;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c">接触面：三个 CDR 环</p>
+<p style="font-size:27px;line-height:1.7">每条链顶端伸出三个环。<b>CDR1、CDR2</b> 由 V 基因编码，种系决定、相对固定；<b>CDR3</b> 横跨 V(D)J 拼接处，长度和序列都高度可变，是接触配体的主力。</p>
+</div>
+<div style="flex:1;background:#e2efec;border:1px solid #15635c;border-radius:12px;padding:32px 34px;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c">它识别的不是游离的肽</p>
+<p style="font-size:27px;line-height:1.7">TCR 看到的是一个<b>复合物</b>：一段 8–11 个氨基酸的短肽，被 <b>MHC I 类分子</b>（人类叫 HLA）夹在凹槽里，呈递在细胞表面。</p>
 </div>
 </div>
-<div style="width:760px;display:flex;flex-direction:column;gap:20px">
-<table style="font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:28px;color:#11181b">
-<tr style="background:#11181b"><th style="width:40%;color:#e7edeb;font-size:26px;text-align:left">数据划分</th><th style="width:30%;color:#e7edeb;font-size:26px;text-align:right">行数</th><th style="width:30%;color:#e7edeb;font-size:26px;text-align:right">表位数</th></tr>
-<tr style="background:#fbfcfc"><td>公开（标签已发表）</td><td style="text-align:right">2,034</td><td style="text-align:right">5</td></tr>
-<tr style="background:#eef1f0"><td>其中可用标签</td><td style="text-align:right">1,782</td><td style="text-align:right">—</td></tr>
-<tr style="background:#eef1f0"><td>其中歧义（不计分）</td><td style="text-align:right">252</td><td style="text-align:right">—</td></tr>
-<tr style="background:#e2efec"><td><b>私有（决定排名）</b></td><td style="text-align:right"><b>602</b></td><td style="text-align:right"><b>3</b></td></tr>
-<tr style="background:#fbfcfc"><td>合计</td><td style="text-align:right">2,636</td><td style="text-align:right">8</td></tr>
-</table>
-<p style="font-size:28px;line-height:1.65;color:#5d6b6e">私有三个表位的标签<b style="color:#11181b">从未发布过</b>——我们核对过 TCRvdb 的全部版本记录。所以这是一个真正的跨表位零样本问题。</p>
+<div style="background:#11181b;border-radius:12px;padding:34px 42px;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:34px;color:#e7edeb;line-height:1.6">那段被呈递的短肽，就是<b style="color:#5fc2b4">表位（epitope）</b>。本竞赛的八个表位都是病毒来源的短肽，例如流感的 <span style="font-family:'JetBrains Mono','Courier New',monospace">GILGFVFTL</span>。</p>
+<p style="font-size:29px;color:#b6c3c1;line-height:1.65">所以“某条 TCR 识别某个表位”的完整含义是：这条 TCR 能结合由<b style="color:#e7edeb">该肽 + 特定 HLA 等位基因</b>共同构成的复合物。换 HLA，同一段肽就不再是同一个靶标。</p>
+</div>
+
+</section>
+<section id="assay" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:32px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:66px;font-weight:600;line-height:1.2">这里的“结合”是功能意义上的</h2>
+<p style="font-size:31px;line-height:1.7;color:#5d6b6e">本竞赛要预测的标签不是生化亲和力常数，而是一次<b style="color:#11181b">功能复验</b>的结果。流程是这样的：</p>
+<div style="flex:1;display:flex;gap:22px;align-items:stretch">
+<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;font-weight:700;color:#15635c">01</p>
+<p style="font-size:26px;line-height:1.7">从数据库记录里取出 TCR 的 α/β 链序列，<b>重新合成基因</b>。</p>
+</div>
+<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;font-weight:700;color:#15635c">02</p>
+<p style="font-size:26px;line-height:1.7">转入<b>报告细胞系</b>（Jurkat），让每个细胞表达一条特定的 TCR。</p>
+</div>
+<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;font-weight:700;color:#15635c">03</p>
+<p style="font-size:26px;line-height:1.7">让它们遇到<b>呈递目标肽</b>的细胞，看 T 细胞是否被激活。</p>
+</div>
+<div style="flex:1;background:#e2efec;border:1px solid #15635c;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;font-weight:700;color:#15635c">04</p>
+<p style="font-size:26px;line-height:1.7">激活会上调 <b>CD69</b> 等标志，可以用流式分选出来并测序定量。</p>
 </div>
 </div>
+<div style="display:flex;gap:22px">
+<div style="flex:1;background:#fbfcfc;border-left:4px solid #15635c;border-radius:8px;padding:22px 28px">
+<p style="font-size:27px;line-height:1.6"><b style="color:#15635c">pos</b> · 被激活，记录<b>复现成功</b></p>
+</div>
+<div style="flex:1;background:#fbfcfc;border-left:4px solid #8f4a3c;border-radius:8px;padding:22px 28px">
+<p style="font-size:27px;line-height:1.6"><b style="color:#8f4a3c">neg</b> · 未激活，记录<b>没能复现</b></p>
+</div>
+<div style="flex:1;background:#fbfcfc;border-left:4px solid #5d6b6e;border-radius:8px;padding:22px 28px">
+<p style="font-size:27px;line-height:1.6"><b style="color:#5d6b6e">ambiguous</b> · 信号不明确，<b>不计分</b></p>
+</div>
+</div>
+<p style="font-size:27px;color:#5d6b6e;line-height:1.65">这比“文献里曾有人报道过结合”严格得多。一条记录没能复现，可能是当年的实验假阳性，也可能是这次表达/配对出了问题——两者在数据里长得一样。</p>
 
 </section>
 <section id="question" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:46px">
@@ -109,7 +142,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <p style="font-size:39px;color:#e7edeb;line-height:1.55;font-weight:500">结果：<b style="color:#dd9583">相当一部分记录复现不了</b>——各表位的验证通过率从 28.7% 到 66.3% 不等。</p>
 <p style="font-size:33px;color:#5fc2b4;line-height:1.6;font-weight:500">比赛任务：给一条 TCR 和它声称识别的肽，预测这条记录能否通过功能复验。</p>
 </div>
-<p style="font-size:27px;color:#5d6b6e;line-height:1.65">注意这不是"预测 TCR 结合哪个抗原"那个经典难题。它更接近<b style="color:#11181b">注释可靠性预测</b>：在已报道的记录里，分辨哪些站得住。</p>
+<p style="font-size:27px;color:#5d6b6e;line-height:1.65">注意这不是“预测 TCR 结合哪个抗原”那个经典难题。它更接近<b style="color:#11181b">注释可靠性预测</b>：在已报道的记录里，分辨哪些站得住。</p>
 
 </section>
 <section id="data" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:40px">
@@ -135,104 +168,183 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <tr><td>LLWNGPMAV</td><td style="text-align:right">229</td><td style="text-align:right">75.3%</td></tr>
 <tr><td>LTDEMIAQY</td><td style="text-align:right">130</td><td style="text-align:right">59.1%</td></tr>
 </table>
-<p style="font-size:27px;color:#b6c3c1;line-height:1.65">序列可见，只有标签被藏起来——所以可以用整组数据算"邻居"，这正是官方基线的做法。</p>
-<p style="font-size:27px;color:#dd9583;line-height:1.65">验证率来自论文正文，不是我们能从数据里看到的。</p>
+<p style="font-size:27px;color:#b6c3c1;line-height:1.65">序列可见，只有标签被藏起来，所以仍可用整组数据计算邻居——官方基线正是这么做的。</p>
+<p style="font-size:27px;color:#dd9583;line-height:1.65">验证率来自论文正文，无法从竞赛数据本身读出。</p>
 </div>
 </div>
 
 </section>
-<section id="baselines" data-section="官方基线，以及我们和队友两条方法主线" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:40px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:69px;font-weight:600;line-height:1.2">官方给了两个基线</h2>
-<div style="display:flex;gap:29px">
-<div style="flex:1;background:#e2efec;border:2px solid #15635c;border-radius:16px;padding:44px;display:flex;flex-direction:column;gap:16px">
-<div style="display:flex;align-items:center;gap:18px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:65px;font-weight:700;color:#15635c">0.8247</p>
-<p style="font-size:27px;color:#15635c;font-weight:700">更强的那个</p>
-</div>
-<h3 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:38px;font-weight:600">tcrdist3</h3>
-<p style="font-size:26px;line-height:1.7">一个<b>手工设计的序列距离</b>。把两条 TCR 的几段关键环区对齐、加权算差异，然后看一条 TCR 离组内其他 TCR 有多近。</p>
-<p style="font-size:24px;line-height:1.65;color:#5d6b6e">直觉：真的能识别某个肽的 TCR，往往成群出现——不同人身上会独立演化出相似的序列。</p>
-</div>
-<div style="flex:1;background:#f2f4f3;border:1px solid #d9e0de;border-radius:16px;padding:44px;display:flex;flex-direction:column;gap:16px">
-<div style="display:flex;align-items:center;gap:18px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:65px;font-weight:700;color:#5d6b6e">0.787</p>
-<p style="font-size:27px;color:#8f4a3c;font-weight:700">反而更弱</p>
-</div>
-<h3 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:38px;font-weight:600">AlphaFold3 min-PAE</h3>
-<p style="font-size:26px;line-height:1.7">用<b>结构预测</b>把 TCR、肽、MHC 一起折叠出来，取界面处的置信度作为"结合强度"的代理。</p>
-<p style="font-size:24px;line-height:1.65;color:#5d6b6e">直觉：模型对一个复合物越有把握，这个结合越可能是真的。</p>
+<section id="metric" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:44px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:76px;font-weight:600;line-height:1.2">评分：只有三个表位真正算数</h2>
+<div style="display:flex;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<p style="font-size:34px;line-height:1.75">打分方式是 <b>按表位分组算 ROC AUC，再取非加权平均</b>，歧义样本剔除。</p>
+<p style="font-size:30px;line-height:1.75;color:#5d6b6e">这意味着两件事：度量<b style="color:#11181b">只看组内排序</b>，所以各表位验证率差多少都不用校准；每个表位<b style="color:#11181b">权重相同</b>，130 行的小表位和 243 行的大表位一样重。</p>
+<div style="background:#f6e8e4;border-left:4px solid #8f4a3c;border-radius:10px;padding:32px 36px;display:flex;flex-direction:column;gap:10px">
+<p style="font-size:32px;font-weight:700;color:#8f4a3c">公开榜已经失效</p>
+<p style="font-size:28px;line-height:1.65;color:#11181b">5 个公开表位的答案随论文一起公开了。用数据库做一次精确 join 就能得 1.000。公榜名次<b>不反映任何能力</b>。</p>
 </div>
 </div>
-<div style="background:#11181b;border-radius:14px;padding:36px 43px">
-<p style="font-size:31px;color:#e7edeb;line-height:1.65">这一届的关键事实：<b style="color:#dd9583">结构方法是落后的一方</b>。论文自报平均 AUROC tcrdist3 <b style="color:#5fc2b4">0.80</b> 对 AlphaFold3 <b>0.74</b>。上一届由 AlphaFold 主导，这一届不是。</p>
+<div style="width:760px;display:flex;flex-direction:column;gap:20px">
+<table style="font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:28px;color:#11181b">
+<tr style="background:#11181b"><th style="width:40%;color:#e7edeb;font-size:26px;text-align:left">数据划分</th><th style="width:30%;color:#e7edeb;font-size:26px;text-align:right">行数</th><th style="width:30%;color:#e7edeb;font-size:26px;text-align:right">表位数</th></tr>
+<tr style="background:#fbfcfc"><td>公开（标签已发表）</td><td style="text-align:right">2,034</td><td style="text-align:right">5</td></tr>
+<tr style="background:#eef1f0"><td>其中可用标签</td><td style="text-align:right">1,782</td><td style="text-align:right">—</td></tr>
+<tr style="background:#eef1f0"><td>其中歧义（不计分）</td><td style="text-align:right">252</td><td style="text-align:right">—</td></tr>
+<tr style="background:#e2efec"><td><b>私有（决定排名）</b></td><td style="text-align:right"><b>602</b></td><td style="text-align:right"><b>3</b></td></tr>
+<tr style="background:#fbfcfc"><td>合计</td><td style="text-align:right">2,636</td><td style="text-align:right">8</td></tr>
+</table>
+<p style="font-size:28px;line-height:1.65;color:#5d6b6e">私有三个表位的标签<b style="color:#11181b">从未发布过</b>——TCRvdb 的全部版本记录都核对过。所以这是一个真正的跨表位零样本问题。</p>
+</div>
 </div>
 
 </section>
-<section id="ours" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:40px">
-<div style="display:flex;align-items:baseline;gap:28px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:72px;font-weight:600;line-height:1.2">我们的主线</h2>
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:34px;color:#15635c;font-weight:500">saarufer · 公榜 0.849</p>
+<section id="tcrdist" data-section="官方的两个基线分别在算什么" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;align-items:baseline;gap:26px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:66px;font-weight:600;line-height:1.2">基线一：tcrdist3 在算什么</h2>
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:32px;color:#15635c;font-weight:700">0.8247</p>
 </div>
-<div style="background:#11181b;border-radius:14px;padding:40px 48px">
-<p style="font-size:40px;color:#e7edeb;line-height:1.55;font-weight:500">一句话：<b style="color:#5fc2b4">看这条 TCR 周围有没有"亲戚"</b>——如果同一个表位下还有一批序列很像它的 TCR，它多半是真的。</p>
-</div>
+<p style="font-size:30px;line-height:1.7;color:#5d6b6e">tcrdist3 本身<b style="color:#11181b">不是预测器</b>，而是一把尺子：衡量<b style="color:#11181b">两条 TCR 有多像</b>。官方基线是把这把尺子用在一个特定的问题上。</p>
 <div style="flex:1;display:flex;gap:28px">
-<div style="flex:3;background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:38px 42px;display:flex;flex-direction:column;gap:18px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#15635c;letter-spacing:2px">构成</p>
-<p style="font-size:30px;line-height:1.75">把<b>三种不同的序列距离</b>各自算一遍"邻域密度"，转成组内排名后取平均；再和 <b>Boltz-2 结构预测</b>的界面置信度按 <b>0.7 / 0.3</b> 融合。</p>
-<ul style="font-size:28px;line-height:1.9;color:#5d6b6e;padding:0 0 0 36px">
-<li>SCEPTR（深度学习的 TCR 表示）两个变体</li>
-<li>tcrdist3（官方同款手工距离）</li>
-<li>Boltz-2 折叠全部 2,636 个复合物，取 TCR–肽最小 PAE</li>
+<div style="flex:1;background:#f2f4f3;border-radius:12px;padding:30px 34px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c;letter-spacing:2px">尺子怎么算</p>
+<ul style="font-size:26px;line-height:1.85;padding:0 0 0 30px">
+<li>取两条 TCR 的 <b>CDR 环</b>：α 链和 β 链各有 CDR1、CDR2、CDR2.5、CDR3，共 8 段</li>
+<li>把对应的环<b>两两对齐</b>，逐位置比较氨基酸</li>
+<li>替换的代价查 <b>BLOSUM62 衍生</b>的矩阵，长度不等再加缺口罚分</li>
+<li><b>CDR3 的权重是其他环的 3 倍</b>——它是主要接触区</li>
+<li>八段加总，得到一个距离数值：越小越像</li>
 </ul>
 </div>
-<div style="flex:2;display:flex;flex-direction:column;gap:22px">
-<div style="background:#e2efec;border-radius:14px;padding:32px 36px;display:flex;flex-direction:column;gap:10px">
-<p style="font-size:30px;font-weight:700;color:#15635c">完全无监督</p>
-<p style="font-size:27px;line-height:1.65">1,782 个标签<b>一个都没用来拟合</b>，只用于验证。零拟合参数。</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<div style="background:#e2efec;border:1px solid #15635c;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c;letter-spacing:2px">基线怎么用这把尺子</p>
+<p style="font-size:27px;line-height:1.7">对每一条待判定的 TCR，在<b>同一表位的队列里</b>找离它最近的那条，用这个<b>最近邻距离</b>打分：离得越近，越可能是真的。</p>
 </div>
-<div style="background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:32px 36px;display:flex;flex-direction:column;gap:10px">
-<p style="font-size:30px;font-weight:700">所有参数事先定死</p>
-<p style="font-size:27px;line-height:1.65">因为我们测出：只有 5 个表位时，<b>"挑参数"这件事本身</b>就要倒扣 0.0048。</p>
+<div style="background:#11181b;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#5fc2b4;letter-spacing:2px">背后的生物学：趋同重组</p>
+<p style="font-size:27px;line-height:1.7;color:#e7edeb">V(D)J 重组是随机的，但面对<b style="color:#5fc2b4">同一个表位</b>，不同个体会<b style="color:#5fc2b4">独立产生序列相似的 TCR</b>——这叫公共克隆型。</p>
+<p style="font-size:26px;line-height:1.65;color:#b6c3c1">所以一条有近亲的 TCR，更可能是真实公共应答的一员；一条在队列里孤零零的，更可能是当年那次实验的假阳性。</p>
 </div>
 </div>
 </div>
 
 </section>
-<section id="theirs" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:38px">
-<div style="display:flex;align-items:baseline;gap:27px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:69px;font-weight:600;line-height:1.2">队友的主线</h2>
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:33px;color:#15635c;font-weight:500">HeidAI · 公榜 0.855</p>
+<section id="af3" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;align-items:baseline;gap:26px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:66px;font-weight:600;line-height:1.2">基线二：AlphaFold3 min-PAE</h2>
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:32px;color:#8f4a3c;font-weight:700">0.787</p>
 </div>
-<div style="background:#11181b;border-radius:14px;padding:38px 46px">
-<p style="font-size:38px;color:#e7edeb;line-height:1.55;font-weight:500">一句话：<b style="color:#5fc2b4">把"邻居"的来源扩大</b>——不只在这 2,636 条里找亲戚，而是去整个 VDJdb 里找同表位的 TCR。</p>
+<div style="display:flex;gap:28px">
+<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:30px 34px;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c;letter-spacing:2px">怎么算</p>
+<p style="font-size:27px;line-height:1.7">把 TCRα、TCRβ、HLA、肽四条链一起交给 <b>AlphaFold3</b> 折叠，得到一个预测的复合物结构。</p>
+<p style="font-size:27px;line-height:1.7">AlphaFold 除了坐标，还输出 <b>PAE</b>（predicted aligned error）：模型认为“残基 i 相对残基 j 的位置”有多不确定，单位是埃。</p>
+<p style="font-size:27px;line-height:1.7">取 <b>TCR 与肽之间</b>所有残基对的 PAE，<b>最小值</b>就是 min-PAE——模型对这个界面最有把握的那一处有多确定。</p>
 </div>
-<div style="flex:1;display:flex;gap:27px">
-<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:37px 40px;display:flex;flex-direction:column;gap:15px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:27px;color:#15635c;font-weight:500">m30 · 扩池</p>
-<p style="font-size:28px;line-height:1.7">同样用 tcrdist3 距离，但参考池从"组内 2,636 条"扩到 VDJdb 里全部同表位克隆型，取最近 8 个邻居。</p>
-<p style="font-size:26px;line-height:1.65;color:#5d6b6e">直觉：密度估计的方差随参考池变大而下降。池越大，"有没有亲戚"这个判断越准。</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:18px">
+<div style="background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 32px">
+<p style="font-size:27px;line-height:1.7"><b>假设：</b>模型对一个界面越有把握，这个结合越可能是真的。于是 min-PAE 越小、分数越高。</p>
 </div>
-<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:37px 40px;display:flex;flex-direction:column;gap:15px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:27px;color:#15635c;font-weight:500">m50 · V 域全序列</p>
-<p style="font-size:28px;line-height:1.7">换一种距离：不只比 tcrdist3 看的那几段环区，而是把整个可变区序列做全局比对。</p>
-<p style="font-size:26px;line-height:1.65;color:#5d6b6e">直觉：tcrdist3 看不到框架区，那里可能还有信息。</p>
+<div style="background:#f6e8e4;border:1px solid #8f4a3c;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:29px;font-weight:700;color:#8f4a3c">这一届结构方法是落后的一方</p>
+<p style="font-size:27px;line-height:1.7">论文自报平均 AUROC：tcrdist3 <b>0.80</b> 对 AlphaFold3 <b>0.74</b>。公开榜上 0.824 对 0.787。</p>
+<p style="font-size:26px;line-height:1.65;color:#5d6b6e">上一届 IMMREP25 由 AlphaFold 类方法主导，这一届翻转了。这直接影响了两条参赛路线各自把算力投在哪里。</p>
 </div>
-<div style="flex:1;background:#e2efec;border:1px solid #15635c;border-radius:14px;padding:37px 40px;display:flex;flex-direction:column;gap:15px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:27px;color:#15635c;font-weight:500">定向补池</p>
-<p style="font-size:28px;line-height:1.7">只往池子最小的表位合并 IEDB 数据，把 LTDEMIAQY 的池从 1.04 倍抬到 <b>1.72 倍</b>。</p>
-<p style="font-size:26px;line-height:1.65;color:#5d6b6e">公榜零代价，专攻最可能拖后腿的那个私有表位。</p>
 </div>
+</div>
+<div style="background:#11181b;border-radius:12px;padding:28px 38px">
+<p style="font-size:28px;color:#b6c3c1;line-height:1.7">两个基线的差别值得记住：tcrdist3 问的是<b style="color:#e7edeb">“这条 TCR 像不像同组的其他 TCR”</b>（群体层面的证据），AlphaFold3 问的是<b style="color:#e7edeb">“这一个复合物能不能折叠得可信”</b>（单分子层面的证据）。</p>
+</div>
+
+</section>
+<section id="why48" data-section="两条参赛路线与它们在私有表位上的差别" style="background:#11181b;color:#e7edeb;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:30px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:66px;font-weight:600;line-height:1.2;color:#e7edeb">为什么要做四十八个实验</h2>
+<p style="font-size:30px;color:#b6c3c1;line-height:1.7">不是因为想多试几个模型。是因为这个任务的结构<b style="color:#e7edeb">不允许</b>用“多试几个挑最好的”这套做法。</p>
+<div style="flex:1;display:flex;gap:26px">
+<div style="flex:1;background:#1c2527;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:13px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#5fc2b4;letter-spacing:2px">约束一 · 零样本</p>
+<p style="font-size:26px;line-height:1.7;color:#e7edeb">决定排名的三个表位<b>从未见过</b>，标签永不公开。任何在公开表位上调出来的东西，都不保证迁移过去。</p>
+</div>
+<div style="flex:1;background:#1c2527;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:13px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#5fc2b4;letter-spacing:2px">约束二 · 只有五折</p>
+<p style="font-size:26px;line-height:1.7;color:#e7edeb">能验证的只有 5 个公开表位。五个表位均值的<b>标准误约 0.011</b>，而方法之间的差距常常比这还小。</p>
+</div>
+<div style="flex:1;background:#351f1a;border:1px solid #dd9583;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:13px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#dd9583;letter-spacing:2px">后果 · 挑选本身有代价</p>
+<p style="font-size:26px;line-height:1.7;color:#e7edeb">实测：用交叉验证从 323 个配置里挑，比<b>事先固定一个</b>还差 <b style="color:#dd9583">0.0048</b>。挑选过程的噪声大于被挑选对象的差异。</p>
+</div>
+</div>
+<div style="background:#15302c;border:1px solid #5fc2b4;border-radius:12px;padding:30px 40px;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:33px;color:#e7edeb;line-height:1.6">所以策略只能换一个方向：<b style="color:#5fc2b4">不是找更好的模型，而是逐条关闭假设</b>。</p>
+<p style="font-size:28px;color:#b6c3c1;line-height:1.7">每个实验回答一个具体问题——这个信号是真的吗？它能迁移到私有表位吗？它是不是另一个已知信号换了名字？约 <b style="color:#e7edeb">24 个阴性结果</b>不是失败，是这套策略的产物：知道一条路为什么走不通，才有依据停下来，也才知道剩下的东西站得住。</p>
+</div>
+
+</section>
+<section id="saarufer" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:baseline;gap:24px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:62px;font-weight:600;line-height:1.2">路线 A · saarufer</h2>
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:30px;color:#15635c;font-weight:700">公榜 0.849</p>
+</div>
+<p style="font-size:30px;line-height:1.7">把基线里“<b>最近的一条</b>邻居”换成“<b>最近的一批</b>邻居”，并且在三个不同的序列空间里各算一遍。</p>
+<div style="flex:1;display:flex;gap:26px">
+<div style="flex:3;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 32px;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:24px;color:#15635c;letter-spacing:2px">邻域密度，三个空间</p>
+<p style="font-size:26px;line-height:1.7">对每条 TCR，算它与同表位队列中所有其他 TCR 的距离，按 <span style="font-family:'JetBrains Mono','Courier New',monospace">exp(−d/σ)</span> 加权求和——近邻贡献大，远邻几乎不贡献。这个和就是<b>邻域密度</b>。</p>
+<ul style="font-size:25px;line-height:1.8;color:#5d6b6e;padding:0 0 0 30px">
+<li><b>SCEPTR</b> default 与 small：一个在数百万条 TCR 上自监督训练的模型，把每条 TCR 映射成 64 维向量，用余弦距离</li>
+<li><b>tcrdist3</b>：官方同款的手工距离</li>
+</ul>
+<p style="font-size:26px;line-height:1.7">三个密度各自转成<b>组内百分位排名</b>后取平均——排名化是为了让三把尺度不同的尺子可以相加。</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:18px">
+<div style="background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:26px 30px;display:flex;flex-direction:column;gap:10px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:24px;color:#15635c;letter-spacing:2px">再混入结构</p>
+<p style="font-size:26px;line-height:1.7">用 <b>Boltz-2</b>（AlphaFold3 的开放权重同类）折叠全部 2,636 个复合物，取 TCR–肽 min-PAE，与密度按 <b>0.7 / 0.3</b> 混合。</p>
+</div>
+<div style="background:#e2efec;border-radius:12px;padding:26px 30px;display:flex;flex-direction:column;gap:10px">
+<p style="font-size:27px;font-weight:700;color:#15635c">完全无监督，零拟合参数</p>
+<p style="font-size:25px;line-height:1.65">1,782 个公开标签<b>一个都没用来拟合</b>，只用于验证。所有超参事先定死，不做逐折挑选。</p>
+</div>
+</div>
+</div>
+
+</section>
+<section id="heidai" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:112px 128px 112px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:baseline;gap:24px">
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:62px;font-weight:600;line-height:1.2">路线 B · HeidAI</h2>
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:30px;color:#15635c;font-weight:700">公榜 0.855</p>
+</div>
+<p style="font-size:30px;line-height:1.7">同样是找近亲，但把<b>到哪里去找</b>这件事改掉了：不限于竞赛给的 2,636 条，而是去整个 VDJdb 数据库里找同表位的 TCR。</p>
+<div style="flex:1;display:flex;gap:24px">
+<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:13px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#15635c;font-weight:500">m30 · 扩大参考池</p>
+<p style="font-size:26px;line-height:1.7">距离仍用 tcrdist3，但候选邻居从“组内”扩到 VDJdb 全部同表位克隆型，取<b>最近 8 个</b>的平均距离。</p>
+<p style="font-size:25px;line-height:1.65;color:#5d6b6e">理由：密度估计的方差随参考池增大而下降。池越大，“有没有近亲”这个判断越稳。</p>
+</div>
+<div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:13px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#15635c;font-weight:500">m50 · 换一把尺子</p>
+<p style="font-size:26px;line-height:1.7">不只比 CDR 环，而是把<b>整个可变区序列</b>做全局比对（BLOSUM62，缺口罚分 11/1）。</p>
+<p style="font-size:25px;line-height:1.65;color:#5d6b6e">理由：tcrdist3 只看四个 CDR 环，<b>框架区完全不参与</b>——那里可能还有它看不到的信息。</p>
+</div>
+<div style="flex:1;background:#e2efec;border:1px solid #15635c;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:13px">
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#15635c;font-weight:500">定向补池</p>
+<p style="font-size:26px;line-height:1.7">只往池子最小的表位合并 IEDB 数据，把 <span style="font-family:'JetBrains Mono','Courier New',monospace">LTDEMIAQY</span> 的可用池从 1.04 倍抬到 <b>1.72 倍</b>。</p>
+<p style="font-size:25px;line-height:1.65;color:#5d6b6e">公榜零代价，专攻三个私有表位里最小、最稀疏的那个。</p>
+</div>
+</div>
+<div style="background:#11181b;border-radius:12px;padding:26px 36px">
+<p style="font-size:27px;color:#b6c3c1;line-height:1.7">两个超参（k=8、两路等权）同样是事先定死的全局常数，不做逐折挑选——这一点上两条路线的纪律一致。HeidAI 判断自跑结构模型不划算，把算力全部留在 CPU 上。</p>
 </div>
 
 </section>
 <section id="compare" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:35px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:69px;font-weight:600;line-height:1.2">两条路线：像的地方比不像的多</h2>
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:69px;font-weight:600;line-height:1.2">两条路线的异同</h2>
 <div style="background:#e2efec;border-radius:14px;padding:31px 38px;display:flex;flex-direction:column;gap:12px">
-<p style="font-size:30px;line-height:1.7"><b>共同的根：</b>都在回答同一个问题——"这条 TCR 是不是某个趋同克隆群的一员"。都完全无监督、都不用标签拟合、都把超参事先定死、都用组内秩平均融合。</p>
+<p style="font-size:30px;line-height:1.7"><b>共同的根：</b>两条路线都在回答同一个问题——这条 TCR 是不是某个趋同克隆群的一员。都完全无监督，都不用标签拟合，都把超参事先定死，都用组内秩平均融合。</p>
 </div>
 <table style="font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:28px;color:#11181b">
-<tr style="background:#11181b"><th style="width:22%;color:#e7edeb;font-size:26px;text-align:left">维度</th><th style="width:39%;color:#5fc2b4;font-size:26px;text-align:left">我们</th><th style="width:39%;color:#5fc2b4;font-size:26px;text-align:left">队友</th></tr>
+<tr style="background:#11181b"><th style="width:22%;color:#e7edeb;font-size:26px;text-align:left">维度</th><th style="width:39%;color:#5fc2b4;font-size:26px;text-align:left">saarufer</th><th style="width:39%;color:#5fc2b4;font-size:26px;text-align:left">HeidAI</th></tr>
 <tr style="background:#f2f4f3"><td><b>邻居从哪来</b></td><td>只用组内 2,636 条</td><td>扩到整个 VDJdb 同表位</td></tr>
 <tr style="background:#fbfcfc"><td><b>怎么聚合邻居</b></td><td>核密度（看全部邻居，按距离加权）</td><td>top-8（只看最近的 8 个）</td></tr>
 <tr style="background:#f2f4f3"><td><b>第二条信息源</b></td><td>结构预测（Boltz-2 界面 PAE）</td><td>V 域全序列比对</td></tr>
@@ -241,21 +353,21 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </table>
 <div style="display:flex;gap:27px">
 <div style="flex:1;background:#f6e8e4;border-left:4px solid #8f4a3c;border-radius:10px;padding:27px 31px">
-<p style="font-size:27px;line-height:1.7"><b style="color:#8f4a3c">有意思的是：</b>我们各自独立测过对方的核心组件，<b>都测过、都否决了</b>——我们否决扩池，他们否决自跑结构。</p>
+<p style="font-size:27px;line-height:1.7">两边<b>各自独立测过对方的核心组件，并且都否决了</b>：saarufer 测过扩池后放弃，HeidAI 评估过自跑结构后放弃。</p>
 </div>
 <div style="flex:1;background:#e2efec;border-left:4px solid #15635c;border-radius:10px;padding:27px 31px">
-<p style="font-size:27px;line-height:1.7"><b style="color:#15635c">也独立得出同一条判据：</b>融合伙伴必须<b>既去相关、又同样强</b>。只去相关不够。</p>
+<p style="font-size:27px;line-height:1.7">两边也<b>独立得出同一条融合判据</b>：候选成分必须既与现有成分去相关、又几乎同样强。只去相关不够。</p>
 </div>
 </div>
 
 </section>
 <section id="transfer" style="background:#11181b;color:#e7edeb;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:40px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:72px;font-weight:600;line-height:1.2;color:#e7edeb">但公榜 0.855 在私榜上还剩多少？</h2>
-<p style="font-size:32px;color:#b6c3c1;line-height:1.7">我们用自己的实现重建了他们的配置（重建 0.8549，对他们报的 0.8552，差 0.0003），然后把每个公开表位的参考池<b style="color:#e7edeb">缩到私有表位实际能拿到的倍数</b>。</p>
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:72px;font-weight:600;line-height:1.2;color:#e7edeb">公榜 0.855 到了私榜还剩多少</h2>
+<p style="font-size:32px;color:#b6c3c1;line-height:1.7">saarufer 用自己的实现重建了 HeidAI 的配置（重建 0.8549，对 HeidAI 报告的 0.8552，差 0.0003），然后把每个公开表位的参考池<b style="color:#e7edeb">缩到私有表位实际能拿到的倍数</b>。</p>
 <div style="flex:1;display:flex;gap:32px;align-items:center">
 <div style="flex:1;display:flex;flex-direction:column;gap:18px">
 <div style="background:#1c2527;border-radius:14px;padding:32px 36px;display:flex;justify-content:space-between;align-items:center">
-<p style="font-size:30px;color:#b6c3c1">他们的配置 · 公榜满池</p>
+<p style="font-size:30px;color:#b6c3c1">HeidAI 配置 · 公榜满池</p>
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:44px;font-weight:700;color:#e7edeb">0.8549</p>
 </div>
 <div style="background:#351f1a;border:2px solid #dd9583;border-radius:14px;padding:32px 36px;display:flex;justify-content:space-between;align-items:center">
@@ -263,12 +375,12 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:44px;font-weight:700;color:#dd9583">0.8476</p>
 </div>
 <div style="background:#15302c;border:2px solid #5fc2b4;border-radius:14px;padding:32px 36px;display:flex;justify-content:space-between;align-items:center">
-<p style="font-size:30px;color:#5fc2b4">我们 · 本来就不用池</p>
+<p style="font-size:30px;color:#5fc2b4">saarufer · 不使用外部池</p>
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:44px;font-weight:700;color:#5fc2b4">0.8498</p>
 </div>
 </div>
 <div style="width:700px;display:flex;flex-direction:column;gap:22px">
-<p style="font-size:34px;line-height:1.7;color:#e7edeb">他们公榜领先 <b style="color:#5fc2b4">+0.0051</b>，但其中 <b style="color:#dd9583">+0.0073</b> 来自私有表位收不到的池。</p>
+<p style="font-size:34px;line-height:1.7;color:#e7edeb">HeidAI 公榜领先 <b style="color:#5fc2b4">+0.0051</b>，但其中 <b style="color:#dd9583">+0.0073</b> 来自私有表位收不到的池。</p>
 <p style="font-size:34px;line-height:1.7;color:#e7edeb">扣掉之后<b style="color:#5fc2b4">反而落后 0.0022</b>——而这个差距远在 ±0.023 的噪声里。</p>
 <p style="font-size:29px;line-height:1.7;color:#849391">原因：三个私有表位里有两个，在 VDJdb 里最多只能再找到约 <b style="color:#b6c3c1">4%</b> 的新克隆型。池子是空的。</p>
 </div>
@@ -295,7 +407,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:38px;font-weight:700">6 队</p>
 </div>
 <div style="background:#e2efec;border:2px solid #15635c;border-radius:12px;padding:26px 32px;display:flex;justify-content:space-between;align-items:center">
-<p style="font-size:29px;color:#15635c;font-weight:700">0.825 – 0.86 ← 我们在这</p>
+<p style="font-size:29px;color:#15635c;font-weight:700">0.825 – 0.86 ← saarufer 在这</p>
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:38px;font-weight:700;color:#15635c">10 队</p>
 </div>
 <div style="background:#fbfcfc;border:1px solid #d9e0de;border-radius:12px;padding:26px 32px;display:flex;justify-content:space-between;align-items:center">
@@ -304,7 +416,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </div>
 </div>
 <div style="width:760px;background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:34px 38px;display:flex;flex-direction:column;gap:16px">
-<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#15635c;letter-spacing:2px">我们附近</p>
+<p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#15635c;letter-spacing:2px">saarufer 附近</p>
 <table style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:28px;color:#11181b">
 <tr><th style="width:18%;text-align:left;font-size:25px;color:#5d6b6e">名次</th><th style="width:52%;text-align:left;font-size:25px;color:#5d6b6e">队伍</th><th style="width:30%;text-align:right;font-size:25px;color:#5d6b6e">公榜</th></tr>
 <tr><td>21</td><td>Giancarlo Croce2</td><td style="text-align:right">0.855</td></tr>
@@ -317,12 +429,12 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </table>
 </div>
 </div>
-<p style="font-size:30px;color:#5d6b6e;line-height:1.65">注意最密的一档正好压在基线 0.824 上：<b style="color:#11181b">15 支队伍</b>，其中 6 支就是原样重交了官方基线文件。</p>
+<p style="font-size:30px;color:#5d6b6e;line-height:1.65">最密的一档正好压在基线 0.824 上：<b style="color:#11181b">15 支队伍</b>，其中 6 支是原样重交了官方基线文件。</p>
 
 </section>
 <section id="whyhigh" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:32px">
 <h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:67px;font-weight:600;line-height:1.2">为什么有人 0.98 以上？</h2>
-<p style="font-size:30px;line-height:1.7;color:#5d6b6e">两种可能：<b style="color:#11181b">（A）</b>直接把公开的答案 join 回来；<b style="color:#11181b">（B）</b>真的有突破性算法。我们可以算一下哪种更可能。</p>
+<p style="font-size:30px;line-height:1.7;color:#5d6b6e">两种可能：<b style="color:#11181b">（A）</b>直接把公开的答案 join 回来；<b style="color:#11181b">（B）</b>真的有突破性算法。这两种可能可以用算的来区分。</p>
 <div style="flex:1;display:flex;gap:34px">
 <div style="flex:1;display:flex;flex-direction:column;gap:17px">
 <p style="font-size:28px;line-height:1.7">假设一支队伍<b>精确 join 了 k 个表位</b>的答案，其余表位用一个 0.85 水平的模型。算出来的公榜分是：</p>
@@ -333,7 +445,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <tr style="background:#f2f4f3"><td>3 / 5</td><td style="text-align:right">0.955</td><td style="text-align:right">0.958</td></tr>
 <tr style="background:#fbfcfc"><td>2 / 5</td><td style="text-align:right">0.928</td><td style="text-align:right">0.943</td></tr>
 <tr style="background:#f2f4f3"><td>1 / 5</td><td style="text-align:right">0.876</td><td style="text-align:right">0.892 · 0.879 · 0.870</td></tr>
-<tr style="background:#e2efec"><td><b>0 / 5</b></td><td style="text-align:right"><b>0.850</b></td><td style="text-align:right"><b>我们 0.849</b></td></tr>
+<tr style="background:#e2efec"><td><b>0 / 5</b></td><td style="text-align:right"><b>0.850</b></td><td style="text-align:right"><b>saarufer 0.849</b></td></tr>
 </table>
 </div>
 <div style="width:700px;display:flex;flex-direction:column;gap:21px">
@@ -356,7 +468,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </div>
 <div style="flex:1;display:flex;gap:33px">
 <div style="flex:1;display:flex;flex-direction:column;gap:19px">
-<p style="font-size:28px;color:#b6c3c1;line-height:1.7">更有意思的是：<b style="color:#e7edeb">论文已经公布了 tcrdist3 在三个私有表位上的成绩</b>。我们核对过——它在五个公开表位上的实测值全部落在论文声明的区间里，所以这些区间描述的就是我们手上这个基线。</p>
+<p style="font-size:28px;color:#b6c3c1;line-height:1.7">更有意思的是：<b style="color:#e7edeb">论文已经公布了 tcrdist3 在三个私有表位上的成绩</b>。在五个公开表位上实测 tcrdist3，数值全部落在论文声明的区间内，说明这些区间描述的正是竞赛所用的那个基线。</p>
 <table style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#e7edeb">
 <tr><th style="width:46%;text-align:left;font-size:24px;color:#849391">私有表位</th><th style="width:54%;text-align:right;font-size:24px;color:#849391">论文公布的 tcrdist3</th></tr>
 <tr><td>CINGVCWTV</td><td style="text-align:right">0.80 – 0.83</td></tr>
@@ -374,7 +486,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:37px;font-weight:700;color:#dd9583">0.753 – 0.780</p>
 </div>
 <div style="background:#15302c;border:2px solid #5fc2b4;border-radius:12px;padding:26px 32px;display:flex;flex-direction:column;gap:8px">
-<p style="font-size:27px;color:#5fc2b4">我们的私榜估计（按这个落差推算）</p>
+<p style="font-size:27px;color:#5fc2b4">saarufer 的私榜估计（按此落差推算）</p>
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:48px;font-weight:700;color:#5fc2b4">0.79</p>
 <p style="font-size:24px;color:#b6c3c1;line-height:1.6">区间 0.778 – 0.805</p>
 </div>
@@ -385,7 +497,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </section>
 <section id="signal" data-section="四十八个实验留下的结论" style="background:#f2f4f3;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:34px">
 <div style="display:flex;align-items:baseline;gap:28px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:72px;font-weight:600;line-height:1.2">48 个实验 · 信号是什么</h2>
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:72px;font-weight:600;line-height:1.2">实验结论之一：信号是什么</h2>
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:30px;color:#8f4a3c">约 24 个是阴性结果</p>
 </div>
 <div style="background:#11181b;border-radius:14px;padding:38px 46px">
@@ -395,23 +507,23 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:34px 38px;display:flex;flex-direction:column;gap:14px">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#15635c;letter-spacing:2px">模型实际在做什么</p>
 <p style="font-size:29px;line-height:1.7">它几乎就是<b>最近邻距离的一个单调函数</b>。按距离分档后，<b>每一档内部</b>的区分力只有 0.52–0.79，而验证率跨档从 0.92 掉到 0.14。</p>
-<p style="font-size:27px;line-height:1.65;color:#5d6b6e">也就是说：它擅长分辨"有亲戚 vs 没亲戚"，不擅长在同类里排序。</p>
+<p style="font-size:27px;line-height:1.65;color:#5d6b6e">也就是说：它擅长分辨“有亲戚 vs 没亲戚”，不擅长在同类里排序。</p>
 </div>
 <div style="flex:1;background:#fbfcfc;border:1px solid #d9e0de;border-radius:14px;padding:34px 38px;display:flex;flex-direction:column;gap:14px">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#8f4a3c;letter-spacing:2px">误差在哪里</p>
-<p style="font-size:29px;line-height:1.7">把每一个"阳性 vs 阴性"的比较分类后发现：<b>62% 的误差来自双方都孤立</b>的配对。</p>
-<p style="font-size:27px;line-height:1.65;color:#5d6b6e">而三个私有表位里，61–93% 的配对正是这一类。<b style="color:#11181b">私榜基本等于"孤立 TCR 排序能力"的考试。</b></p>
+<p style="font-size:29px;line-height:1.7">把每一个“阳性 vs 阴性”的比较分类后发现：<b>62% 的误差来自双方都孤立</b>的配对。</p>
+<p style="font-size:27px;line-height:1.65;color:#5d6b6e">而三个私有表位里，61–93% 的配对正是这一类。<b style="color:#11181b">私榜基本等于“孤立 TCR 排序能力”的考试。</b></p>
 </div>
 <div style="flex:1;background:#f6e8e4;border:1px solid #8f4a3c;border-radius:14px;padding:34px 38px;display:flex;flex-direction:column;gap:14px">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:25px;color:#8f4a3c;letter-spacing:2px">典型性陷阱</p>
-<p style="font-size:29px;line-height:1.7">四个看起来毫不相干的想法，最后都在重新编码同一件事：<b>这条 TCR 有多"普通"</b>。</p>
+<p style="font-size:29px;line-height:1.7">四个看起来毫不相干的想法，最后都在重新编码同一件事：<b>这条 TCR 有多“普通”</b>。</p>
 <p style="font-size:27px;line-height:1.65;color:#5d6b6e">密度本身、结构置信度、V 域比对、αβ 配对相容性——都是它。现在任何新特征都要先过这道闸门。</p>
 </div>
 </div>
 
 </section>
 <section id="method" style="background:#fbfcfc;color:#11181b;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;gap:28px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:60px;font-weight:600;line-height:1.2">48 个实验 · 方法学教训</h2>
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:60px;font-weight:600;line-height:1.2">实验结论之二：方法学</h2>
 <div style="flex:1;display:flex;flex-direction:column;gap:17px">
 <div style="background:#f2f4f3;border-left:4px solid #15635c;border-radius:10px;padding:23px 30px;display:flex;gap:23px;align-items:baseline">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:28px;font-weight:700;color:#15635c;width:56px">01</p>
@@ -424,13 +536,13 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:28px;font-weight:700;color:#15635c;width:56px">02</p>
 <div style="flex:1">
 <p style="font-size:26px;line-height:1.65;font-weight:500">去相关是必要的，但远远不够。</p>
-<p style="font-size:24px;line-height:1.6;color:#5d6b6e">融合伙伴必须<b>既去相关、又同样强</b>。我们试过一个去相关性最好的距离，它同时也是最弱的——即便用事后最优权重，最佳权重也是零。</p>
+<p style="font-size:24px;line-height:1.6;color:#5d6b6e">融合伙伴必须<b>既去相关、又同样强</b>。测过的候选里，去相关性最好的那把距离同时也是最弱的；即便用事后最优权重，它的最佳权重也是零。</p>
 </div>
 </div>
 <div style="background:#f2f4f3;border-left:4px solid #15635c;border-radius:10px;padding:23px 30px;display:flex;gap:23px;align-items:baseline">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:28px;font-weight:700;color:#15635c;width:56px">03</p>
 <div style="flex:1">
-<p style="font-size:26px;line-height:1.65;font-weight:500">只有 5 个表位时，"挑选"本身就是代价。</p>
+<p style="font-size:26px;line-height:1.65;font-weight:500">只有 5 个表位时，“挑选”本身就是代价。</p>
 <p style="font-size:24px;line-height:1.6;color:#5d6b6e">交叉验证挑配置比事先固定差 <b>0.0048</b>。要做更少的决定，而不是把决定验证得更好。</p>
 </div>
 </div>
@@ -445,7 +557,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:28px;font-weight:700;color:#8f4a3c;width:56px">05</p>
 <div style="flex:1">
 <p style="font-size:26px;line-height:1.65;font-weight:500">建模一个未知量之前，先查文献有没有测过。</p>
-<p style="font-size:24px;line-height:1.6;color:#5d6b6e">我们用四个实验估计私榜落差，而答案写在我们一直在引用的那篇论文里。这是最贵的一课。</p>
+<p style="font-size:24px;line-height:1.6;color:#5d6b6e">四个实验被用来估计私榜落差，而答案写在项目从头就在引用的那篇论文里。这是最贵的一课。</p>
 </div>
 </div>
 </div>
@@ -453,7 +565,7 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 </section>
 <section id="now" style="background:#11181b;color:#e7edeb;font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;padding:128px 128px 112px;display:flex;flex-direction:column;justify-content:space-between">
 <div style="display:flex;flex-direction:column;gap:30px">
-<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:76px;font-weight:600;line-height:1.2;color:#e7edeb">我们现在在哪</h2>
+<h2 style="font-family:'Noto Serif SC','Songti SC','SimSun',Georgia,serif;font-size:76px;font-weight:600;line-height:1.2;color:#e7edeb">现在的位置</h2>
 <div style="display:flex;gap:26px">
 <div style="flex:1;background:#1c2527;border-radius:14px;padding:34px 36px;display:flex;flex-direction:column;gap:10px">
 <p style="font-size:27px;color:#849391">公榜</p>
@@ -480,12 +592,12 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <div style="display:flex;gap:36px">
 <div style="flex:1;display:flex;flex-direction:column;gap:16px">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#5fc2b4;letter-spacing:2px">还剩 7 天 · 当前判断</p>
-<p style="font-size:31px;line-height:1.7;color:#e7edeb">提交稿<b style="color:#5fc2b4">不再改动</b>。所有局部优化的路都已经用证据关闭，继续搜索的期望收益为负。</p>
-<p style="font-size:29px;line-height:1.7;color:#b6c3c1">剩下的时间投在<b style="color:#e7edeb">找真正新的生物学假设</b>上——新假设现在过闸门只要几分钟，失败也便宜。</p>
+<p style="font-size:31px;line-height:1.7;color:#e7edeb">saarufer 的提交稿<b style="color:#5fc2b4">不再改动</b>。所有局部优化的路都已用证据关闭，继续搜索的期望收益为负。</p>
+<p style="font-size:29px;line-height:1.7;color:#b6c3c1">剩下的时间投在<b style="color:#e7edeb">寻找真正新的生物学假设</b>上。新假设过一遍已有的闸门只要几分钟，失败也便宜。</p>
 </div>
 <div style="width:760px;background:#1c2527;border-radius:14px;padding:32px 36px;display:flex;flex-direction:column;gap:14px">
 <p style="font-family:'JetBrains Mono','SFMono-Regular',Consolas,'Courier New',monospace;font-size:26px;color:#849391;letter-spacing:2px">最值得攻的那个问题</p>
-<p style="font-size:30px;line-height:1.7;color:#e7edeb">私榜 61–93% 的比较发生在<b style="color:#5fc2b4">两个都没有亲戚的 TCR 之间</b>。我们试过的所有东西在那里都失效：结构 0.722、生成概率 0.497、特异性模型 0.481。</p>
+<p style="font-size:30px;line-height:1.7;color:#e7edeb">私榜 61–93% 的比较发生在<b style="color:#5fc2b4">两个都没有亲戚的 TCR 之间</b>。试过的所有特征在那里都失效：结构 0.722、生成概率 0.497、特异性模型 0.481。</p>
 <p style="font-size:30px;line-height:1.7;color:#5fc2b4;font-weight:500">一个孤立的真阳性，和一个孤立的假阳性，生物学上差在哪里？</p>
 </div>
 </div>
@@ -496,21 +608,24 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 <h2 style="max-width:1080px;margin:0 auto 20px;font-family:'Noto Serif SC',serif;color:#e7edeb;font-size:24px">演讲备注</h2>
 <div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">01 · cover</b><br>这份讲解面向队友和新加入的朋友。目标是在不假设免疫学背景的前提下，把比赛规则、科学问题、我们和队友两条技术路线、排行榜的真实结构，以及四十八个实验的结论讲清楚。</div>
 <div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">02 · timeline</b><br>两周很短。注意最后一行：主办方的问题设定本身就暗示了他们预期结构方法会强，但这一届结果相反，后面会讲。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">03 · metric</b><br>这一页是整个比赛最重要的规则。很多人没意识到公榜已经泄漏，会被前排的分数误导。我们从第二个实验起就不再看公榜名次了。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">04 · question</b><br>最后一句对新人很重要。很多人一上来会套用 TCR-抗原结合预测的模型，但任务其实不同——我们在第十三个实验里验证了这一点，直接训练的特异性模型得分低于随机。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">05 · data</b><br>私有表位的验证率是从论文读到的，不是从数据算的——这点后面讲私榜估计时会再用到。注意 NLVPMVATV 验证率只有 28.7%，而 CINGVCWTV 有 76.3%，差了一倍多，但因为度量只看组内排序，这个差异不影响打分。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">06 · baselines</b><br>这个翻转很重要。它意味着把算力投在自跑结构模型上，起点就比一个纯序列方法低。我们还是跑了结构——但只作为融合的一个小权重，后面讲为什么。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">07 · ours</b><br>"零拟合参数"听起来像自缚手脚，但第十五个实验量化过：用交叉验证挑配置，比事先固定配置差 0.0048。五折的噪声比被挑选的对象还大。所以我们的纪律是：做更少的决定，而不是把决定交叉验证得更好。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">08 · theirs</b><br>这条路线设计得很干净：两个超参（k=8、权重 1.0）也是事先定死的全局常数，和我们一样不做逐折调参。定向补池那一手尤其聪明——它针对的正是三个私有表位里最小最稀疏的那个。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">09 · compare</b><br>最后两块是这页的重点。两边在没有交流的情况下关闭了同样一批死路，还各自推出同一条融合判据——这种独立复现比任何单边的结论都可信。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">10 · transfer</b><br>这页回答"为什么他们分更高"。答案不是我们没想到扩池——我们在第二十七个实验里测过，公榜 +0.0112，私有可兑现只有 +0.0013，于是主动放弃。现在用他们的配置复现同一件事，数字对得上。两边在私榜上实际是平手。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">11 · leaderboard</b><br>第 24 名听起来很差，但下一页会说明这个排名基本没有信息量。真正要看的是：扣掉 join 之后，实际在做建模的队伍大概只有十几支，而我们和它们挤在 0.82–0.86 这个很窄的带里。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">12 · whyhigh</b><br>这页的论证方式比结论更重要：我们没有指控任何人，只是算了"如果 join 会得多少分"，然后发现榜单的分数簇精确落在那条阶梯上。而且这对我们没有任何实际影响——因为私有标签从未发布，这些队伍在私榜上会回到自己真实的建模水平。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">13 · private</b><br>这一页有个教训值得讲给新人：我们前后做了四个实验、花了大量算力去估计这个落差，而答案其实写在我们从第一个实验起就在引用的那篇论文里，只是没人去读它的结果章节。先查文献，再建模。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">14 · signal</b><br>第三块是给新人最实用的一条。如果你想出一个新特征，先用一行代码和"这条 TCR 的链特征离队列均值多远"比一次——这个朴素量得 0.6378，已经干掉四个想法了。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">15 · method</b><br>这五条对新人比任何具体结论都有用，而且不止适用于这个比赛。第 5 条我讲的时候会自嘲一下——这确实是本项目最浪费的一次。</div>
-<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">16 · now</b><br>结尾落在这个开放问题上，而不是落在分数上。这是目前唯一值得投入剩余时间的方向，也是这个项目能往独立科研课题发展的地方。</div>
-</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">03 · biology</b><br>这一页是给非免疫背景的同学的。三个要点：TCR 多样性来自随机重组；CDR3 是高变的接触区；TCR 识别的是肽-MHC 复合物而不是游离肽。后面讲 tcrdist3 为什么给 CDR3 三倍权重时会用到第二点。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">04 · assay</b><br>强调最后一句：标签是“这次复验有没有过”，不是“这条 TCR 在生物学上是否真的识别”。这个区别后面讲 H4 那个假设时会再提到——我们专门查过有没有表达缺陷的序列特征，结果是没有。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">05 · question</b><br>最后一句对新人很重要。很多人一上来会套用 TCR-抗原结合预测的模型，但任务其实不同——我们在第十三个实验里验证了这一点，直接训练的特异性模型得分低于随机。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">06 · data</b><br>私有表位的验证率是从论文读到的，不是从数据算的——这点后面讲私榜估计时会再用到。注意 NLVPMVATV 验证率只有 28.7%，而 CINGVCWTV 有 76.3%，差了一倍多，但因为度量只看组内排序，这个差异不影响打分。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">07 · metric</b><br>这一页是整个比赛最重要的规则。很多人没意识到公榜已经泄漏，会被前排的分数误导。我们从第二个实验起就不再看公榜名次了。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">08 · tcrdist</b><br>这页是理解整个竞赛的钥匙。所有参赛方法——包括 saarufer 和 HeidAI 的——本质上都在改进同一件事：怎么更好地判断“这条 TCR 有没有近亲”。后面说的“邻域密度”就是把“最近的一个”换成“最近的一批”。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">09 · af3</b><br>把两个基线的提问方式对照起来讲，新人更容易记住。也为后面埋下伏笔：saarufer 的方法把两者按 0.7/0.3 混起来用，而 HeidAI 判断结构这条线不值得投入。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">10 · why48</b><br>这页是整份讲解的方法论核心。如果新人只记住一页，希望是这页：在小样本、零样本的任务里，“搜索更多模型”是负期望的，“用证据关闭假设”才是可积累的。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">11 · saarufer</b><br>强调“排名化”那一步：三个密度的数值范围完全不同（余弦距离 vs tcrdist 的整数尺度），直接相加没有意义，转成组内百分位之后才可比。这也是为什么度量只看组内排序对我们有利。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">12 · heidai</b><br>定向补池那一手值得专门说：它不是无差别扩池，而是针对“哪个私有表位最可能拖后腿”做的定点补强。思路很对，只是后面会看到 LTDEMIAQY 的池子本身就接近枯竭。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">13 · compare</b><br>最后两块是这页的重点。两边在没有交流的情况下关闭了同样一批死路，还各自推出同一条融合判据——这种独立复现比任何单边的结论都可信。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">14 · transfer</b><br>这页回答“为什么他们分更高”。答案不是我们没想到扩池——我们在第二十七个实验里测过，公榜 +0.0112，私有可兑现只有 +0.0013，于是主动放弃。现在用他们的配置复现同一件事，数字对得上。两边在私榜上实际是平手。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">15 · leaderboard</b><br>第 24 名听起来不好，但下一页会说明这个排名基本没有信息量。真正要看的是：扣掉 join 之后，实际在做建模的队伍大概只有十几支，而我们和它们挤在 0.82–0.86 这个很窄的带里。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">16 · whyhigh</b><br>这页的论证方式比结论更重要：我们没有指控任何人，只是算了“如果 join 会得多少分”，然后发现榜单的分数簇精确落在那条阶梯上。而且这对我们没有任何实际影响——因为私有标签从未发布，这些队伍在私榜上会回到自己真实的建模水平。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">17 · private</b><br>这一页有个教训值得讲给新人：我们前后做了四个实验、花了大量算力去估计这个落差，而答案其实写在我们从第一个实验起就在引用的那篇论文里，只是没人去读它的结果章节。先查文献，再建模。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">18 · signal</b><br>第三块是给新人最实用的一条。如果你想出一个新特征，先用一行代码和“这条 TCR 的链特征离队列均值多远”比一次——这个朴素量得 0.6378，已经干掉四个想法了。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">19 · method</b><br>这五条对新人比任何具体结论都有用，而且不止适用于这个比赛。第 5 条我讲的时候会自嘲一下——这确实是本项目最浪费的一次。</div>
+<div style="max-width:1080px;margin:0 auto 20px;padding:18px 24px;background:#fbfcfc;border-left:3px solid #15635c;font-family:'Noto Sans SC','PingFang SC',sans-serif;font-size:15px;line-height:1.8;color:#11181b"><b style="font-family:monospace;color:#15635c">20 · now</b><br>结尾落在这个开放问题上，而不是落在分数上。这是目前唯一值得投入剩余时间的方向，也是这个项目能往独立科研课题发展的地方。</div></div>
 <script>(function(){var st=document.querySelector('.stage');
 function fit(){st.style.zoom=Math.min(1,(window.innerWidth-36)/1920);}
 if(!window.matchMedia('print').matches){fit();window.addEventListener('resize',fit);}})();</script></body></html>
