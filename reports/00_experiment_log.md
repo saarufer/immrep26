@@ -3700,3 +3700,72 @@ is not estimable. That is consistent with antigen-associated selection and does
 not demonstrate it: the plan's own boundary, that a naive repertoire or
 functional experiment is required, still stands. Nothing here changes the
 predictor.
+
+---
+
+## E59 — Do the public motifs revalidate better than matched non-motif TCRs?
+
+E58 measured how often the motifs occur. This asks whether occurring in one
+predicts passing functional revalidation, against controls matched on the things
+that could produce the same difference without any recognition advantage.
+`scripts/57_functional_residual.py`. **GILGFVFTL only** — E56 found 13 matched
+controls on GLCTLVAML, and the plan forbids loosening the matching to rescue it.
+
+**The comparison**, within GILGFVFTL and restricted to TRBV19 so the V gene is
+held fixed:
+
+| group | n | validated |
+|---|---:|---:|
+| in a large family | 158 | **96.2%** |
+| TRBV19, no large family | 278 | 74.5% |
+
+Raw difference **+0.217**, odds ratio 8.7, Fisher p 6.4e-10.
+
+**The matching ladder.**
+
+| matching | difference | motif TCRs in a usable stratum | strata |
+|---|---:|---:|---:|
+| CDR3β length | +0.210 | 158/158 | 2 |
+| length × Pgen tercile | **+0.230** | 158/158 | 6 |
+| length × Pgen × **nn3** tercile | +0.082 | 137/158 | 9 |
+
+Matching on generation probability does not reduce the advantage — it is
++0.230 after, against +0.217 before — so E58's finding that family members are
+3.6× more generatable does **not** account for their validating more often.
+
+The last row controls `nn3`, and it is reported because the plan asks for it,
+**not as the causal estimate**: the motif's convergence is *why* its members
+have close neighbours, so matching on density removes the mechanism along with
+any confounding. That it still leaves **+0.082** is informative in the other
+direction — even comparing TCRs with equally close neighbours, motif membership
+carries something.
+
+**E59.2 — the statistical unit, corrected by E58.** Leave-one-out at two levels,
+because E58 showed four of the five families are sub-clusters of one motif:
+
+| level | removals | range of the difference |
+|---|---:|---|
+| family | 5 | +0.208 to +0.237 |
+| **motif** | 2 | +0.208 to +0.255 |
+
+The two motif groups are `CASSIRS-13` (families #5, #27, #30, #36) and
+`CASSIGSYGYTF` (family #1). Removing either leaves the advantage positive —
++0.208 without the small group, +0.255 without the CASSIRS cluster, where only
+31 motif TCRs remain. So the effect is not carried by the textbook CASSIRS
+cluster alone, which is the strongest statement available at an effective n of
+two motifs.
+
+**E59.3 — joint reading with E58, with the plan's boundary intact.**
+
+Motifs that recur beyond the rearrangement model (E58: 744–4563× against a
+matched control's ~34×) also revalidate more often than TCRs matched on epitope,
+V gene, CDR3β length and generation probability (E59: +0.230). Both results
+survive removing either motif group.
+
+That is **consistent with antigen-associated selection and does not demonstrate
+it.** The plan's boundary stands unchanged: distinguishing selection from
+ascertainment quantitatively needs a naive or pre-exposure repertoire, or a
+functional experiment, and the evidence here rests on about two independent
+motifs within a single epitope. Nothing in E56–E59 changes the predictor, and
+nothing in it can: E56 measured 0% donor coverage on two of three private
+epitopes.

@@ -21,3 +21,5 @@ submissions/
 # sequences and no TCRvdb labels -- so `make submission` works from a fresh
 # clone without a GPU.
 !data/interim/boltz_features.csv
+data/external/prp/
+data/external/seeker/
