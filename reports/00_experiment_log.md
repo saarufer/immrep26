@@ -3258,3 +3258,104 @@ already banked**: candidate D's top-8 members read the continuous variable
 directly, which is why E51 measured +0.0143 on both-singleton pairs where
 reweighting (E50) and a singleton-only classifier (E52) each got about +0.001.
 The entry is unchanged.
+
+---
+
+## E54 — Is family label purity more than the continuous density relation?
+
+The design is the user's. E20 observed 45 families of ≥3 labelled members with
+26 pure-positive, 3 pure-negative and the **20–60% purity band completely
+empty**, and could not distinguish two readings:
+
+- **A** families look pure because their members all sit at low `nn3_dist`,
+  where the validation rate is high anyway, and families are small;
+- **B** each family shares something extra — a recognition state, or a study or
+  donor — that makes members agree beyond their position on the distance axis.
+
+`scripts/52_family_purity_null.py`. The null permutes the label within
+**(epitope × nn3 bin)**, preserving each epitope's label ratio, the
+density-to-label relation at the bins' resolution, and every edge and family,
+while destroying family-level agreement not already implied by position.
+
+**Two design points that have bitten this project before.** The graph is built
+on the **full cohort** — every row of the epitope including the ambiguous ones
+that carry no label — and purity is measured on labelled members only; two
+clustering bases already exist here (`scripts/20` labelled rows, `scripts/25`
+the whole cohort) and mixing them is what made E30's accounting inconsistent.
+Building it correctly **reproduces E20's 26 / 3 / 16 exactly**, so that headline
+was not affected by the basis. And the bin count is swept rather than fixed.
+
+**The density relation is flat inside this population.** Across nn3 deciles of
+the 390 TCRs in families of ≥3, the validation rate runs 0.927, 0.925, 0.895,
+0.949, 0.846, 0.949, 0.842, 0.947, 0.974, 0.825 — **no trend**, because family
+members all sit at nn3 0.03–0.14 by construction. So conditioning on density
+barely binds, and the question reduces cleanly to whether labels clump by family.
+
+**The sweep, 2,000 draws per setting.**
+
+| bins | strata | movable | pure⁺ obs | pure⁺ null | p | concordance obs | null | p |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 5 | 98.2% | 26 | 26.5 | 0.707 | 0.9092 | 0.8290 | **0.0005** |
+| 3 | 15 | 90.5% | 26 | 26.7 | 0.742 | 0.9092 | 0.8272 | **0.0005** |
+| 5 | 25 | 81.5% | 26 | 25.9 | 0.577 | 0.9092 | 0.8361 | **0.0005** |
+| 10 | 47 | 64.6% | 26 | 24.5 | 0.270 | 0.9092 | 0.8541 | **0.0005** |
+| 20 | 87 | 45.1% | 26 | 24.6 | 0.289 | 0.9092 | 0.8609 | **0.0020** |
+
+**A split verdict, and the two halves do not conflict.**
+
+**Result A for E20's headline.** The *number* of pure families is exactly what
+the null produces at every density resolution — 26 observed against 24.5–26.7,
+p 0.27 to 0.74. **The 26 pure families and the empty 20–60% band need no extra
+mechanism**; they are what a high base rate plus small families gives.
+
+**Result B, narrowed to six objects.** Pair-weighted agreement is above the null
+everywhere (0.9092 against 0.827–0.861, p ≤ 0.002), and decomposing by family
+size shows where all of it lives:
+
+| family size | families | pairs | concordance | null | excess | p |
+|---|---:|---:|---:|---:|---:|---:|
+| 3–4 | 23 | 87 | 0.862 | 0.810 | +0.052 | 0.162 |
+| 5–9 | 12 | 190 | 0.795 | 0.809 | −0.014 | 0.649 |
+| 10–19 | 4 | 393 | 0.924 | 0.876 | +0.048 | 0.196 |
+| **20+** | **6** | **2996** | **0.916** | 0.857 | **+0.059** | **0.006** |
+
+Six families hold 2,996 of 3,666 pairs (82%) and are the only significant band.
+A wider permutation pool — shuffling among *all* labelled rows of the stratum so
+family members can trade with TCRs that have no family — gives the same answer
+(concordance p 0.0005, pure-positive p 0.481), so this is not an artifact of
+restricting the pool.
+
+**The six, named, because a result resting on six objects must be inspectable.**
+
+| family | labelled | validated | distinct references | shared by all | dominant TRBV |
+|---|---:|---:|---:|---|---|
+| GILGFVFTL#5 | 50 | 92.0% | 13 | none | TRBV19 (50/50) |
+| GILGFVFTL#1 | 31 | 100.0% | 12 | none | TRBV19 (31/31) |
+| GILGFVFTL#36 | 27 | 100.0% | 13 | none | TRBV19 (27/27) |
+| GILGFVFTL#27 | 27 | 100.0% | 10 | none | TRBV19 (27/27) |
+| GLCTLVAML#2 | 27 | 96.3% | 11 | none | TRBV20-1 (27/27) |
+| GILGFVFTL#30 | 23 | 91.3% | 19 | none | TRBV19 (23/23) |
+
+**The confounding check comes out clean.** No family shares a single reference
+across all its members, and each is reported independently in **10–19** distinct
+studies. Across all families, pure ones share a reference at 17.2% against mixed
+ones at 12.5% — 5/29 against 2/16, no meaningful provenance effect. So the extra
+agreement is not a study or donor artifact.
+
+**Settled.** There is **no evidence for a per-family functional switch in
+general**: E20's purity pattern is fully reproduced by the null. There *is*
+extra agreement, it is real and not provenance, and it lives entirely in six
+large germline-restricted public-motif families — five GILGFVFTL built on
+TRBV19 and one GLCTLVAML on TRBV20-1, 96.2% validated against 85.9% in the other
+39 families. The "something extra each family shares" is **public-motif
+identity at the V-gene level**, a known and named thing rather than a hidden
+per-cluster state.
+
+This connects to E49 from a new direction. TRBV Simpson diversity rank-ordered
+typicality's per-epitope AUC perfectly, and GILGFVFTL was the extreme (0.570);
+here its four largest families are all TRBV19, which is what that concentration
+*is*. But the connection does not make an epitope easy: GLCTLVAML's one large
+family is uniformly TRBV20-1 at 96.3% validated, and GLCTLVAML still has the
+lowest nn3-alone AUC (0.677) and the weakest published band.
+
+Nothing here changes the predictor; it is a test of the biological reading.
