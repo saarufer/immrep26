@@ -1,6 +1,6 @@
 # Data-layer audit
 
-57 checks across the artifacts behind all 39 experiments: 2 NOTE, 55 PASS.
+59 checks across the artifacts behind all 39 experiments: 2 NOTE, 57 PASS.
 
 | group       | check                                                                | status   | detail                                                   |
 |:------------|:---------------------------------------------------------------------|:---------|:---------------------------------------------------------|
@@ -56,8 +56,10 @@
 | md          | site residues stored per pair member                                 | PASS     | no shared union                                          |
 | md          | pairs whose members number the site differently                      | NOTE     | 5/40 -- each would be mis-probed by a union              |
 | md          | every pair member was simulated                                      | PASS     | 69 members, 0 missing                                    |
+| submissions | d_density3_m30pool_m50_struct.csv: validates                         | PASS     | 2636 rows, public 0.8600                                 |
 | submissions | density3_struct03.csv: validates                                     | PASS     | 2636 rows, public 0.8498                                 |
 | submissions | density4_struct03.csv: validates                                     | PASS     | 2636 rows, public 0.8525                                 |
 | submissions | density_sceptr_default_sigma0.1.csv: validates                       | PASS     | 2636 rows, public 0.8396                                 |
+| submissions | f_density3_m30_m50_struct_nopool.csv: validates                      | PASS     | 2636 rows, public 0.8557                                 |
 | reports     | every report a script declares exists                                | PASS     | all present                                              |
-| reports     | report files on disk                                                 | NOTE     | 23 files, 19 declared by scripts                         |
+| reports     | report files on disk                                                 | NOTE     | 26 files, 22 declared by scripts                         |
