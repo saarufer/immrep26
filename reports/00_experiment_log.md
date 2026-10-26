@@ -2745,3 +2745,127 @@ which E47 superseded. Now records 0.79 anchored on the published bands, with
 the history of how E30 and E40 each got half of it right, and a new entry on
 the typicality well.
 
+
+---
+
+## E49 — Is typicality a motif detector? Response diversity, conditioned and oracled
+
+**Why.** E45 left typicality scoring 0.6378 with a very uneven per-epitope
+profile (GIL 0.779 down to NLV 0.518). The proposed mechanism was that "typical
+shape" proxies "belongs to the epitope's dominant motif", which would make the
+weight typicality deserves a function of how concentrated the response is — and
+that concentration is observable without labels, hence observable on the private
+epitopes. `scripts/46_response_diversity.py`.
+
+Two things pre-registered before the run, because both could otherwise have been
+chosen after seeing results: the primary diversity index is
+`largest_family_share`, and the primary stratification is TRBV. All four indices
+are rarefied to the smallest cohort (130 against 670) since every one of them is
+biased by n.
+
+**Part 1 — label-free diversity, all eight epitopes.** Rarefied, 200 draws.
+
+| epitope | n | split | largest_family_share | family_simpson | trbv_simpson | len_simpson |
+|---|---:|---|---:|---:|---:|---:|
+| GILGFVFTL | 670 | public | 0.1064 | 0.9707 | **0.5699** | 0.5136 |
+| GLCTLVAML | 192 | public | **0.1654** | 0.9537 | 0.8945 | 0.7437 |
+| NLVPMVATV | 366 | public | 0.0464 | 0.9896 | 0.9558 | 0.8413 |
+| TTDPSFLGRY | 387 | public | 0.0177 | 0.9920 | 0.8841 | 0.8031 |
+| YLQPRTFLL | 419 | public | 0.0364 | 0.9899 | 0.9238 | 0.7830 |
+| CINGVCWTV | 243 | private | 0.0124 | 0.9922 | 0.9441 | 0.8405 |
+| LLWNGPMAV | 229 | private | 0.0185 | 0.9920 | 0.9460 | 0.7489 |
+| LTDEMIAQY | 130 | private | 0.0538 | 0.9891 | 0.9464 | 0.8232 |
+
+**Part 2 — the between-epitope association.** Exact permutation p throughout:
+`scipy.stats.spearmanr` uses a t-approximation that reports p=0.000 for rho=-1
+at n=5, where the exact value is 2/120 = 0.0167.
+
+| index | rho vs typicality AUC | exact p | family-wise (Sidak, 4 indices) |
+|---|---:|---:|---:|
+| largest_family_share (pre-registered) | +0.100 | 0.950 | 1.000 |
+| family_simpson | -0.100 | 0.950 | 1.000 |
+| **trbv_simpson** | **-1.000** | **0.017** | **0.065** |
+| len_simpson | -0.700 | 0.233 | 0.655 |
+
+**The pre-registered index fails and a secondary one orders perfectly.** That is
+the multiplicity trap the pre-registration existed to expose, so it is reported
+as such. Three things make it more than a lucky draw among four:
+
+- GILGFVFTL is an outlier on `trbv_simpson` (0.57 against 0.88–0.96), but
+  dropping it leaves rho = **-1.000** on the remaining four (exact p 0.083).
+- rho is -1.000 across all six rarefaction seeds tried, and -1.000 (p 0.017)
+  with no rarefaction at all.
+- the two indices that fail are both *family*-level (near-duplicate clusters at
+  cosine 0.12) while the one that works is *germline*-level. That is the same
+  split E42 found when whole-V-domain alignment tracked typicality at rho
+  +0.994 through framework that contacts nothing: typicality measures the
+  germline half, not the CDR3 half.
+
+All three private cohorts sit at 0.946–0.949, NLV's diverse end, so the
+association predicts typicality near chance on every private epitope.
+
+**Part 3 — the within-epitope conditional test, and why it is void.** Typicality's
+pair-weighted AUC counting only positive-negative pairs inside the same TRBV
+stratum, with a cluster bootstrap over families:
+
+| epitope | AUC all pairs | pairs | AUC within TRBV | pairs | retained | drop | 95% CI |
+|---|---:|---:|---:|---:|---:|---:|---|
+| GILGFVFTL | 0.779 | 73914 | 0.664 | 19778 | 26.8% | **+0.115** | [0.056, 0.183] |
+| GLCTLVAML | 0.641 | 6160 | 0.676 | 519 | 8.4% | -0.035 | [-0.161, 0.157] |
+| NLVPMVATV | 0.518 | 20566 | 0.620 | 643 | 3.1% | -0.102 | [-0.200, 0.045] |
+| TTDPSFLGRY | 0.667 | 29240 | 0.684 | 2642 | 9.0% | -0.016 | [-0.083, 0.059] |
+| YLQPRTFLL | 0.584 | 35392 | 0.585 | 2240 | 6.3% | -0.002 | [-0.070, 0.072] |
+
+Only GILGFVFTL's CI excludes zero, and only GILGFVFTL retains enough pairs to
+have power. Family-level conditioning is unusable at any cohort size here: 257,
+68, 9, 0 and 8 within-family pairs across the five.
+
+**Part 3b — the control, which voids it.** Added after a first run that lacked
+one. The same TRBV conditioning applied to other scores, as the drop in AUC:
+
+| epitope | density alone | submitted blend | typicality |
+|---|---:|---:|---:|
+| GILGFVFTL | **+0.119** | **+0.141** | +0.115 |
+| GLCTLVAML | -0.141 | -0.130 | -0.035 |
+| NLVPMVATV | -0.024 | -0.017 | -0.102 |
+| TTDPSFLGRY | -0.007 | +0.024 | -0.016 |
+| YLQPRTFLL | +0.030 | +0.039 | -0.002 |
+
+On GILGFVFTL, conditioning on TRBV costs density alone **more** than it costs
+typicality. The one drop with a CI excluding zero is therefore a property of
+TRBV stratification on that cohort, not evidence that typicality acts through
+motif membership. **The mediation test fails its own control and establishes
+nothing.** Without Part 3b the GIL row would have read as confirmation.
+
+**Part 4 — and it is worth nothing on the leaderboard anyway.** Oracle first,
+since an oracle that cannot clear the bar closes the direction whatever the
+mechanism turns out to be.
+
+| | score | vs frozen |
+|---|---:|---:|
+| frozen entry | 0.8498 | — |
+| oracle *per-epitope* typicality weight | 0.8523 | **+0.0025** |
+| oracle single global weight (w=0.10) | 0.8503 | +0.0004 |
+
+Per-epitope oracle weights: GIL 0.20, GLC 0.30, TTD 0.10, NLV 0.05, YLQ 0.00 —
+ordered exactly as `trbv_simpson` predicts, which is the association again and
+not independent of it. Conditioning buys an oracle **+0.0020** over a single
+global weight, against a +0.02 inclusion bar and E15's -0.0048 selection cost.
+No label-free estimate of a per-epitope weight can beat its own oracle, so no
+nested rule was fitted. Typicality passes both standing gates
+(`private_variance_gate` and E3 viability, 243/229/130 distinct values) and
+still has nowhere to go.
+
+**Settled.** The mechanism hypothesis is **not supported**: the only test with
+power fails its control. What survives is an association — germline TRBV
+concentration rank-orders typicality's per-epitope AUC perfectly across five
+epitopes, robustly to the outlier and to the rarefaction, exact p 0.017 and
+family-wise 0.065 — which five epitopes cannot promote to a mechanism, and which
+an oracle prices at +0.0025. The epitope-conditioned weighting direction named
+in memory as this project's gap is closed for typicality specifically. The entry
+is unchanged.
+
+**Two method notes worth keeping.** A perfect rank correlation at n=5 needs an
+exact p; the asymptotic one is wrong by a factor of 60 here. And a mediation
+test needs the same conditioning applied to a score that is not the hypothesis,
+or a stratification that is simply hard will read as confirmation.
