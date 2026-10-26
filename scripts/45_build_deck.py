@@ -24,6 +24,12 @@ section{width:1920px;height:1080px;overflow:hidden;position:relative;
 table{border-collapse:collapse;width:100%}
 th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:baseline}
 sup{font-size:.65em;vertical-align:super}
+/* <x-shape> is the slide runtime's own element; a plain browser renders it as
+   a filled box. Clip it into the arrow the runtime would have drawn, so the
+   standalone file and the runtime show the same diagram. */
+x-shape{display:inline-block;vertical-align:middle;flex:0 0 auto}
+x-shape[kind="arrow-right"]{clip-path:polygon(0 32%,58% 32%,58% 0,100% 50%,58% 100%,58% 68%,0 68%)}
+x-shape[kind="arrow-down"]{clip-path:polygon(32% 0,32% 58%,0 58%,50% 100%,100% 58%,68% 58%,68% 0)}
 @media screen{body{padding:24px 0}.stage{display:flex;flex-direction:column;align-items:center}}
 @page{size:1920px 1080px;margin:0}
 @media print{html,body{background:#fff}body{padding:0}.stage{zoom:1 !important}
