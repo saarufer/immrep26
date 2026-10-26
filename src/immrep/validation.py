@@ -109,3 +109,96 @@ def sklearn_fitter(make_model: Callable[[], object], columns: list[str] | None =
         return model.decision_function(filled)
 
     return fit
+
+
+# ---------------------------------------------------------------------------
+# Standing gates. A feature passes both before its LOEO score is believed.
+
+
+def private_variance_gate(test: pd.DataFrame, series: pd.Series) -> tuple[bool, str]:
+    """E3's rule: a feature constant inside a private epitope contributes
+    exactly zero where the ranking is decided, however well it scores publicly.
+
+    Returns (passes, per-epitope level counts).
+    """
+    detail, ok = [], True
+    for epitope, cohort in test[test["split"] == "private"].groupby("epitope_aa"):
+        levels = cohort["tcr_id"].map(series).nunique()
+        detail.append(f"{epitope[:5]}:{levels}")
+        if levels <= 1:
+            ok = False
+    return ok, " ".join(detail)
+
+
+CHARGE = {**{a: 1.0 for a in "KRH"}, **{a: -1.0 for a in "DE"}}
+MASS = {"G": 57, "A": 71, "S": 87, "P": 97, "V": 99, "T": 101, "C": 103,
+        "L": 113, "I": 113, "N": 114, "D": 115, "Q": 128, "K": 128, "E": 129,
+        "M": 131, "H": 137, "F": 147, "R": 156, "Y": 163, "W": 186}
+
+
+def typicality(test: pd.DataFrame) -> pd.Series:
+    """How ordinary a TCR's own chain features are, within its own cohort.
+
+    This exists because it is the gravity well of this project. Four features
+    that looked like different ideas all turned out to re-encode it: the
+    neighbourhood density itself, Boltz interface confidence (E14), the
+    whole-V-domain alignment distance (E26, E42) and alpha-beta pairing
+    compatibility (E45) -- the last of which it outscored, 0.6378 to 0.6336,
+    while involving no pairing at all.
+
+    Deliberately crude: the summed negative z-score of CDR3 length, charge and
+    mean residue mass on both chains, within epitope. A new feature that cannot
+    beat this is not carrying new information, whatever it is called.
+    """
+    out = pd.Series(index=test["tcr_id"], dtype=float)
+    columns = {}
+    for side, cdr3 in (("a", "cdr3_alpha_aa"), ("b", "cdr3_beta_aa")):
+        seqs = test[cdr3].astype(str)
+        columns[f"len_{side}"] = seqs.str.len().to_numpy(dtype=float)
+        columns[f"charge_{side}"] = np.array(
+            [sum(CHARGE.get(c, 0.0) for c in s) for s in seqs])
+        columns[f"mass_{side}"] = np.array(
+            [np.mean([MASS.get(c, 110) for c in s]) for s in seqs])
+    frame = pd.DataFrame(columns, index=test.index)
+    for _, cohort in test.groupby("epitope_aa"):
+        block = frame.loc[cohort.index]
+        score = np.zeros(len(block))
+        for column in block.columns:
+            values = block[column].to_numpy()
+            score -= np.abs((values - values.mean()) / (values.std() or 1.0))
+        out.loc[cohort["tcr_id"]] = score
+    return out
+
+
+def typicality_gate(test: pd.DataFrame, labels: pd.DataFrame,
+                    series: pd.Series) -> dict:
+    """Is this feature carrying anything typicality does not already?
+
+    Reports the feature's mean per-epitope AUC, typicality's on the same rows,
+    and their within-epitope rank correlation. A feature that scores no higher
+    than typicality is a fifth re-encoding of it, and the correlation says how
+    directly.
+    """
+    from scipy.stats import spearmanr
+
+    reference = typicality(test)
+
+    def mean_auc(values: pd.Series) -> float:
+        per = []
+        for _, block in labels.groupby("epitope_aa"):
+            mapped = block["tcr_id"].map(values).to_numpy()
+            if len(np.unique(mapped)) > 1:
+                per.append(roc_auc_score(block["pos"], mapped))
+        return float(np.mean(per)) if per else float("nan")
+
+    feature_auc, reference_auc = mean_auc(series), mean_auc(reference)
+    rho = float(np.mean([
+        spearmanr(cohort["tcr_id"].map(series),
+                  cohort["tcr_id"].map(reference)).statistic
+        for _, cohort in test.groupby("epitope_aa")]))
+    beats = feature_auc > reference_auc
+    return {"feature_auc": feature_auc, "typicality_auc": reference_auc,
+            "rho_with_typicality": rho, "beats_typicality": beats,
+            "verdict": ("carries something typicality does not"
+                        if beats else
+                        "does NOT beat typicality -- likely a re-encoding")}

@@ -2706,3 +2706,42 @@ ranking comes from framework, a region that contacts nothing. But "below
 threshold" and "transfers without discount" are different properties, and the
 frozen entry was not changed on the strength of this.
 
+
+## Standing gates — 2026-10-26
+
+Two checks promoted out of individual scripts into `src/immrep/validation.py`,
+so a new feature meets them before its LOEO score is believed rather than
+after. Both have tests.
+
+**`private_variance_gate`** is E3's rule, which has been applied by hand since
+E3 and caught two H4 indicators in E43: a feature constant inside a private
+epitope contributes exactly zero where the ranking is decided, however well it
+scores publicly.
+
+**`typicality_gate`** is new, and exists because typicality is this project's
+gravity well. Four features that looked like different ideas all turned out to
+re-encode *how ordinary a TCR's own chain features are within its cohort*:
+
+| feature | what it looked like | what it was |
+|---|---|---|
+| neighbourhood density | convergent antigen-driven clustering | partly typicality |
+| Boltz interface confidence (E14) | structural plausibility of the complex | how canonical the TCR is |
+| whole-V-domain alignment (E26, E42) | a decorrelated sequence distance | framework, which contacts nothing, at rho +0.994 |
+| alpha-beta pairing compatibility (E45) | cross-chain selection by antigen | typicality, which outscored it |
+
+E45 is the sharpest: a crude score -- the summed negative z-score of CDR3
+length, charge and mean residue mass on both chains, within epitope, **with no
+pairing in it at all** -- reaches **0.6378** against the pairing statistic's
+0.6336, correlating at rho +0.715.
+
+The gate reports the feature's AUC, typicality's, their within-epitope rho and
+a verdict. Validated on the two known cases: the submitted blend beats it
+(0.8498 against 0.6378, rho +0.275) and H5's pairing score does not (0.6336,
+rho +0.715). Three tests pin that behaviour, including the two-case
+discrimination, so the gate cannot quietly stop working.
+
+**Memory corrected at the same time.** It still carried E40's retreat to 0.846,
+which E47 superseded. Now records 0.79 anchored on the published bands, with
+the history of how E30 and E40 each got half of it right, and a new entry on
+the typicality well.
+

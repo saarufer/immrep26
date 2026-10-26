@@ -192,3 +192,53 @@ def test_validate_accepts_the_frozen_submission():
     from immrep.submission import validate
 
     validate(pd.read_csv(SUBMISSION), test=load_test())
+
+
+# --------------------------------------------------------------------------
+# The standing gates
+
+
+@needs_data
+def test_private_variance_gate_catches_a_constant_feature():
+    """E3's rule. A feature constant inside a private epitope must be rejected
+    however well it scores publicly."""
+    from immrep.data import load_test
+    from immrep.validation import private_variance_gate
+
+    test = load_test()
+    constant = pd.Series(1.0, index=test["tcr_id"])
+    ok, _ = private_variance_gate(test, constant)
+    assert not ok
+
+    varying = pd.Series(np.arange(len(test), dtype=float), index=test["tcr_id"])
+    ok, _ = private_variance_gate(test, varying)
+    assert ok
+
+
+@needs_data
+def test_typicality_reproduces_the_value_that_motivated_the_gate():
+    """E45: typicality scores 0.6378, which beat the alpha-beta pairing
+    compatibility score it was built to check (0.6336)."""
+    from immrep.data import load_test
+    from immrep.validation import typicality, typicality_gate
+
+    test = load_test()
+    result = typicality_gate(test, _labels(), typicality(test))
+    assert result["typicality_auc"] == pytest.approx(0.6378, abs=5e-4)
+
+
+@needs_data
+def test_typicality_gate_separates_the_two_known_cases():
+    """The submitted blend carries information typicality does not; a feature
+    that merely re-encodes it does not. If this stops discriminating, the gate
+    is no longer doing its job."""
+    from immrep.data import load_test
+    from immrep.validation import typicality, typicality_gate
+
+    test = load_test()
+    labels = _labels()
+    frame = pd.read_csv(SUBMISSION)
+    blend = frame.set_index(frame.columns[0])[frame.columns[1]]
+
+    assert typicality_gate(test, labels, blend)["beats_typicality"]
+    assert not typicality_gate(test, labels, typicality(test))["beats_typicality"]
