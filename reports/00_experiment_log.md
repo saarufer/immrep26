@@ -2869,3 +2869,90 @@ is unchanged.
 exact p; the asymptotic one is wrong by a factor of 60 here. And a mediation
 test needs the same conditioning applied to a score that is not the hypothesis,
 or a stratification that is simply hard will read as confirmation.
+
+---
+
+## E50 — Pair-conditioned weights: the third pairwise formulation
+
+**Why.** Three things get called pairwise learning and two were already settled.
+E16 put a pairwise ranking surrogate under gradient descent and it failed
+structurally — the surrogate is *negatively* correlated with AUC across the
+sigma grid (−0.39, −0.51) and only aligns as its temperature goes to zero, where
+it becomes the 1−AUC step function and the gradients vanish. E10 and E13 fitted
+pointwise learners and lost to the zero-parameter rank average. Never built: a
+model whose training example is a *pair*.
+
+The motivation was E22. Error rate varies enormously by a pair's cluster state,
+and most of the loss sits in one class, so a pair-conditioned weight could
+express "when neither member has relatives, trust density less" — which no
+pointwise score can. `scripts/47_pairwise_learning.py`.
+
+**Only four of E22's five classes are usable.** Separating `pos_clu_neg_sing`
+from `pos_clu_neg_sing` requires knowing which member is the positive, i.e. the
+label. Their union — exactly one member clustered — is label-free, as are the
+other three. Conditioning on the five would be leakage, and the rule has to work
+on the private split where nothing is labelled.
+
+**The model.** `decision(i,j) = Σ_k w[k, class(i,j)] · (f_k(i) − f_k(j))` over
+the frozen entry's own two components plus typicality. Every term is an
+antisymmetric difference scaled by a symmetric pair property, so
+`P(i beats j) = 1 − P(j beats i)` holds by construction, and `w_struct = 0.3,
+w_typ = 0` reproduces the frozen entry — **the anchor, which matched to
+0.000001**, so everything below describes the model actually entered.
+
+Because class partitions the pairs, a class's weights move only its own pairs,
+so the oracle separates into four independent searches and the ceiling of the
+whole idea is cheap to price.
+
+**Where the loss sits, under the label-free partition.**
+
+| class | share of pairs | within-class AUC | share of all loss |
+|---|---:|---:|---:|
+| both_singleton | 49.2% | 0.818 | **59.8%** |
+| one_clustered | 43.6% | 0.903 | 28.1% |
+| diff_cluster | 6.9% | 0.745 | 11.7% |
+| same_cluster | 0.3% | 0.734 | 0.5% |
+
+E22's 62% for `both_singleton` survives the merge of the two adversarial classes
+into one observable one, at 59.8%.
+
+**The oracle, one weight pair per class.**
+
+| class | density | structure | typicality | gain |
+|---|---:|---:|---:|---:|
+| both_singleton | 0.80 | 0.20 | 0.00 | +0.0010 |
+| one_clustered | 0.65 | 0.20 | 0.15 | +0.0016 |
+| same_cluster | 0.85 | 0.05 | 0.10 | +0.0002 |
+| diff_cluster | **0.25** | **0.40** | **0.35** | +0.0012 |
+
+| | score | vs frozen |
+|---|---:|---:|
+| frozen entry | 0.8498 | — |
+| oracle class-conditioned | 0.8537 | **+0.0039** |
+| oracle single global weight (struct 0.20, typ 0.10) | 0.8515 | +0.0017 |
+
+Pair-conditioning buys an oracle **+0.0022** over one global weight. The weight
+heterogeneity is real — `diff_cluster` wants density down to 0.25 and
+typicality up to 0.35, nothing like the frozen weights — but that class holds
+6.9% of pairs, so the whole effect is worth +0.0012.
+
+**Settled, and on a sharper criterion than the bar.** The oracle ceiling
++0.0039 is **smaller than E15's measured selection cost of −0.0048** over a
+search of comparable size (4 classes × 231 weight pairs here against 323
+configurations there). A fitted version is therefore expected to come out net
+*negative*, not merely short of +0.02. Nothing was fitted.
+
+And the motivation is answered directly: `both_singleton` holds 59.8% of all
+loss and the oracle moves it by **+0.0010**. **Reweighting cannot reach the place
+the loss lives** — when neither member of a pair has relatives, there is no
+combination of these three components that orders them better. The finer
+conditioning confirms it: mutual distance is the one genuinely pairwise
+continuous quantity with no pointwise counterpart, and within `both_singleton`
+its terciles want structure 0.20/0.30/0.30 and typicality 0.00 throughout, i.e.
+essentially the frozen weights everywhere.
+
+**All three pairwise formulations are now closed, each with a mechanism**: the
+ranking objective by surrogate–metric mismatch on a heavy-tailed score
+distribution (E16), the pointwise learners by five folds (E10, E13), and
+pair-conditioned weights by the loss sitting in the one class that reweighting
+cannot improve (here). The entry is unchanged.
