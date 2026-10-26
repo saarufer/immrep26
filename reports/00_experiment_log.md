@@ -2573,3 +2573,68 @@ the checks already in place; the data audit verifies files, the tests verify the
 frozen artifact, and neither looks at whether two numbers in the same sentence
 were produced the same way.
 
+
+## E47 — The private shift is published. E40's retreat to 0.846 was too far.
+
+`scripts/43_published_baseline_anchor.py`. Found while reading material the PI
+supplied; the finding itself comes from the Immunity paper this competition is
+built on, which we have cited since E1.
+
+**E30 projected the private macro at 0.799 and E40 withdrew it**, concluding
+that with five epitopes the shift is not measurable. That conclusion was wrong
+in an avoidable way: the paper reports tcrdist3's per-epitope AUROC for **all
+eight epitopes, private ones included**, in its Figure 4 results text:
+
+> "tcrdist3 showed high performance for the GILGFVFTL (GIL) and YLQ epitopes
+> (AUROC 0.87-0.93), good performance for the CIN, NLV, LLWNGPMAV (LLW), and
+> TTDPSFLGRY (TTD) epitopes (AUROC 0.80-0.83), and modest performance for the
+> GLC and LTDEMIAQY (LTD) epitopes (AUROC 0.66-0.68)."
+
+**The anchor validates against our own measurement**, which is what makes it
+usable -- the bands have to describe the estimator we actually hold:
+
+| epitope | published | our tcrdist3 | |
+|---|---|---:|---|
+| GILGFVFTL | 0.87-0.93 | 0.871 | inside |
+| YLQPRTFLL | 0.87-0.93 | 0.928 | inside |
+| NLVPMVATV | 0.80-0.83 | 0.809 | inside |
+| TTDPSFLGRY | 0.80-0.83 | 0.826 | inside |
+| GLCTLVAML | 0.66-0.68 | 0.690 | outside by 0.010 |
+
+Four of five inside, the fifth over by 0.010 -- consistent, given the paper
+quotes grouped ranges.
+
+**The shift, measured rather than projected.**
+
+| | |
+|---|---:|
+| tcrdist3 public macro, our measurement | 0.8247 |
+| tcrdist3 private macro, published | **0.753-0.780** (mid 0.767) |
+| **public-to-private shift** | **-0.071 to -0.045** (mid -0.058) |
+| our public | 0.8498, margin +0.0251 over tcrdist3 |
+| **our private estimate** | **0.778-0.805** (mid **0.792**) |
+
+**So E30 was closer than E40 left it.** E30's 0.799 was right in magnitude and
+wrong in method; E40 correctly demolished the method and then retreated to
+0.846, which the published baseline says is too high by about 0.05. The honest
+position is **0.79**, from a measurement of the baseline plus one assumption,
+rather than 0.846 from an estimator that cannot see the shift at all.
+
+**The one remaining assumption** is that our +0.0251 margin over tcrdist3
+carries to the private epitopes. Untestable here, and it cuts both ways: the
+margin comes mostly from density, which E29 and E30 show leans on family
+structure the private cohorts have less of, and LTD is where tcrdist3 is
+weakest while our model reads the same neighbourhood signal. Against that, the
+paper puts AlphaFold3 at **0.84-0.88 on LLW** against tcrdist3's 0.80-0.83, and
+our blend carries structure at weight 0.3 -- so on one of the three private
+epitopes the structure term is the stronger of the two. That is independent
+published support for E21's choice of 0.3 over 0.2, which until now rested only
+on our own thinning curves.
+
+**The methodological lesson is the uncomfortable one.** Four experiments
+(E21, E30, E32-D10, E40) and a large amount of compute went into estimating a
+quantity whose baseline was stated in the paper we had been citing since E1.
+Nobody read the results section for it. **Before modelling an unknown, check
+whether the literature has already measured it** -- especially the literature
+the dataset comes from.
+
