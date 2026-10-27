@@ -7154,3 +7154,108 @@ not have can only destroy information, which is exactly the ordering observed.
 It was worth testing because it is the first thing tried here that is a
 genuinely different functional of the same matrix rather than the same
 functional in a different space. The entry does not change.
+
+---
+
+## E100 — Local intrinsic dimension: the one functional that was actually different
+
+E99 closed hubness by measuring that this space is not hub-afflicted. Local
+intrinsic dimension is the remaining functional of the same matrix that is
+genuinely separate: density asks **how far** a TCR's neighbours are, LID asks
+**how fast the neighbour count grows with radius** — the exponent rather than
+the scale — and it is built from *ratios* of log-distances, so it is invariant
+to the quantity density measures. `scripts/90_local_intrinsic_dimension.py`.
+
+The biology is concrete: a receptor inside a clonal lineage has neighbours
+strung along a mutational path, few effective degrees of freedom, **low LID**;
+a receptor in a generic region has neighbours in every direction, **high LID**.
+E29 measured that family recurrence carries part of the ranking; LID asks the
+same question continuously and without a family radius.
+
+### 1. Local dimension per cohort, and how much of it is density
+
+| epitope | split | LID median | p10 | p90 | ρ(density, LID) |
+|---|---|---:|---:|---:|---:|
+| TTDPSFLGRY | public | 10.57 | 3.92 | 15.01 | −0.834 |
+| NLVPMVATV | public | 9.65 | 1.45 | 16.22 | −0.914 |
+| LTDEMIAQY | private | 9.38 | 3.22 | 13.87 | −0.908 |
+| YLQPRTFLL | public | 8.87 | 2.68 | 15.81 | −0.873 |
+| CINGVCWTV | private | 7.85 | 3.48 | 13.34 | −0.782 |
+| LLWNGPMAV | private | 7.85 | 4.70 | 14.17 | −0.805 |
+| GILGFVFTL | public | 5.10 | 1.91 | 15.37 | −0.874 |
+| GLCTLVAML | public | **3.58** | 1.15 | 11.49 | −0.827 |
+
+The ordering is interpretable: GLCTLVAML, the over-convergent cohort of E20 and
+E72, has by far the lowest local dimension (3.58) — its TCRs really do lie
+along few directions. GILGFVFTL, the other family-rich cohort, is second.
+
+### 2. The estimator matters, and the usual trade-off appears
+
+| feature | macro | inverted | ρ with density |
+|---|---:|---:|---:|
+| density (reference) | 0.8414 | — | +1.000 |
+| **LID TwoNN** | 0.3539 | **0.6461** | **−0.337** |
+| LID MLE k=5 | 0.2484 | 0.7516 | −0.598 |
+| LID MLE k=20 | 0.1962 | 0.8038 | −0.852 |
+| LID MLE k=40 | 0.1848 | 0.8152 | −0.906 |
+
+Every LID runs *below* chance and is informative inverted — low dimension means
+validates — and once again the margin tracks the correlation with density: the
+MLE variants at large k are a sign-flipped density (ρ −0.91) and score 0.82,
+while **TwoNN is the only one decorrelated enough to be a different quantity**
+(ρ −0.337) and scores 0.6461 inverted. By E28's rule, decorrelation *plus*
+margin over chance is the combination worth testing, and TwoNN is the first
+feature in this project to have both.
+
+### 3. Blended into D, every LID fails — including TwoNN
+
+| feature | oracle | vs D | nested | vs D |
+|---|---:|---:|---:|---:|
+| LID MLE k=5 | 0.8615 | +0.0015 | 0.8597 | −0.0004 |
+| LID TwoNN | 0.8605 | +0.0004 | 0.8597 | −0.0004 |
+| LID MLE k=40 | 0.8600 | −0.0000 | 0.8588 | −0.0012 |
+
+On its own next to D, TwoNN is worth nothing. The result only appears in
+combination.
+
+### 4. On top of E98's all-three, and the number that counts
+
+Adding TwoNN to the all-three combination and nesting its weight gives 0.8629,
+**+0.0008 over all-three**. But the other three parameters are then held at
+values chosen on these same epitopes, so the honest test re-selects **all four**
+inside every fold — and because this grid is coarser than E98's (3×3×2×3
+against 5×4×3), the three-parameter version is re-run on **this** grid rather
+than compared against E98's, or TwoNN would be credited with stability the grid
+supplied:
+
+| | fully nested | vs D | selection cost | picks across folds |
+|---|---:|---:|---:|---|
+| three parameters | 0.8610 | +0.0009 | **−0.0011** | unstable: p ∈ {0.5, 1}, struct ∈ {0, 0.15, 0.3} |
+| **four parameters** | **0.8629** | **+0.0028** | **+0.0000** | **identical in all five folds** |
+
+**TwoNN's own contribution is +0.0019**, and the more interesting half is the
+second column: adding it drove the selection cost to **exactly zero** by making
+`(p=0.5, struct=0.3, lenfreq=0.05, twonn=0.05)` the unanimous choice in every
+fold. Without it the optimum wanders; with it there is nothing left to select.
+A feature that stabilises the others is not something this project has seen
+before, and the mechanism is plausible — TwoNN is the only ingredient
+anti-correlated with density, so it flattens the objective's dependence on the
+bandwidth and structure weights.
+
+Per epitope, against D: NLVPMVATV **+0.0063**, TTDPSFLGRY **+0.0070**,
+GILGFVFTL +0.0008, GLCTLVAML +0.0010, YLQPRTFLL −0.0009. The gain is again
+carried by the two cohorts E86 identified as most like the private split.
+
+### Verdict
+
+**+0.0028 fully nested at zero selection cost** is the largest honest gain this
+project has produced, and it is still **14% of the +0.02 bar**. The entry does
+not change.
+
+Two caveats, stated rather than buried. First, the *grids* for the three older
+parameters were designed from E83, E96 and E97, all run on these five epitopes,
+so even a fully nested search inherits that choice — the +0.0028 is honest
+about weight selection and optimistic about grid design. Second, unlike E97's
+bandwidth rule, TwoNN needs only each TCR's two nearest distances and is
+therefore available on every private row, so unlike the bandwidth component it
+should transfer in full.
