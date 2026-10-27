@@ -7345,3 +7345,111 @@ four-component configuration, not that it is better by a measurable amount.
 mechanistically distinct components, each clearing both standing gates, now sum
 to under a fifth of what the pre-registered rule requires to act — which is
 E98's conclusion holding at twice the component count.
+
+---
+
+## E102 — Where the gain lives: extreme heterogeneity, uncorrelated profiles, and near-full transfer
+
+Not a new candidate. The five components assembled in E98–E101 reach +0.0035
+fully nested, and every experiment in that sequence reported most of it on
+NLVPMVATV and TTDPSFLGRY. If that is a property of those two cohorts rather
+than of the method, the private estimate must come down.
+`scripts/92_component_attribution.py`. Evaluated at the configuration E100/E101
+converged to (p=0.5, struct=0.3, lenfreq=0.05, twonn=0.05, xlid=0.05), which
+scores **+0.0042** macro — the nested figure is lower at +0.0035 because
+nesting pays for choosing it.
+
+### 1. Exact Shapley attribution (×10⁴), per epitope
+
+Five components give 32 subsets, so Shapley is exact rather than sampled, and
+the per-epitope totals are asserted against the measured difference.
+
+| epitope | bandwidth | structure | lenfreq | twonn | xlid | total |
+|---|---:|---:|---:|---:|---:|---:|
+| TTDPSFLGRY | 18.7 | 26.8 | 11.0 | 9.4 | 19.9 | **+85.8** |
+| GLCTLVAML | 0.3 | −5.0 | −5.0 | 11.8 | **69.3** | **+71.4** |
+| NLVPMVATV | 21.6 | 18.3 | 6.9 | 15.6 | −15.0 | +47.4 |
+| GILGFVFTL | 0.2 | 13.4 | 5.3 | −10.5 | 1.3 | +9.7 |
+| YLQPRTFLL | −1.0 | −4.5 | 1.5 | −1.5 | 3.0 | **−2.5** |
+| **MACRO** | **8.0** | **9.8** | **4.0** | **4.9** | **15.7** | **+42.4** |
+
+**The heterogeneity is extreme**: per-epitope totals run from −0.0003 to
++0.0086, a range thirty times the macro mean. A five-epitope average of numbers
+that scattered is a weak estimate of anything.
+
+The largest single cell is **xlid on GLCTLVAML, +0.0069**, and it is
+mechanistically coherent: E100 measured GLCTLVAML's own local dimension at
+**3.58**, by far the lowest of the eight, so the cross-epitope dimension
+contrast has the most to work with exactly where own-cohort structure is most
+distinctive. The same component is **−0.0015 on NLVPMVATV**.
+
+### 2. The profiles are uncorrelated
+
+Mean off-diagonal Spearman between the per-epitope contribution profiles:
+**−0.110**. Every epitope's gain comes from a different component. This is the
+"five separate effects" reading rather than "one method working everywhere",
+and it means no individual component can be said to work — each works
+somewhere and fails elsewhere.
+
+63% of the public gain sits on NLVPMVATV + TTDPSFLGRY, which was the worry
+that prompted this experiment.
+
+### 3. The perturbation table answers the worry, and reverses it
+
+`1 − Spearman(D, D+component)` inside each cohort. A component that cannot move
+a private ranking contributes exactly zero there, whatever it does publicly —
+and this is measurable without labels.
+
+| epitope | split | bandwidth | structure | lenfreq | twonn | xlid |
+|---|---|---:|---:|---:|---:|---:|
+| **CINGVCWTV** | private | **0.0000** | **0.0051** | 0.0014 | 0.0013 | 0.0013 |
+| **LLWNGPMAV** | private | **0.0000** | 0.0018 | 0.0006 | 0.0010 | 0.0013 |
+| **LTDEMIAQY** | private | 0.0004 | 0.0046 | 0.0013 | 0.0009 | 0.0013 |
+| GILGFVFTL | public | 0.0006 | 0.0020 | 0.0007 | 0.0011 | 0.0013 |
+| NLVPMVATV | public | 0.0005 | 0.0041 | 0.0012 | 0.0011 | 0.0013 |
+| TTDPSFLGRY | public | 0.0006 | 0.0051 | 0.0011 | 0.0012 | 0.0013 |
+| YLQPRTFLL | public | 0.0000 | 0.0016 | 0.0007 | 0.0011 | 0.0013 |
+
+Two things stand out. The **structure component perturbs CINGVCWTV (0.0051)
+more than any public cohort**, matching TTDPSFLGRY exactly — and E86 identified
+TTDPSFLGRY as CINGVCWTV's structural twin at distance 1.40. And **xlid perturbs
+every cohort identically at 0.0013**, which it must, since it is built from a
+common subsample size.
+
+Only the bandwidth component fails to reach the private split, and it is a
+small contributor (8.0 of 42.4).
+
+### 4. Projection
+
+Gain per unit perturbation, measured on the public five, applied to each
+private cohort's own measured perturbation:
+
+| component | public gain ×10⁴ | public perturbation | CINGVCWTV | LLWNGPMAV | LTDEMIAQY |
+|---|---:|---:|---:|---:|---:|
+| bandwidth | 8.0 | 0.0007 | **0.0** | **0.0** | 5.0 |
+| structure | 9.8 | 0.0031 | 16.3 | 5.7 | 14.9 |
+| lenfreq | 4.0 | 0.0009 | 5.8 | 2.7 | 5.4 |
+| twonn | 4.9 | 0.0012 | 5.5 | 4.3 | 4.1 |
+| xlid | 15.7 | 0.0013 | 15.4 | 15.2 | 15.8 |
+| **TOTAL** | **42.4** | | **43.1** | **27.9** | **45.2** |
+
+**Projected private macro gain +0.0039, against the public +0.0042** — near-full
+transfer, and the opposite of what prompted the experiment. The reason is
+structural: the one component that does not transfer is also the smallest, and
+the largest contributor transfers uniformly by construction.
+
+**The projection's assumption, stated.** It holds the *efficiency* of each
+component — gain per unit of rank perturbation — fixed between public and
+private cohorts. The measured ratios vary from 3,213 (structure) to 12,087
+(xlid), so that assumption is doing real work, and a component that perturbs
+a private cohort in a less useful direction would still register here.
+
+### What this changes
+
+Not the entry: +0.0035 nested, +0.0039 projected private, against a **+0.02**
+bar. What it changes is the reason for the ceiling. E98 showed it is not caused
+by overlap between components. E102 shows it is not caused by failure to reach
+the private split either. The per-epitope spread of −0.0003 to +0.0086 at an
+average of +0.0042, with contribution profiles correlating at −0.110, says the
+remaining signal is not a single exploitable axis at all — it is a handful of
+cohort-specific effects that happen to average positive.
