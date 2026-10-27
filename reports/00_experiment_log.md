@@ -7056,3 +7056,101 @@ re-encodings. This one cannot. The ceiling is not being hit because the ideas
 overlap; it is being hit because the signal available to this family of methods
 is close to exhausted, which is the sharpest version of E20's "density
 saturates at ~0.84" that the project has produced.
+
+---
+
+## E99 — Hubness: the space is not hub-afflicted, so the corrections have nothing to fix
+
+E98 concluded the ceiling is not caused by candidate features overlapping, so
+the next thing has to be outside the family — and the family is narrower than
+it looks. Every density variant built here is the **same functional**, mean
+distance to my k nearest neighbours, computed in a different space.
+
+Hubness is a different functional of the identical matrix and a known
+pathology of k-NN in high dimensions. For a point x, the **out-degree** view is
+what D uses; the **in-degree** `N_k(x)` is how many points have x among *their*
+k nearest. A hub sits in everyone's list while its own neighbours are far — the
+generic receptor, vaguely close to everything and specifically close to
+nothing, which is a different thing from being in a sparse neighbourhood.
+`scripts/89_hubness.py`.
+
+### 1. There is hubness, and it is mild
+
+| epitope | split | n | N_k skew | antihub % | max N_k | ρ(density, N_k) |
+|---|---|---:|---:|---:|---:|---:|
+| LLWNGPMAV | private | 229 | 1.25 | 0.4 | 29 | **+0.846** |
+| YLQPRTFLL | public | 419 | 1.13 | 1.0 | 30 | +0.706 |
+| TTDPSFLGRY | public | 387 | 1.11 | 0.5 | 26 | +0.793 |
+| GILGFVFTL | public | 670 | 0.99 | 1.0 | 28 | +0.688 |
+| GLCTLVAML | public | 192 | 0.96 | 0.5 | 27 | +0.662 |
+| NLVPMVATV | public | 366 | 0.88 | 0.0 | 25 | +0.743 |
+| CINGVCWTV | private | 243 | 0.56 | 0.4 | 23 | **+0.833** |
+| LTDEMIAQY | private | 130 | 0.50 | 0.0 | 18 | +0.753 |
+
+Skew 0.50–1.25 against k=8 — a genuinely hub-afflicted space runs well above 2
+— and **antihubs are 0–1%** where the pathology would produce tens of percent.
+The decisive number is the last column: **density and in-degree correlate at
++0.66 to +0.85**. The two degree views are not separate quantities here, which
+is the reason the corrections have nothing to work with.
+
+### 2. Every correction is worse standalone
+
+| feature | macro | ρ with density |
+|---|---:|---:|
+| **density (reference)** | **0.8414** | — |
+| mutual-kNN density | 0.8345 | +0.935 |
+| in-degree `N_k` | 0.7548 | +0.753 |
+| density on local scaling (NICDM) | 0.7346 | +0.705 |
+| density on mutual proximity | 0.6910 | +0.630 |
+| in-degree minus density rank | 0.3742 | −0.356 |
+
+The ordering is monotone in the correlation with density: **the more a variant
+departs from plain density, the worse it does**, and the most decorrelated one
+(`in-degree minus density rank`, ρ −0.356) scores 0.374, well *below* chance
+and therefore informative with its sign flipped — a higher in-degree than
+one's own density warrants associates with *failing* revalidation. That is the
+hub signature, and it is real but tiny.
+
+Local scaling deserves a note because it is **a per-TCR adaptive bandwidth**,
+the individual-level version of E97's per-cohort one. E97 bought +0.0007 inside
+D; the per-TCR version costs −0.107 standalone. The bandwidth should vary by
+cohort and should not vary by receptor.
+
+### 3. Blended into D, and then into E98's combination
+
+| feature | oracle w | oracle | vs D | nested | vs D |
+|---|---:|---:|---:|---:|---:|
+| mutual-kNN density | 0.15 | 0.8619 | +0.0018 | 0.8609 | **+0.0009** |
+| density on mutual proximity | 0.05 | 0.8611 | +0.0011 | 0.8605 | +0.0005 |
+| density on local scaling | 0.10 | 0.8610 | +0.0009 | 0.8605 | +0.0005 |
+| in-degree `N_k` | 0.05 | 0.8599 | −0.0001 | 0.8594 | −0.0007 |
+
+The best of them, mutual-kNN at nested +0.0009, is also the one **93.5%
+correlated with the density it sits beside** — margin without decorrelation,
+the mirror image of E28's rule that decorrelation without margin buys nothing.
+
+**And it does not add to what already exists.** On top of E98's all-three
+combination, with the weight nested:
+
+| w(mutual-kNN) on top of all-three | macro |
+|---|---:|
+| 0.00 | 0.8621 |
+| 0.10 | 0.8627 |
+| 0.20 | 0.8627 |
+| **nested over the weight** | **0.8614** |
+
+Nested is **−0.0007 against all-three** — selecting the weight costs more than
+the feature returns. Its per-TCR change correlates with the all-three change at
+ρ +0.352, so it is not independent of them either.
+
+### What this closes
+
+Hubness is not the missing axis, and the measurement says why rather than
+merely that: **this space is not hub-afflicted**. Density and in-degree agree
+at ρ +0.66–0.85, antihubs are under 1%, and the skew never reaches half what
+the pathology requires. Corrections designed to repair a problem the data does
+not have can only destroy information, which is exactly the ordering observed.
+
+It was worth testing because it is the first thing tried here that is a
+genuinely different functional of the same matrix rather than the same
+functional in a different space. The entry does not change.
