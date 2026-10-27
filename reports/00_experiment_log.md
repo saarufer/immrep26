@@ -5349,6 +5349,15 @@ within-epitope ρ +0.905, so it is measuring what D already measures.
 
 **The entry is unchanged.**
 
+
+**Amended by the 2026-10-27 review.** The table above puts all twelve variants
+at a **common top-8 reduction**, so the comparison between them is exact. E6's
+published numbers used each representation's *own best* reduction, so the two
+sets are not comparable row by row: `default` reads **0.8414** at top-8 here
+against E6's **0.8396** at kernel σ=0.1. Nothing in the conclusion depends on
+it — the controls, the span and the selection cost are all computed within this
+table — but the earlier text invited the wrong comparison.
+
 ---
 
 ## E82 — The two-task control: is antigen specificity in the pretraining or in the retrieval?
@@ -5420,3 +5429,44 @@ would succeed.
 (β only) nor SEEKER (pairs without a shared panel, or a shared panel without
 sequences) provides it, and that gap is worth more as a specification for the
 next dataset than as a reason to weaken the claim.
+
+---
+
+## Code review of E77–E82 (2026-10-27)
+
+**The first finding is a process failure of mine.** Five of the six experiments
+were run as inline heredocs and left **no retained script** — E77, E79, E80,
+E81 and E82. That is exactly the gap E60 criticised in a collaborator's ledger
+("M70 and pool v3 have conclusions but no code, and cannot be re-run"). Fixed:
+`scripts/69` through `scripts/73` now implement them, and **every one
+reproduces its logged numbers exactly** —
+
+| experiment | script | check |
+|---|---|---|
+| E77 family de-duplication | `69_family_dedup_topk.py` | 0.8414 → 0.8381, effective count 0.2957, ρ +0.9667 ✓ |
+| E79 reference quality weighting | `70_reference_quality_weighting.py` | n_refs +0.0007, into D +0.0000 ✓ |
+| E80 cross-epitope expansion | `71_cross_epitope_expansion.py` | 20 private records, 13 clonotypes, 0.8330 → 0.8341 ✓ |
+| E81 representation ablations | `72_representation_ablations.py` | nested 0.8316, cost −0.0144 ✓ |
+| E82 task B | `73_task_b_recognition.py` | all ρ ≤ +0.043, all p ≥ 0.598 ✓ |
+
+**No computational bugs were found in the six experiments.** The bug classes
+that bit E62–E64 were checked again and are absent here: no free-parameter
+curve fitting, no isotonic direction assumption, no reliability ceiling
+compared raw, and every permutation or resample uses the same unit as its
+observed statistic.
+
+**Two reporting defects, neither changing a conclusion.**
+
+1. **E81 mixed reductions when citing E6.** All twelve variants there use a
+   common top-8, so the comparison between them is exact, but E6's published
+   figures used each representation's own best reduction. `default` is 0.8414
+   at top-8 and 0.8396 at kernel σ=0.1. The entry is amended in place.
+2. **E82's 156 pairs are not independent.** Twenty-one receptors carrying
+   sixteen distinct CDR3β generate 156 pairs, so each receptor appears in about
+   seventeen and the p-values are anticonservative. Every result is null at
+   p ≥ 0.598, so the conclusion is unaffected; the limit is now in the script's
+   docstring alongside the β-only bound.
+
+**The standing rule this re-earns:** an experiment without a retained script is
+not a result, whoever ran it. The five scripts were written after the fact and
+checked against the logged numbers rather than trusted.
