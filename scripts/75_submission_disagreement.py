@@ -49,7 +49,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from immrep.data import build_training_frame, load_test  # noqa: E402
 
-REPORT = ROOT / "reports/36_submission_disagreement.md"
+REPORT = ROOT / "reports/50_submission_disagreement.md"
 FAMILY_RADIUS = 0.12          # E22's single-linkage radius, not nn3_dist
 TOPK = 8
 ENTRIES = {

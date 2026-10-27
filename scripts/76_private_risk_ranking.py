@@ -62,7 +62,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from immrep.data import build_training_frame, load_test  # noqa: E402
 
-REPORT = ROOT / "reports/37_private_risk_ranking.md"
+REPORT = ROOT / "reports/51_private_risk_ranking.md"
 FAMILY_RADIUS = 0.12
 
 # E47: tcrdist3's published per-epitope AUROC, from the Immunity paper.

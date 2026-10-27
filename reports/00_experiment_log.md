@@ -5725,3 +5725,97 @@ D at its **worst** observed fraction (0.7892) still exceeds the best rival at it
 **best** (F, 0.7862). The ordering therefore does not depend on which fraction is
 the right one — though the margin is +0.0030, well inside every uncertainty on
 this page, so this is robustness of the ordering and not of the gap.
+
+---
+
+## E86 — A similarity map of the eight cohorts: which public epitope is each private one like?
+
+E85 needed one number from this — each private epitope's nearest public analogue
+— and turned up something worth drawing in full. `scripts/77_epitope_similarity_map.py`,
+figure at `reports/figures/epitope_similarity_map.png`.
+
+"Alike" is not one thing, so three axes are computed, and the first result is
+that **they are mutually orthogonal**:
+
+| axis | axis | ρ over the 28 epitope pairs |
+|---|---|---:|
+| cohort structure | TCR repertoire | **−0.073** |
+| cohort structure | peptide | +0.032 |
+| TCR repertoire | peptide | +0.133 |
+
+So there is no single answer to "which epitope resembles which", and in
+particular **cohorts whose TCRs sit in similar regions of sequence space are not
+organised alike**. That is a point in favour of the sampling reading of E55 and
+E76: family structure is a property of how a cohort was collected, not of the
+receptors in it.
+
+### 1. Cohort structure — the axis that matters, and the only one that groups
+
+Standardised over all eight (E85 used the public five, since it was predicting
+public folds; the public–public distances shift by at most 0.45 and no ordering
+changes). Distance to each public epitope, nearest first:
+
+| private | 1st | 2nd | 3rd | 4th | 5th |
+|---|---|---|---|---|---|
+| CINGVCWTV | **TTDP 1.40** | NLVP 3.09 | YLQP 4.04 | GILG 5.82 | GLCT 5.92 |
+| LLWNGPMAV | **TTDP 1.47** | NLVP 2.17 | YLQP 2.98 | GILG 4.98 | GLCT 5.07 |
+| LTDEMIAQY | NLVP 2.56 | TTDP 2.62 | YLQP 3.79 | GLCT 4.54 | GILG 5.19 |
+
+The dendrogram splits cleanly in two, and **all three private cohorts land in
+the same branch as exactly one public epitope**:
+
+```
+  singleton-dominated   LTDEMIAQY · TTDPSFLGRY · CINGVCWTV · LLWNGPMAV
+  family-rich           GLCTLVAML · GILGFVFTL · NLVPMVATV · YLQPRTFLL
+```
+
+CINGVCWTV and LLWNGPMAV are closer to TTDPSFLGRY (1.40, 1.47) than any two
+public epitopes are to each other except NLVP–YLQP (1.80). **TTDPSFLGRY is the
+private split's public twin**, and it scores 0.8493 under D.
+
+The clustering is **not** recovering HLA. LTDEMIAQY and TTDPSFLGRY are the only
+two HLA-A\*01:01 cohorts, and LTDEMIAQY's nearest neighbour is nonetheless the
+A\*02:01 NLVPMVATV, at 2.56 against 2.62.
+
+**LTDEMIAQY is the one with no twin.** Its nearest analogue sits at 2.56 in a
+space where the public epitopes span 1.80–5.59, and E85 already put it first on
+every other risk axis — worst published band, widest fraction interval, smallest
+cohort at 130 rows. Every axis independently nominates the same epitope.
+
+### 2. TCR repertoire — flat, which is itself the result
+
+Symmetrised Chamfer distance in SCEPTR space (for every TCR in A, the cosine
+distance to its nearest neighbour in B, averaged, and the same back). All 28
+pairs fall in **0.485–0.600**, a span of 0.115 on an axis where neighbours
+*inside* a cohort sit at 0.12–0.40. Between cohorts, every epitope is about
+equally far from every other. The two mild exceptions are NLVP–GILG (0.485) and
+CINGVCWTV–GLCTLVAML (0.513).
+
+This is what makes the orthogonality above interpretable rather than puzzling:
+there is barely any repertoire-level structure *to* correlate with.
+
+### 3. Antigen — carries nothing, as expected
+
+BLOSUM62 similarity normalised by self-score, range −0.42 to +0.27. E75 already
+established that six of the eight are HLA-A\*02:01 nonamers, so this axis is
+nearly flat by construction; it is drawn to show that it supplies no grouping
+rather than because it was expected to.
+
+### The inference the figure invites, and which does not hold
+
+The bar panel labels each public epitope with tcrdist3's published AUROC, which
+invites reading *closer to the private cohorts* as *easier*. It does not:
+
+| public epitope | mean distance to the three private | tcrdist3 |
+|---|---:|---:|
+| TTDPSFLGRY | 1.83 | 0.826 |
+| NLVPMVATV | 2.61 | 0.809 |
+| YLQPRTFLL | 3.60 | 0.928 |
+| GLCTLVAML | 5.18 | 0.690 |
+| GILGFVFTL | 5.33 | 0.871 |
+
+Spearman **+0.100**. The two most distant cohorts are the easiest and nearly the
+hardest. Structural resemblance says what the private cohorts *look like*, not
+what they will score — which is the same conclusion E85 reached when the
+structure-matched margin model failed its leave-one-epitope-out test at MAE
+0.0261 against 0.0157. **This map must not be used to re-weight anything.**
