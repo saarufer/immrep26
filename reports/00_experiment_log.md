@@ -7259,3 +7259,89 @@ about weight selection and optimistic about grid design. Second, unlike E97's
 bandwidth rule, TwoNN needs only each TCR's two nearest distances and is
 therefore available on every private row, so unlike the bandwidth component it
 should transfer in full.
+
+---
+
+## E101 — Cross-epitope local dimension: a large effect, a small gain, and a lost unanimity
+
+E100 found TwoNN local dimension is the first feature here with both
+decorrelation and margin, and that adding it drove the four-parameter selection
+cost to exactly zero. The natural follow-up is whether the lineage structure it
+detects is **specific**: a genuine member of an epitope-specific response
+should look lineage-like in *its own* cohort and generic everywhere else.
+E89's contrastive *density* version of this failed the typicality gate on all
+four variants, but TwoNN passes it at ρ −0.084, so the question is worth asking
+again on this functional. `scripts/91_cross_epitope_lid.py`.
+
+Two symmetry problems are handled rather than ignored. **Cohort size** — r₁ and
+r₂ shrink as a cohort grows, so every cohort is subsampled to 110 and the whole
+thing averaged over 25 draws. **Relatives** — a TCR has clonal relatives in its
+own cohort and none in the others, so both the unmasked and the
+single-linkage-family-masked version are computed.
+
+### The effect is large and survives family masking
+
+| version | median LID own | median LID other | median contrast | non-finite |
+|---|---:|---:|---:|---:|
+| unmasked | 29.9 | 74.8 | **−40.5** | 5 |
+| family-masked | 33.8 | 75.2 | **−37.1** | 1 |
+
+**A TCR's local dimension in its own cohort is less than half what it is in any
+other**, and masking its single-linkage family barely moves that. (TwoNN
+diverges when r₁ = r₂ to numerical precision; the summary uses medians over
+finite values and the count of non-finite rows is reported, while the AUCs
+below replace them before scoring.)
+
+**The interpretation is confounded and should not be oversold.** In a foreign
+cohort a TCR has no close relatives at all, so r₁ and r₂ are both large and
+similar and the estimator necessarily returns a high dimension. Masking at
+radius 0.12 removes the single-linkage family but not near-relatives just
+outside it. So the contrast is real as a measurement and only partly a
+statement about antigen specificity.
+
+### The usual trade-off, one more time
+
+| feature | inverted AUC | ρ density | ρ TwoNN-own |
+|---|---:|---:|---:|
+| LID own (unmasked) | **0.7217** | −0.506 | +0.471 |
+| LID own (family-masked) | 0.6944 | −0.431 | +0.369 |
+| rank of own among 8 (family-masked) | 0.6722 | −0.372 | +0.333 |
+| **LID own − mean other (family-masked)** | 0.6273 | **−0.191** | **+0.200** |
+
+Every variant passes both gates. The genuine *contrast* is the most
+decorrelated quantity this project has produced — ρ −0.191 with density and
++0.200 with TwoNN-own — and, as always, it is also the weakest. "LID own" at
+0.7217 scores best and is simply plain TwoNN recomputed on subsamples, which is
+already the fourth component; testing it as a fifth would answer a different
+question, so the contrast is what goes forward.
+
+### It adds, but it costs back the stability
+
+| configuration | nested | vs D | oracle | selection cost | distinct picks |
+|---|---:|---:|---:|---:|---:|
+| four components (E100) | 0.8628 | +0.0028 | 0.8628 | **+0.0000** | **1** |
+| **five components** | **0.8636** | **+0.0035** | 0.8656 | **−0.0020** | 3 |
+
+The fifth component improves the nested figure by **+0.0007** and breaks the
+unanimity that made E100 interesting: the five-parameter optimum differs across
+three of the five folds, and the selection cost returns to −0.0020. The grid
+oracle rises further, to +0.0056, which is the usual sign that most of the
+apparent gain is selection.
+
+**+0.0007 over five folds is also inside the noise of a five-fold estimate**,
+so the correct reading is that the contrast is *not clearly* better than the
+four-component configuration, not that it is better by a measurable amount.
+
+### Where this leaves the running total
+
+| configuration | fully nested | vs D |
+|---|---:|---:|
+| D | 0.8600 | — |
+| three components (E98) | 0.8610 | +0.0009 |
+| four, with TwoNN (E100) | 0.8628 | +0.0028 |
+| five, with the cross-epitope contrast | 0.8636 | +0.0035 |
+
+**+0.0035 is 18% of the +0.02 bar.** The entry does not change. Five
+mechanistically distinct components, each clearing both standing gates, now sum
+to under a fifth of what the pre-registered rule requires to act — which is
+E98's conclusion holding at twice the component count.
