@@ -4596,3 +4596,92 @@ absent from every private epitope.
 This also confirms E67's reading against the macro-AUC sensitivity arithmetic.
 GLC's loss is diffuse — spread over 80 non-motif rows, not concentrated in
 outliers — so there is no handful of cases to fix.
+
+---
+
+## E71 — Is there systematic sequence–function decoupling in GLC outside the public motif?
+
+Two minimal analyses as asked, plus the control that makes the second one
+readable. `scripts/66_glc_decoupling.py`, figure at
+`reports/glc_score_distribution.html`.
+
+**Why the second needs a control.** Removing the family removes 26 positives
+and 1 negative, so the base rate moves and what remains is by construction the
+harder half. An AUC drop is expected with no decoupling at all.
+
+### 1. D's score distribution on GLCTLVAML
+
+| | n | D rank median | IQR | in family |
+|---|---:|---:|---|---:|
+| validated | 110 | 0.606 | [0.383, 0.830] | 26 |
+| not validated | 56 | 0.331 | [0.174, 0.476] | **1** |
+
+24.5% of positives sit inside the negatives' interquartile range. The figure
+shows why the whole-epitope AUC is 0.757: the validated distribution has a
+sharp right peak at 0.8–0.95 that **is** the public-motif family, and removing
+it leaves two heavily overlapping distributions.
+
+### 2. AUC with the family removed, against three references
+
+| epitope | removed | AUC all | **AUC without family** | 95% CI | nn3 alone on remainder |
+|---|---:|---:|---:|---|---:|
+| GILGFVFTL | 158 | 0.886 | **0.851** | [0.809, 0.890] | 0.812 |
+| **GLCTLVAML** | 27 | 0.757 | **0.695** | **[0.603, 0.777]** | 0.614 |
+| NLVPMVATV | 0 | 0.873 | 0.873 | [0.825, 0.914] | 0.845 |
+| TTDPSFLGRY | 0 | 0.849 | 0.849 | [0.807, 0.887] | 0.860 |
+| YLQPRTFLL | 0 | 0.935 | 0.935 | [0.908, 0.960] | 0.927 |
+
+### The answer: **no, there is no large-scale decoupling**
+
+GLC's remainder scores **0.695 with a 95% CI of [0.603, 0.777], which excludes
+0.5**, and `nn3_dist` alone still reaches 0.614 there. The sequence
+neighbourhood has not stopped predicting function outside the public motif —
+it predicts it **weakly**. The control says part of the drop is simply the cost
+of removing easy cases: GILGFVFTL loses 0.035 to the same operation and lands
+at 0.851, while GLC loses 0.062 and lands at 0.695.
+
+**And the weakening is a gradient, not a population.** Inside the remainder,
+by `nn3` tercile:
+
+| tercile | n | validated | AUC |
+|---|---:|---:|---:|
+| near | 46 | 0.717 | **0.774** |
+| mid | 47 | 0.617 | 0.665 |
+| far | 46 | 0.478 | **0.606** |
+
+Validation rate and D's accuracy decline together and continuously, and even
+the far tercile stays above chance. There is no sub-population where the
+relationship breaks; there is a smooth loss of signal with distance.
+
+### One specific, suggestive finding — and it is about calibration, not biology
+
+GLC is the only epitope where restricting to **within-TRBV pairs improves** D
+on the remainder:
+
+| epitope | overall | within TRBV | delta | 95% CI | pairs kept |
+|---|---:|---:|---:|---|---:|
+| **GLCTLVAML** | 0.695 | **0.793** | **+0.098** | **[+0.005, +0.198]** | 11.8% |
+| NLVPMVATV | 0.873 | 0.895 | +0.023 | [−0.046, +0.080] | 3.4% |
+| TTDPSFLGRY | 0.849 | 0.850 | +0.001 | [−0.052, +0.052] | 9.0% |
+| YLQPRTFLL | 0.935 | 0.915 | −0.020 | [−0.057, +0.012] | 6.3% |
+| GILGFVFTL | 0.851 | 0.700 | **−0.152** | [−0.211, −0.093] | 34.4% |
+
+If this holds, it says D **ranks correctly inside each TRBV group on GLC's
+remainder and misorders the groups against each other** — a between-group
+calibration failure rather than a failure on any TCR population.
+
+**It is reported as suggestive, not established.** The CI's lower bound is
++0.005, only 11.8% of pairs survive the conditioning, and five epitopes were
+tested without a multiplicity correction. GILGFVFTL moves the opposite way at
+−0.152, which is itself informative: on an epitope whose response is
+TRBV19-dominated, between-group ordering is where most of D's information
+lives.
+
+### Settled
+
+Outside its public motif GLC is **harder, not decoupled**. The remaining
+question that this analysis can pose but not answer is whether the between-TRBV
+ordering is systematically wrong there — and even if it is, E69 already showed
+the route is closed for the competition: V-gene identity is inside D through
+the V-domain term (E42), and any fix would need a label-free way to order V
+genes that works on three private cohorts with no families at all.
