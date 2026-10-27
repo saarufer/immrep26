@@ -4805,3 +4805,78 @@ which VDJdb carries here.
 resolution, so 8.7% rests on thin data. The contrast with NLVPMVATV — 12
 donors at 89% resolution and 0.1% — is large enough that noise is an unlikely
 explanation, but the number itself should not be quoted precisely.
+
+---
+
+## E73 — Should GLC be excluded from validation because the private side has no oligoclonality?
+
+The proposal, and it is the *opposite* of what E20 forbade: E20 said do not tune
+*for* GLC; this asks whether to drop GLC *from the validation set*, on the
+grounds that its pathology (E72: within-donor oligoclonality inflating density)
+does not exist on the private split.
+
+**The premise holds, and extends further than proposed.** Close-neighbour
+fraction, which is label-free and does not need donor information (LLW and LTD
+have 0% donor coverage, E56):
+
+| epitope | split | close-neighbour fraction |
+|---|---|---:|
+| **GLCTLVAML** | public | **55.2%** |
+| **GILGFVFTL** | public | **47.6%** |
+| YLQPRTFLL | public | 18.4% |
+| NLVPMVATV | public | 18.3% |
+| LTDEMIAQY | private | 14.6% |
+| TTDPSFLGRY | public | 4.7% |
+| LLWNGPMAV | private | 4.4% |
+| CINGVCWTV | private | 2.5% |
+
+The private range is 2.5–14.6%, matched by YLQ, NLV and TTD. **Both GLC and GIL
+sit outside it** — so the proposal, taken seriously, excludes two epitopes.
+
+### The direct test, and it refutes the proposal
+
+E47's published tcrdist3 bands give the answer the proposal is trying to
+approximate: the private macro is **0.767**. So ask which public subset
+estimates it best.
+
+| subset used | tcrdist3 estimate | error |
+|---|---:|---:|
+| all five public | 0.825 | +0.058 |
+| the "private-like" three (YLQ, NLV, TTD) | 0.854 | **+0.088** |
+| **the two excluded (GLC, GIL)** | 0.780 | **+0.014** |
+
+**Excluding GLC makes the private estimate worse, not better.** tcrdist3's
+measured per-epitope values explain why: GIL 0.871, **GLC 0.690**, NLV 0.809,
+TTD 0.826, YLQ 0.928, against published private bands of 0.815 / 0.815 /
+**0.67**. **GLC is the only public epitope in the weak band, and therefore the
+only public proxy for LTDEMIAQY.** Dropping it removes the sole representative
+of one third of the private set.
+
+### And it would not have changed anything anyway
+
+| configuration | all five | private-like three | rank |
+|---|---:|---:|---|
+| D | 0.8600 | 0.8857 | 1 → 1 |
+| F | 0.8557 | 0.8838 | 2 → 2 |
+| frozen | 0.8498 | 0.8795 | 3 → 3 |
+
+The ordering is identical. The optimal structure weight moves **0.20 → 0.15**
+under the restriction — *less* structure, not more, and both below the 0.30 in
+use, whose justification was never a public optimum but E20's dominance
+argument about sparse cohorts.
+
+### Settled, and the general lesson
+
+**Cohort geometry and difficulty are different axes, and they disagree on GLC.**
+
+| | by density geometry | by published difficulty |
+|---|---|---|
+| is GLC like the private epitopes? | **no** (55.2% against 2.5–14.6%) | **it is the closest** (0.690 against LTD's 0.67 band) |
+
+This is E21's result again — "sparsity does not determine performance;
+intrinsic separability does" — and E49's, where GLC broke the `trbv_simpson`
+ordering. Of the two axes, the published per-epitope AUROC is the more direct
+evidence, because it *is* the quantity being predicted, while density is a
+proxy for it.
+
+The idea was sound and worth testing; the test says keep GLC. Nothing changes.
