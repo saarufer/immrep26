@@ -6854,3 +6854,111 @@ from 2.2% on CINGVCWTV to 32.8% on GILGFVFTL. Any future work that treats the
 SCEPTR cosine as a homogeneous quantity across epitopes is assuming something
 false. It happens not to matter for the ranking, which was measured rather than
 assumed. The entry does not change.
+
+---
+
+## E97 — A per-epitope kernel bandwidth, chosen without labels
+
+D runs three kernel densities at bandwidths fixed for every cohort — SCEPTR
+`default` and `small` at σ=0.1, tcrdist at σ=20. E96 showed the cohorts are not
+alike enough for that to be obviously right. E16 already learned a bandwidth
+and failed, but it learned **one global** bandwidth **from labels**; this is a
+**per-epitope** bandwidth from a **label-free** cohort property, which is the
+only kind applicable to the private split.
+`scripts/87_per_epitope_bandwidth.py`.
+
+### The ceiling, and a sign that is backwards
+
+| | macro |
+|---|---:|
+| density3 at D's fixed bandwidths | 0.8430 |
+| density3 at the per-epitope oracle | **0.8487** |
+| headroom | **+0.0058** |
+
+| component | GIL | GLC | NLV | TTD | YLQ |
+|---|---:|---:|---:|---:|---:|
+| default | 0.15 | 0.1 | **0.03** | 0.05 | 0.15 |
+| small | 0.1 | 0.15 | 0.02 | 0.07 | 0.2 |
+| tcrdist | 30 | 30 | 20 | 14 | 45 |
+
+Spearman(median pairwise distance, oracle σ) = **−0.821**, exact p 0.133. **A
+looser cohort wants a narrower kernel** — the reverse of standard adaptive KDE,
+where the bandwidth scales *with* the data. The mechanism: in a sparse cohort
+the only real signal is the handful of genuinely close pairs and a wide kernel
+washes them out; in a dense cohort a narrow kernel discards the family.
+
+### Dynamic range is the whole story
+
+A rule can only reproduce an oracle it can span, and correlation is not enough:
+
+| quantity | min | max | ratio |
+|---|---:|---:|---:|
+| **oracle σ (target)** | 0.030 | 0.150 | **5.00×** |
+| median pairwise distance | 0.729 | 0.923 | 1.26× |
+| **median nn1 distance** | 0.096 | 0.497 | **5.17×** |
+| effective neighbours @ σ=0.1 | 0.264 | 7.437 | 28.2× |
+
+The three rules order by exactly that match, which is the useful part of this
+experiment:
+
+| rule | range | density3 nested | vs fixed | exponent chosen per fold |
+|---|---:|---:|---:|---|
+| fixed σ (D's own) | 1× | 0.8430 | — | — |
+| constant effective neighbours | 28.2× | 0.8318 | **−0.0112** | 2/2/3/3/2 |
+| inverse median pairwise | 1.26× | 0.8430 | +0.0000 | 0/1/1/1/1 |
+| **inverse median nn1** | 5.17× | **0.8460** | **+0.0030** | **0.5 in all five** |
+
+The over-ranged rule actively anti-correlates with the oracle (ρ −0.79 to −0.89
+depending on target); the under-ranged one cannot move σ enough to matter and
+converges on doing nothing. Only the matched one helps.
+
+The surviving form is `σ_e = σ_base[space] × (geometric-mean nn1 / nn1_e)^p`,
+with **p = 0 reproducing D exactly** so the rule is free to decline. It chose
+p = 0.5 in **all five folds**.
+
+### Inside the full D it is a quarter of that, and almost nothing on the private side
+
+| epitope | D | D with rule | diff |
+|---|---:|---:|---:|
+| GILGFVFTL | 0.8862 | 0.8860 | −0.0002 |
+| GLCTLVAML | 0.7568 | 0.7564 | −0.0004 |
+| NLVPMVATV | 0.8729 | 0.8750 | **+0.0021** |
+| TTDPSFLGRY | 0.8493 | 0.8515 | **+0.0022** |
+| YLQPRTFLL | 0.9350 | 0.9348 | −0.0002 |
+| **MACRO** | 0.8600 | **0.8607** | **+0.0007** |
+
+Nested LOEO over the two: 0.8607, **+0.0007** — exactly a quarter of density3's
++0.0030, as a four-term average requires.
+
+**And the private side barely moves.** The bandwidths the rule picks there:
+
+| epitope | split | median nn1 | default | small | tcrdist | D uses |
+|---|---|---:|---:|---:|---:|---|
+| CINGVCWTV | private | 0.404 | **0.1** | **0.1** | **20** | 0.1 / 0.1 / 20 |
+| LLWNGPMAV | private | 0.361 | **0.1** | **0.1** | **20** | 0.1 / 0.1 / 20 |
+| LTDEMIAQY | private | 0.553 | 0.07 | 0.07 | 14 | 0.1 / 0.1 / 20 |
+
+On **two of the three private epitopes the rule changes nothing at all**, and
+on the third it narrows by one grid step. The public gain is carried entirely
+by NLVPMVATV and TTDPSFLGRY, whose nn1 (0.481, 0.497) sits above CINGVCWTV's
+and LLWNGPMAV's. Realisable private gain is on the order of **+0.0002**.
+
+### A dimensional bug worth recording
+
+The first implementation used a bare coefficient as the bandwidth — fine for
+SCEPTR cosine, meaningless for tcrdist where distances run in the hundreds. It
+silently saturated at the grid floor (σ=4 for every cohort, i.e.
+nearest-neighbour-only) and reported **+0.0014** inside D, twice the true
+figure. Anchoring on each component's own fixed bandwidth and fitting a
+dimensionless exponent fixes it and halves the result. The lesson is the same
+as E64's unbounded knot: when a free parameter is snapped to a grid, check
+whether it has landed on the boundary before reading the score.
+
+### Verdict
+
+A third positive nested LOEO (after E83's +0.0015 and E96's +0.0005), the
+largest so far at **+0.0030** on density3 — and **+0.0007** inside D, of which
+roughly a third transfers. Against a +0.02 bar and E15's −0.0048 selection
+cost, the entry does not change. What is worth keeping is the dynamic-range
+criterion: three label-free rules, one helps, and which one is predicted
+entirely by whether its spread across cohorts matches the oracle's.
