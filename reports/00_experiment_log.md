@@ -5819,3 +5819,113 @@ hardest. Structural resemblance says what the private cohorts *look like*, not
 what they will score — which is the same conclusion E85 reached when the
 structure-matched margin model failed its leave-one-epitope-out test at MAE
 0.0261 against 0.0157. **This map must not be used to re-weight anything.**
+
+---
+
+## E87 — Should the public epitopes be weighted by resemblance to the private ones?
+
+E86 measured that CINGVCWTV and LLWNGPMAV are structural near-twins of
+TTDPSFLGRY (1.40, 1.47) while GILGFVFTL and GLCTLVAML are the two public
+cohorts least like the private split (mean distance 5.33, 5.18). The move that
+follows is textbook covariate-shift correction: when choosing a configuration,
+stop averaging the five public epitopes equally and upweight the ones the
+private split actually resembles. `scripts/78_proximity_weighted_selection.py`.
+
+E85 rejected a *different* use of the same distances — predicting the private
+AUC **level** — and that says nothing about this. Predicting a level and
+predicting *which configuration wins* are different questions, and only the
+second is what selection needs.
+
+The prior is against, and quantitatively so: E15 measured that cross-validated
+selection over this same 323-configuration bank costs **−0.0048** against fixing
+the configuration in advance, because with five folds the selection step has
+worse signal-to-noise than the thing being selected. Proximity weighting reduces
+the effective number of folds further, so it must beat equal weighting by enough
+to pay for that as well.
+
+### 1. Configuration transfer does not track structural distance
+
+For each pair of epitopes, the Spearman correlation between their
+323-vectors of configuration AUC — does the same configuration win on both?
+
+| pair | structural distance | config transfer ρ |
+|---|---:|---:|
+| NLVP–YLQP | **1.80** | **+0.014** |
+| NLVP–TTDP | 2.18 | +0.542 |
+| GILG–YLQP | 2.92 | +0.652 |
+| GILG–GLCT | 3.07 | +0.063 |
+| GILG–NLVP | 3.10 | +0.223 |
+| TTDP–YLQP | 3.44 | +0.191 |
+| GLCT–YLQP | 3.90 | +0.484 |
+| GLCT–NLVP | 3.96 | −0.068 |
+| GILG–TTDP | **4.92** | **+0.520** |
+| GLCT–TTDP | 5.59 | −0.247 |
+
+Spearman **−0.345, exact p 0.331** over the ten pairs (enumerated over all
+3,628,800 permutations, per E49). The sign is the one the hypothesis wants and
+the magnitude is nothing. The counterexamples are what matter: the structurally
+*closest* public pair, NLVP–YLQP at 1.80, has essentially **zero** configuration
+transfer (+0.014), while GILG–TTDP at 4.92 — nearly the most distant pair —
+transfers at +0.520.
+
+**And it is not that the wrong distance was picked.** Every label-free
+similarity available was tested against the same transfer correlations:
+
+| label-free similarity | ρ with config transfer | exact p |
+|---|---:|---:|
+| repertoire Chamfer (E86) | −0.479 | 0.165 |
+| \|log cohort size ratio\| | −0.406 | 0.248 |
+| \|nn3 IQR difference\| | −0.394 | 0.261 |
+| structural distance (E86) | −0.345 | 0.331 |
+| \|singleton % difference\| | −0.139 | 0.706 |
+| \|log largest-family ratio\| | +0.442 | 0.204 |
+| HLA mismatch | +0.071 | 0.915 |
+
+Nothing reaches significance across seven tests at n=10. Five of the seven carry
+the hypothesised sign, which is weak directional evidence that the idea is not
+absurd — but the strongest candidate is the repertoire Chamfer distance, which
+E86 showed is the *flattest* axis of the three, so even that is not a mechanism.
+
+**The obstacle is structural, not a matter of finding a better metric.** The
+quantity that would predict configuration transfer is configuration transfer
+itself, and computing it needs labels. The private split has none.
+
+### 2. The payoff: weighting makes nested LOEO monotonically worse
+
+Nested leave-one-epitope-out with the *inner* selection objective weighted by
+`exp(-d/τ)` toward the held-out epitope — exactly the procedure that would be
+run against the private split, simulated where the answer is known. `τ=∞` is
+E15's equal-weight nested LOEO; `τ=0` selects on the single nearest epitope.
+
+| τ | nested LOEO | vs equal weight | distinct configs chosen |
+|---|---:|---:|---:|
+| **∞ (equal)** | **0.8460** | — | 3 |
+| 8 | 0.8463 | +0.0003 | 2 |
+| 4 | 0.8444 | −0.0016 | 3 |
+| 2 | 0.8444 | −0.0016 | 3 |
+| 1 | 0.8412 | −0.0048 | 4 |
+| 0.5 | 0.8417 | −0.0043 | 3 |
+| 0.25 | 0.8386 | **−0.0074** | 4 |
+| 0 (nearest only) | 0.8410 | −0.0050 | 3 |
+
+Oracle, for scale: 0.8508.
+
+The only non-negative point is τ=8, whose weights are 0.19–0.22 — equal
+weighting with rounding error, and +0.0003 is noise. Everything with real
+weighting loses, and **τ=1 costs −0.0048, which is E15's selection cost over
+again**: weighting pays the selection penalty a second time, which is what
+reducing the effective fold count buys. Per fold, nearest-neighbour-only loses
+on four of the five.
+
+### What this closes, and what it does not
+
+**Closed:** using cohort resemblance to reweight the selection objective. It was
+measured across eight temperatures and seven similarity metrics and is negative
+at every setting that actually changes the weights.
+
+**Not closed, and still the right use of E86:** cohort resemblance as a *risk
+description*. LTDEMIAQY being first on every independent axis — published band,
+headroom-fraction interval, cohort size, analogue distance — remains worth
+knowing. The distances say what the private cohorts look like. They do not say
+which configuration will win there, and now that has been tested rather than
+assumed in either direction.
