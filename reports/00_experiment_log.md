@@ -4880,3 +4880,81 @@ evidence, because it *is* the quantity being predicted, while density is a
 proxy for it.
 
 The idea was sound and worth testing; the test says keep GLC. Nothing changes.
+
+---
+
+## E74 — The margin over tcrdist3 is not uniform, and the better model is validated
+
+E47 anchored the private estimate on the paper's published tcrdist3 bands and
+carried **our margin over tcrdist3 uniformly** across the three private
+epitopes. E47 named that as the single remaining assumption. E73 made it
+testable by establishing that the published per-epitope AUROC is the right axis
+for comparing epitopes. This tests the assumption.
+
+**It is wrong, and systematically.** Configuration D's margin against
+tcrdist3's measured per-epitope AUC:
+
+| epitope | tcrdist3 | D's margin | remaining headroom | fraction captured |
+|---|---:|---:|---:|---:|
+| GLCTLVAML | 0.690 | **+0.067** | 0.310 | 0.215 |
+| NLVPMVATV | 0.809 | +0.064 | 0.191 | 0.335 |
+| TTDPSFLGRY | 0.826 | +0.023 | 0.174 | 0.133 |
+| GILGFVFTL | 0.871 | +0.015 | 0.129 | 0.120 |
+| YLQPRTFLL | 0.928 | **+0.007** | 0.072 | 0.099 |
+
+Spearman between tcrdist3's level and our margin is **−1.000, exact p 0.017**
+(exact over all 120 permutations, per E49's lesson).
+
+**Part of that is mechanical and must be removed.** AUC is bounded at 1, so a
+baseline of 0.928 leaves only 0.072 to win. On the headroom-fraction scale the
+relationship weakens to Spearman −0.900, **exact p 0.083** — so the ceiling
+explains much of the slope but not all of it.
+
+### The leave-one-epitope-out test, which decides between the models
+
+Each model is fitted on four public epitopes and asked to predict the fifth's
+margin — the discipline E40 demanded of E30's projection, which failed it at
+MAE 0.083.
+
+| margin model | held-out MAE |
+|---|---:|
+| uniform (what E47 assumed) | 0.0301 |
+| linear in tcrdist3's level | 0.0161 |
+| **constant fraction of remaining headroom** | **0.0156** |
+
+**Both difficulty-aware models roughly halve the held-out error**, and the
+headroom model — which is also the one with a mechanical justification — wins.
+At MAE 0.0156 it is five times more accurate than E30's withdrawn projection.
+
+### Revised private estimates
+
+| configuration | public | held-out MAE | uniform (logged) | **headroom model** | band interval |
+|---|---:|---:|---:|---:|---|
+| frozen | 0.8498 | 0.0185 | 0.792 | **0.795** | [0.783, 0.807] |
+| **D** | 0.8600 | 0.0156 | 0.802 | **0.809** | [0.798, 0.820] |
+| F | 0.8557 | 0.0130 | 0.798 | **0.804** | [0.793, 0.815] |
+
+D per-epitope under the headroom model: **CIN 0.848, LLW 0.848, LTD 0.730.**
+
+The intervals come from the published bands' own width (0.80–0.83 and
+0.66–0.68), not from sampling error, so they describe what the paper states
+rather than what we measured.
+
+### What changes and what does not
+
+The estimates rise by +0.003 to +0.007 and the **ordering is unchanged** —
+D > F > frozen under every margin model. So nothing about the submission
+follows from this.
+
+What does follow is that **E47's last stated assumption has now been tested
+rather than assumed**, and replaced with a model that is validated on held-out
+epitopes. The per-epitope breakdown is also no longer an assertion: LTDEMIAQY
+is projected at 0.730 against CIN and LLW at 0.848, which is where the weak
+band and the headroom argument both put it.
+
+**The honest limits.** Five epitopes, one held-out fold each. The headroom
+fraction itself ranges 0.099–0.335 across them, a 3.4× spread, so "constant
+fraction" is true only on average and MAE 0.0156 is the price of that. And
+LTDEMIAQY's published band (0.66–0.68) sits just below the public range's
+minimum (GLC at 0.690), so its projection is a short extrapolation rather than
+an interpolation.
