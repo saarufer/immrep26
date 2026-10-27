@@ -6402,3 +6402,126 @@ but that is an argument against the artifact, not a reading of the methods.
 
 **The objections were right and the conclusions survive them.** The entry does
 not change.
+
+---
+
+## E93 — Reading the methods sections, and recovering what they do not say
+
+E92 named the one thing no VDJdb field records: whether a study pre-selected
+its TCRs by motif, V gene or clone size. Two halves here — reading the papers,
+and recovering the signature from the deposited data for the papers that cannot
+be read. `scripts/84_selection_signatures.py` for the second half.
+
+### A. What the papers say
+
+Retrieved through Europe PMC. **PMID:28636592, PMID:28636589 and PMID:27645996
+are paywalled** (the PMC author manuscripts return empty), and
+**doi:10.1101/2020.05.04.20085779 blocks retrieval** — it is a May 2020 medRxiv
+preprint (Chour et al., ISB) that was **never peer-reviewed**, and its
+NLVPMVATV TCRs are control specificities inside a SARS-CoV-2 study. That is the
+worst contributor in the whole dataset and its text is the one we cannot read.
+
+**PMID:35383307** — the study that supplies 127 of LTDEMIAQY's 130 rows, plus
+TTD 246 and YLQ 188. DNA-barcoded MHC-dextramers (dCODE Klickmer), 10x 5′,
+sorted on live CD3⁺CD8⁺dextramer⁺.
+
+> **No motif-guided enrichment, no V-gene preselection, no clone-size
+> threshold.** Clones are "groups of cells from the same donor with identical
+> nucleotide sequences of both CDR3α and CDR3β".
+
+Its specificity call is the mechanism of interest instead:
+
+- a cell is assigned an epitope if **>30% of its dextramer UMIs** carry that barcode;
+- **if several dextramers pass, the cell is called specific to all of them**;
+- no call if the top barcode is **≤3 UMIs**;
+- then a **clone-level majority vote** overwrites individual cells — "to correct
+  erroneous or missing dextramer assignments… we assign each T cell a specificity
+  of the majority of cells from this clone", which propagates a call along a clone.
+
+And the paper reports its own ambiguity rate: among the 43 clones with ≥20
+cells, **72% (31/43) matched a single epitope across all cells**. The authors
+state a ~28% multi-assignment rate in their most-sampled clones.
+
+| study | selection | validation in the original study | excess |
+|---|---|---|---:|
+| PMID:36711524 | nanovial affinity + **functional** screen (IFN-γ) | functional | NLV **+0.484** |
+| PMID:34793243 | dextramer/10x | **cloned into Jurkat J76, activation tested** | GIL +0.213, YLQ +0.324 |
+| PMID:29483513 | direct tetramer, single-cell sort | — | GIL +0.274 |
+| PMID:33951417 | **TAME** + single-cell sort | tetramer validation on T cell lines | YLQ +0.156 |
+| PMID:35383307 | barcoded dextramer, UMI threshold | Jurkat lines for selected TCRs only | TTD +0.071, YLQ −0.071 |
+| PMID:35750048 | **TAME** + indexed single-cell sort | — | TTD −0.117, YLQ −0.180 |
+| PMID:29997621 | TAME or direct tetramer, single-cell sort | — | GIL −0.224 |
+
+**TAME is not the discriminator** — PMID:33951417 uses it and sits at +0.156.
+The apparent pattern is **downstream functional validation**: the two studies
+that re-expressed their TCRs and tested activation are the two best. That is
+also exactly the `method.verification` variable E92 found confounded with study
+identity, so it is a hypothesis with n=2, not a result.
+
+### B. The signature, for the papers that cannot be read
+
+A selection rule leaves a trace. If a study enriched for a motif its TCRs are
+unusually tight relative to other studies on the same epitope; if it preselected
+a V gene its V usage is unusually concentrated. Each statistic is standardised
+against **2,000 size-matched random subsamples of the same epitope's cohort**,
+so cohort-level convergence cannot masquerade as a study rule.
+
+The raw correlations look decisive:
+
+| signature | ρ with excess | p |
+|---|---:|---:|
+| `z_nn3` (within-study tightness) | **−0.656** | **0.0004** |
+| `z_trbv_H` (TRBV entropy) | −0.541 | 0.0061 |
+
+Tighter, more V-biased studies validate better. **This is almost entirely an
+artifact of aggregation**, and the control says so: convergent TCRs validate
+better is the project's central *per-TCR* finding, so a study holding more
+convergent TCRs validates better for reasons that have nothing to do with the
+study. Subtracting what each TCR's own typicality already predicts — isotonic,
+fitted within the epitope with that study held out:
+
+| signature | ρ with excess | p | ρ with **residual** | p |
+|---|---:|---:|---:|---:|
+| `z_nn3` | −0.656 | 0.0004 | **−0.295** | 0.151 |
+| `z_trbv_H` | −0.541 | 0.0061 | **−0.337** | 0.097 |
+| `z_trav_H` | −0.389 | 0.057 | +0.085 | 0.686 |
+| `z_topfam` | +0.322 | 0.117 | +0.115 | 0.584 |
+
+**Nothing survives at n=25.** The two sequence-level signatures keep their sign
+at ρ ≈ −0.3, p 0.10–0.15, so a residual study effect is not excluded, but it is
+not established either. I would have reported −0.656 as a finding without this
+control.
+
+**What the signatures do show, descriptively**, is that the worst study has the
+*opposite* profile to an enrichment artifact. `doi:10.1101/2020.05.04…` on
+NLVPMVATV: `z_nn3` **+5.79** (unusually scattered), `z_topfam` **−2.99**
+(unusually unclustered), 168 TCRs, excess −0.194. Its receptors look like
+random draws from the cohort, which is what non-specific multimer capture
+produces — not like a motif-enriched set. PMID:35750048 on YLQPRTFLL is the
+same shape at +4.30. At the other end, PMID:36711524's functional screen gives
+`z_nn3` −8.80, `z_trbv_H` −6.65, `z_topfam` +3.80.
+
+### C. Did one study build the large public families?
+
+| epitope | family size | refs | largest share | that study | validated |
+|---|---:|---:|---:|---|---:|
+| GILGFVFTL | 71 | 8 | 35% | PMID:28636592 | 0.92 |
+| GILGFVFTL | 37 | 9 | 27% | PMID:28636592 | 1.00 |
+| GILGFVFTL | 37 | 11 | 33% | PMID:28636592 | 0.91 |
+| GLCTLVAML | 32 | 6 | 47% | PMID:28636592 | 0.96 |
+| NLVPMVATV | 17 | 8 | 24% | PMID:28636592 | 1.00 |
+| YLQPRTFLL | 12 | 6 | 58% | PMID:33951417 | 1.00 |
+
+**No.** Every large family draws on 6–11 references with no study above 58%,
+and they validate at 0.88–1.00. With E57's 50–110 distinct donors per GILGFVFTL
+family, motif-guided enrichment by a single study is excluded as their origin
+from two independent directions.
+
+### Where this leaves the provenance programme
+
+The question the collaborator raised is now answered as far as it can be. The
+methods are read for every retrievable study; the one that matters most is
+unreadable and is a never-peer-reviewed preprint whose TCRs are controls. No
+study shows a selection signature that explains its false-positive rate once
+the per-TCR density effect is removed, and the large public families are not
+one study's selection rule. The entry does not change.
