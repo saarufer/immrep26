@@ -272,15 +272,25 @@ def main() -> int:
                  "NLVPMVATV": 0.815, "LLWNGPMAV": 0.815, "TTDPSFLGRY": 0.815,
                  "GLCTLVAML": 0.67, "LTDEMIAQY": 0.67}
     band_rows = []
+    from itertools import permutations as _perms
     for column in ("enrich_median", "frac_within_012", "nn3_median"):
         source = shape if column in shape else crossing
         x = [float(source.loc[e, column]) for e in published]
         y = [published[e] for e in published]
         rho = spearmanr(x, y)
+        # n=8 and y holds only three distinct band values, so scipy's
+        # asymptotic p is not trustworthy here for the same reason it was not
+        # at n=5 in E49. 8! = 40,320 permutations is cheap, so take the exact
+        # one. (Measured: 0.457 asymptotic against 0.510 exact -- immaterial
+        # to a null result, but there is no reason to report the wrong one.)
+        draws = np.array([spearmanr(x, list(o)).statistic for o in _perms(y)])
+        exact = float((np.abs(draws) >= abs(rho.statistic) - 1e-12).mean())
         band_rows.append({"label_free_index": column,
                           "rho_vs_published_auroc": rho.statistic,
-                          "p": rho.pvalue, "n": len(x)})
-        print(f"  {column:<18} rho {rho.statistic:+.3f}  p {rho.pvalue:.3f}")
+                          "p_exact": exact, "p_asymptotic": rho.pvalue,
+                          "n": len(x)})
+        print(f"  {column:<18} rho {rho.statistic:+.3f}  exact p {exact:.3f} "
+              f"(asymptotic {rho.pvalue:.3f})")
     bands = pd.DataFrame(band_rows)
     print("\n  Per epitope, so the outlier is visible:")
     for epitope in sorted(published, key=lambda e: -float(shape.loc[e, 'enrich_median'])):

@@ -72,11 +72,11 @@ Singleton rate against cohort size: rho **-0.309** (n=8).
 
 ## Part 2b2 - label-free enrichment against the published bands
 
-| label_free_index   |   rho_vs_published_auroc |      p |   n |
-|:-------------------|-------------------------:|-------:|----:|
-| enrich_median      |                   0.3086 | 0.4571 |   8 |
-| frac_within_012    |                   0.2315 | 0.5813 |   8 |
-| nn3_median         |                  -0.3086 | 0.4571 |   8 |
+| label_free_index   |   rho_vs_published_auroc |   p_exact |   p_asymptotic |   n |
+|:-------------------|-------------------------:|----------:|---------------:|----:|
+| enrich_median      |                   0.3086 |    0.5095 |         0.4571 |   8 |
+| frac_within_012    |                   0.2315 |    0.6333 |         0.5813 |   8 |
+| nn3_median         |                  -0.3086 |    0.5095 |         0.4571 |   8 |
 
 ## Part 2c - binary indicator against the continuous variable
 

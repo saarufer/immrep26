@@ -4048,6 +4048,19 @@ decomposition that would have been interesting cannot be made because single
 need replicate screens or far deeper sampling per cell, not a better model.
 Nothing here touches the frozen predictor.
 
+
+**SUPERSEDED IN PART by the 2026-10-27 code review.** The split-half ceiling
+below (0.275) lacked a Spearman–Brown correction and the cross-receptor
+correlation was compared against it raw, although that correlation is
+attenuated by both receptors' noise. Corrected: ceiling **0.419**, and
+disattenuating per pair while dropping EBV (self-reliability 0.171) gives a
+shared component of **46%**, so about **54% of a substitution's effect is
+receptor-specific**. **"Nothing can be concluded about receptor-specificity"
+is withdrawn** — the honest statement is roughly half shared, half specific,
+with wide uncertainty. Everything else in this entry stands: fixed matrices
+explain nothing, and the position-conditioned models do not survive the
+chemistry-shuffled control.
+
 ---
 
 ## E63 — Recognition distance against sequence distance (PRP)
@@ -4156,6 +4169,21 @@ was not inflated by leakage. Getting further would need flow on peptides that
 were *not* chosen for being top-ranked, which no public dataset here provides.
 Nothing in E62–E64 touches the frozen predictor.
 
+
+**SUPERSEDED IN PART by the 2026-10-27 code review.** The two-piece knot model
+was never fitted: its `position` parameter started at 2.0, outside the observed
+range of log10(r2_r1_ratio) ([−0.44, 1.13]), so `clip()` was zero everywhere,
+`slope2` had no gradient and stayed at its initial −10 in all five folds, and
+the model was a straight line by construction. **"Its second slope fits to
+about zero, so no knot is supported" is withdrawn** — the slope never fitted.
+
+With the knot bounded inside the data, TCR59 stays linear (+0.683 against the
+knot's +0.658) but **TCR63 has a real threshold**: knot **+0.581** under gene
+holdout and **+0.632** across the human/virus split, against linear's +0.309,
+with the knot at log10(r2_r1) ≈ 0.33 in every fold. TCR63's best held-out ρ is
+therefore **0.632**, not the 0.427 tabled below. The leakage finding — that
+E61's plain KFold was not inflating anything — is unaffected.
+
 ---
 
 ## Code review of E62–E64 (2026-10-27)
@@ -4237,3 +4265,70 @@ worth keeping: when a conclusion rests on comparing an observed correlation
 with a ceiling, the ceiling needs its own validation — split the right thing,
 correct for the split, and drop any unit whose self-agreement is too low to
 divide by.
+
+---
+
+## Full code review of E49–E64 (2026-10-27)
+
+Prompted by the three bugs found in E62–E64: if that class were widespread,
+many conclusions would be in doubt. Every experiment back to E49 was scanned
+by bug class rather than by reading each script end to end, since the three
+bugs shared a shape.
+
+| bug class | scripts with the pattern | real bugs | conclusions changed |
+|---|---:|---:|---:|
+| unbounded optimizer parameter | 3 | **1** (E64) | 1 |
+| noise ceiling not validated | 5 | **2** (E62, E63) | 1 |
+| `IsotonicRegression` default direction | 2 | 0 remaining | 0 |
+| permutation null on a different unit than the statistic | 10 | 0 new | 0 |
+| asymptotic p at small n | 5 | 1 immaterial (E53) | 0 |
+| resamples silently dropped, biasing a null | 1 checked | 0 | 0 |
+| independence inflation of the analysis unit | 2 checked | 0 new | 0 |
+| paired vs unpaired resampling | 1 checked | 0 | 0 |
+
+**What was checked and cleared, with the reason:**
+
+- **The two other `minimize` hits are not this bug.** `scripts/32` and
+  `scripts/34` call OpenMM's `simulation.minimizeEnergy(maxIterations=...)` —
+  a physics minimiser with an iteration cap, not a statistical curve fit with
+  free parameters that can stick at their initial values.
+- **E50's "ceiling" is an oracle bound, not a noise model.** It is the best
+  score achievable *given the labels*, computed exactly, so there is nothing to
+  disattenuate. The same is true of E49's and E51's oracle numbers.
+- **E54's permutation is same-unit.** Observed and null both go through
+  `purity_counts(·, codes, n_families)` with identical codes, which is exactly
+  the E41→E46 failure avoided.
+- **E45's stratified shuffle** permutes assignment indices within each stratum,
+  the correct construction.
+- **E58's control is the same code path.** Pseudo-motifs go through
+  `motif_from` → `match_rate(pool)` → `match_rate(cohort)` identically to the
+  real motifs. And the `isfinite` filter that could have biased the control
+  distribution downward by dropping zero-background draws **never fires**:
+  measured 0/200 dropped at every motif size.
+- **E49's cluster bootstrap is paired.** `raw` and `cond` are computed on the
+  same resample before differencing, so the CI is on the drop rather than on
+  two independently resampled quantities.
+- **E59's weighting is standard Mantel–Haenszel**, `n_a·n_b/(n_a+n_b)`.
+- **E53's n=8 correlation** used scipy's asymptotic p with only three distinct
+  values in y. Recomputed exactly over all 40,320 permutations: **0.510 against
+  the reported 0.457**. Both null, so the "enrichment does not predict
+  difficulty" conclusion is unaffected; the script now reports the exact p.
+- **E63's five identical-CDR3β pairs are not five independent observations** —
+  {135.7, 19.2C1, 28.1} is a triple contributing three of them. Collapsing it
+  to one value leaves the median at **0.259**, unchanged to three decimals.
+- **E39's Mann–Whitney** runs at n in the hundreds, where the asymptotic p is
+  appropriate.
+
+**Why the three bugs clustered where they did.** They all live in machinery
+that only appears in E62–E64: reliability ceilings and free-form curve fitting,
+both introduced for the external datasets. The IMMREP26 experiments (E49–E59)
+are built from direct AUC measurement, oracle upper bounds and same-unit
+permutations — a smaller and more robust toolkit, and one whose central output
+has been validated against the leaderboard **four times** (0.8396→0.839,
+0.8498→0.849, 0.8601→0.860, 0.8557→0.855). The competition conclusions are the
+least exposed to this bug class, not the most.
+
+**The three bugs were real but not the tip of an iceberg.** Their shared
+lesson stands as a standing rule: *a noise model is a result and needs its own
+validation.* Split the right thing, correct the split for its own halving, and
+drop any unit whose self-agreement is too low to be a denominator.
