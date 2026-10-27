@@ -63,7 +63,18 @@ REPEATS = 20
 SEED = 0
 
 # E27 / E48: the multipliers the private epitopes can actually reach.
+# These are VDJdb-only -- this repository holds no IEDB download. A
+# collaborator reports that adding IEDB targeted at epitopes whose VDJdb
+# multiplier is below 2 raises LTDEMIAQY from 1.04 to 1.72 at no public cost.
+# That claim cannot be verified here, so it is carried as a SCENARIO and the
+# whole realisable column is reported under both, because it is the single
+# input the pool rejection rests on.
 PRIVATE_MULTIPLIERS = {"LTDEMIAQY": 1.038, "CINGVCWTV": 1.045, "LLWNGPMAV": 1.834}
+MULTIPLIER_SCENARIOS = {
+    "vdjdb_only (measured here)": PRIVATE_MULTIPLIERS,
+    "with targeted IEDB (collaborator, unverified)": {
+        "LTDEMIAQY": 1.72, "CINGVCWTV": 1.045, "LLWNGPMAV": 1.834},
+}
 # E47: tcrdist3's published private per-epitope AUROC.
 PRIVATE_BANDS = {"CINGVCWTV": (0.80, 0.83), "LLWNGPMAV": (0.80, 0.83),
                  "LTDEMIAQY": (0.66, 0.68)}
@@ -207,6 +218,51 @@ def main() -> int:
             realisable[name].append(float(np.mean(draws[name])))
         print(f"  thinned to {private_epitope} (x{multiplier:.3f}) done")
 
+    print("\n=== sensitivity: what if LTDEMIAQY can reach 1.72x? ===")
+    print("  Only the LTD draw changes; CIN and LLW keep their measured")
+    print("  multipliers. Same 20 repeats, same candidates.\n")
+    scenario = {name: [] for name in candidates}
+    for private_epitope, multiplier in (
+            MULTIPLIER_SCENARIOS["with targeted IEDB (collaborator, unverified)"]
+            .items()):
+        draws = {name: [] for name in candidates}
+        for _ in range(REPEATS):
+            thinned = {}
+            for epitope, (cohort, _) in query.items():
+                available = extra_available[epitope]
+                take = int(round((multiplier - 1.0) * len(cohort)))
+                thinned[epitope] = (
+                    available.sample(min(take, len(available)),
+                                     random_state=int(rng.integers(1 << 30)))
+                    if take > 0 and len(available) else available.iloc[:0])
+            m30_thin = rank(pooled_topk(thinned))
+            variants = {
+                "frozen entry (density3 + structure)": frozen,
+                "HeidAI rebuild (m30 pooled + m50)": (m30_thin + vdomain) / 2,
+                "A  frozen, density3 -> pooled m30":
+                    (1 - STRUCTURE_WEIGHT) * m30_thin
+                    + STRUCTURE_WEIGHT * structure,
+                "B  pooled m30 + m50 + structure":
+                    (m30_thin + vdomain + structure) / 3,
+                "C  HeidAI rebuild + structure 0.3":
+                    (1 - STRUCTURE_WEIGHT) * ((m30_thin + vdomain) / 2)
+                    + STRUCTURE_WEIGHT * structure,
+                "D  density3 + pooled m30 + m50 + structure":
+                    (density3 + m30_thin + vdomain + structure) / 4,
+                "E  (density3 + pooled m30 + m50)/3 + str 0.3":
+                    (1 - STRUCTURE_WEIGHT)
+                    * ((density3 + m30_thin + vdomain) / 3)
+                    + STRUCTURE_WEIGHT * structure,
+                "F  D with no pool at all": (density3 + m30_nopool + vdomain
+                                             + structure) / 4,
+            }
+            for name, series in variants.items():
+                draws[name].append(score(series))
+        for name in candidates:
+            scenario[name].append(float(np.mean(draws[name])))
+        print(f"  thinned to {private_epitope} "
+              f"(x{multiplier:.3f}) done")
+
     rows = []
     for name in candidates:
         mean_realisable = float(np.mean(realisable[name]))
@@ -220,6 +276,10 @@ def main() -> int:
             "vs_frozen_realisable": mean_realisable
                                     - np.mean(realisable[
                                         "frozen entry (density3 + structure)"]),
+            "realisable_iedb": float(np.mean(scenario[name])),
+            "vs_frozen_iedb": float(np.mean(scenario[name]))
+                              - float(np.mean(scenario[
+                                  "frozen entry (density3 + structure)"])),
         })
     table = pd.DataFrame(rows).sort_values("public", ascending=False)
     print("\n=== the bet, laid out ===")

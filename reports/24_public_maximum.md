@@ -1,15 +1,15 @@
 # A public-maximising second entry, with the bet priced
 
-| configuration                                |   public |   realisable |   pool_dependent |   vs_frozen_public |   vs_frozen_realisable |
-|:---------------------------------------------|---------:|-------------:|-----------------:|-------------------:|-----------------------:|
-| D  density3 + pooled m30 + m50 + structure   |   0.8601 |       0.8561 |           0.0039 |             0.0102 |                 0.0063 |
-| C  HeidAI rebuild + structure 0.3            |   0.8588 |       0.8534 |           0.0055 |             0.009  |                 0.0035 |
-| A  frozen, density3 -> pooled m30            |   0.8583 |       0.8499 |           0.0084 |             0.0085 |                 0.0001 |
-| E  (density3 + pooled m30 + m50)/3 + str 0.3 |   0.8582 |       0.8548 |           0.0034 |             0.0083 |                 0.005  |
-| B  pooled m30 + m50 + structure              |   0.8572 |       0.8521 |           0.0052 |             0.0074 |                 0.0023 |
-| F  D with no pool at all                     |   0.8557 |     nan      |         nan      |             0.0059 |               nan      |
-| HeidAI rebuild (m30 pooled + m50)            |   0.8549 |       0.8476 |           0.0073 |             0.0051 |                -0.0022 |
-| frozen entry (density3 + structure)          |   0.8498 |       0.8498 |          -0      |             0      |                 0      |
+| configuration                                |   public |   realisable |   pool_dependent |   vs_frozen_public |   vs_frozen_realisable |   realisable_iedb |   vs_frozen_iedb |
+|:---------------------------------------------|---------:|-------------:|-----------------:|-------------------:|-----------------------:|------------------:|-----------------:|
+| D  density3 + pooled m30 + m50 + structure   |   0.8601 |       0.8561 |           0.0039 |             0.0102 |                 0.0063 |            0.8565 |           0.0067 |
+| C  HeidAI rebuild + structure 0.3            |   0.8588 |       0.8534 |           0.0055 |             0.009  |                 0.0035 |            0.854  |           0.0042 |
+| A  frozen, density3 -> pooled m30            |   0.8583 |       0.8499 |           0.0084 |             0.0085 |                 0.0001 |            0.8509 |           0.0011 |
+| E  (density3 + pooled m30 + m50)/3 + str 0.3 |   0.8582 |       0.8548 |           0.0034 |             0.0083 |                 0.005  |            0.8551 |           0.0052 |
+| B  pooled m30 + m50 + structure              |   0.8572 |       0.8521 |           0.0052 |             0.0074 |                 0.0023 |            0.8526 |           0.0028 |
+| F  D with no pool at all                     |   0.8557 |     nan      |         nan      |             0.0059 |               nan      |            0.8557 |           0.0059 |
+| HeidAI rebuild (m30 pooled + m50)            |   0.8549 |       0.8476 |           0.0073 |             0.0051 |                -0.0022 |            0.8484 |          -0.0015 |
+| frozen entry (density3 + structure)          |   0.8498 |       0.8498 |          -0      |             0      |                 0      |            0.8498 |           0      |
 
 ## Within both-singleton pairs, which decide the private split
 

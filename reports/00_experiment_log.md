@@ -3052,6 +3052,31 @@ passing:
 D passes both standing gates (private variance 236/220/126; typicality
 "carries something typicality does not", 0.8601 against 0.6378 at rho +0.265).
 
+
+**Amended: sensitivity to the pool multiplier (2026-10-27).** A collaborator
+reports that adding IEDB targeted at epitopes whose VDJdb multiplier is below 2
+raises LTDEMIAQY from 1.04 to **1.72** at no public cost, and separately
+estimates M30's private pool gain at about +0.011 against the +0.0013 E27
+measured. This repository holds no IEDB download, so the claim cannot be
+verified here — but the realisable column can be recomputed under it, since
+that multiplier is the single input the pool rejection rests on.
+
+| configuration | realisable, VDJdb-only | realisable, LTD at 1.72 | vs frozen |
+|---|---:|---:|---|
+| D | 0.8561 | 0.8565 | +0.0063 → +0.0067 |
+| C | 0.8534 | 0.8540 | +0.0035 → +0.0042 |
+| A (pure pool bet) | 0.8499 | 0.8509 | +0.0001 → +0.0011 |
+| HeidAI rebuild | 0.8476 | 0.8484 | −0.0022 → **−0.0015** |
+
+**The conclusion does not depend on the multiplier.** Even under the more
+optimistic figure the rival configuration stays negative against the frozen
+entry on the private split, and D's advantage moves by +0.0004. LTDEMIAQY is
+one of three private epitopes and 1.038 → 1.72 adds a modest number of
+neighbours to a top-8 density on a 130-row cohort, so the input has little
+leverage. The disagreement with the +0.011 estimate therefore does not need to
+be resolved to act: our thinning measurement is direct, theirs appears to apply
+a discount factor, and the decision is the same either way.
+
 ---
 
 ## E52 — Classifying singletons only
