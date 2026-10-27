@@ -4047,3 +4047,111 @@ decomposition that would have been interesting cannot be made because single
 (position, a, b) cells are estimated from too few pairs. Recovering it would
 need replicate screens or far deeper sampling per cell, not a better model.
 Nothing here touches the frozen predictor.
+
+---
+
+## E63 — Recognition distance against sequence distance (PRP)
+
+PRP's Dryad package carries peptide counts and nothing else. The TCR sequences
+are in the companion GitHub repo as `data/tcr_cdr3b.csv`, 487 bytes, and
+reading it produced the finding this experiment is built on:
+
+```
+CASSVAYYSTDTQYF  ->  135.7, 19.2C1, 28.1
+CASSVATYSTDTQYF  ->  19.2C2, 4.3
+CASSVGLYSTDTQYF  ->  19.2C5, 4.1
+CASSVGTYSTDTQYF  ->  19.2C4, 8.4
+```
+
+**Twenty-one screened receptors carry sixteen distinct CDR3β.** The engineered
+19.2 variants were built carrying another patient TCR's β, so five comparable
+pairs have a CDR3β distance of exactly **zero** while being different
+receptors. `scripts/61_recognition_vs_sequence.py`.
+
+**The limitation that bounds everything below: only CDR3β exists here** — no
+alpha, no V/J. "Sequence distance zero" means zero *on the axis that can be
+measured*.
+
+**Noise floor first**, learnt from E62. Splitting each receptor's round-4 reads
+by a binomial draw and rebuilding the profile from each half gives a within-
+receptor reliability of **0.687** (range 0.178–0.990). Profiles here are
+reliable, unlike E62's per-cell estimates.
+
+**The five identical-CDR3β pairs**, against 151 others with ≥5,000 common
+peptides:
+
+| a | b | common peptides | profile ρ | ceiling | ρ / ceiling |
+|---|---|---:|---:|---:|---:|
+| 135.7 | 28.1 | 46,940 | 0.304 | 0.788 | 0.386 |
+| 19.2C5 | 4.1 | 53,566 | 0.269 | 0.671 | 0.401 |
+| 19.2C4 | 8.4 | 38,547 | 0.259 | 0.546 | 0.475 |
+| 135.7 | 19.2C1 | 57,972 | 0.246 | 0.656 | 0.376 |
+| 19.2C1 | 28.1 | 43,804 | 0.218 | 0.580 | 0.375 |
+
+| | median profile ρ |
+|---|---:|
+| identical CDR3β (5 pairs) | **0.259** |
+| everything else (151 pairs) | **0.282** (range 0.139–0.482) |
+
+**Identical CDR3β buys −0.023.** Receptors carrying literally the same β chain
+recognise no more similarly than a random comparable pair.
+
+**And sequence distance explains nothing across the board**: CDR3β Levenshtein
+against profile distance gives ρ **+0.015** (n=156); Hamming gives +0.010.
+
+Counterexamples exist in both directions. Sequence close, recognition far:
+19.2C3 vs 26.1 at Levenshtein 1 and ρ 0.145. Sequence far, recognition close:
+4.2 vs 4.4 at Levenshtein 5 and ρ **0.482**, the highest in the set and 0.70 of
+the ceiling.
+
+**Settled.** On this dataset CDR3β distance carries no information about
+recognition-profile similarity, and even a zero distance does not predict
+similar recognition. That confirms the roadmap's H0 in the direction it
+predicted — but the correct statement is **"CDR3β alone is insufficient"**, not
+"sequence distance fails". The divergence between receptors sharing a β could
+be entirely an alpha effect, and alpha is unobserved. Twenty-one receptors, one
+HLA, one disease context.
+
+---
+
+## E64 — E61's calibration under family holdout, and does model shape help?
+
+E61 used a plain KFold, sound only if nearby peptides cannot land on both sides
+of a split. `scripts/62_flow_calibration_v2.py`.
+
+**Measuring the concern before fixing it.** Among the 192 flow-measured
+peptides there is **1 Hamming-1 pair on TCR59 and 4 on TCR63**, and only 68 and
+80 are even 9-mers — these are real proteome and virome peptides, not an NNK
+library. **Sequence-family leakage was never live for E61.** The groupings that
+do exist are `Gene` (160 and 157 distinct) and `origin` (human against virus,
+which makes a real domain shift rather than a fold).
+
+**Held-out Spearman of `r2_r1_ratio` against single-copy flow:**
+
+| TCR | model | plain KFold | gene holdout | origin holdout |
+|---|---|---:|---:|---:|
+| TCR59 | **linear (log x)** | +0.682 | **+0.683** | +0.680 |
+| TCR59 | two-piece linear, learnable knot | +0.682 | +0.683 | +0.680 |
+| TCR59 | isotonic, direction from data | +0.635 | +0.639 | +0.665 |
+| TCR59 | saturating sigmoid | +0.578 | +0.588 | +0.657 |
+| TCR63 | **isotonic, direction from data** | +0.427 | +0.424 | **+0.514** |
+| TCR63 | saturating sigmoid | +0.386 | +0.405 | +0.368 |
+| TCR63 | linear (log x) | +0.320 | +0.309 | +0.319 |
+
+**E61's number stands.** TCR59 goes +0.682 → +0.683 → +0.680 across the three
+schemes; TCR63 goes +0.427 → +0.424 → +0.514. Holding out whole source genes
+changes nothing, and training on human peptides to test on viral ones changes
+nothing on TCR59 and *helps* TCR63.
+
+**Model shape buys nothing.** The two-piece model with a learnable knot returns
+*exactly* the linear numbers on TCR59 — its second slope fits to about zero, so
+no knot is supported by the data. The saturating sigmoid is worse than linear
+everywhere on TCR59. On TCR63 isotonic wins, but linear wins on TCR59, so there
+is no consistent shape. 192 points selected on the predictor itself cannot
+identify a four-parameter curve, which the roadmap said in advance.
+
+**Settled.** The screen-to-flow relationship is a monotone trend with no
+evidence of a threshold or saturation in the measured range, and E61's estimate
+was not inflated by leakage. Getting further would need flow on peptides that
+were *not* chosen for being top-ranked, which no public dataset here provides.
+Nothing in E62–E64 touches the frozen predictor.
