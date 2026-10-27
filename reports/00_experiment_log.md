@@ -3954,3 +3954,96 @@ cannot be extrapolated to the library. Antigen density does not reorder these
 candidates. Both statements are about 192 peptides on two receptors under one
 HLA, and neither is evidence about binding, which SEEKER does not measure.
 Nothing here touches the frozen predictor.
+
+---
+
+## E62 — Substitution grammar: what explains how one residue change moves the response?
+
+The question is whether a position-conditioned substitution model beats fixed
+matrices (BLOSUM62, Grantham, physicochemical descriptors) at explaining
+response change, under peptide-family holdout.
+`scripts/60_substitution_grammar.py`.
+
+**The substrate had to be chosen, not assumed.** Single mutants *relative to the
+wild type* are too few: the Flu-M1 mutagenesis table holds **69**, covering 20
+of 171 possible (position, residue) cells, with positions 2, 4 and 6 entirely
+absent — and it is a top-10,000 table, so substitutions that killed the response
+were never recorded. The plan's own fallback applies. What works instead is
+peptide pairs *within* one screen differing at one residue:
+
+| screen | peptides | Hamming-1 pairs | families |
+|---|---:|---:|---:|
+| Flu (4TCR) | 7,264 | 7,122 | 1,425 |
+| EBV (4TCR) | 8,362 | 3,790 | 764 |
+| 1G4 (4TCR) | 8,123 | 1,587 | 108 |
+| DMF5 (4TCR) | 8,022 | 247 | 107 |
+| TCR59 / TCR63 (B27) | — | **15 / 1** | unusable |
+
+**A data trap worth recording.** These tables are ranked per **nt construct**,
+not per peptide: 10,000 rows hold 8,545 distinct 9-mers and one peptide carries
+up to **16 synonymous encodings**. Treating rows as peptides manufactures
+duplicate pairs with a delta of exactly zero — a first run reported median
+|Δ| 0.000 and 42,810 Flu pairs against the 7,122 a deduplicated count gives.
+Reads are now summed over a peptide's encodings, and `r3_r2_ratio` is
+recomputed from the summed counts with a declared pseudocount, because the
+shipped column is NaN for the 2,785 rows unobserved in round 2.
+
+**Part 1 — held-out Spearman by model** (grouped by Hamming-1 connected
+component, response is the later-round gain per E61):
+
+| model | 1G4 | DMF5 | EBV | Flu |
+|---|---:|---:|---:|---:|
+| BLOSUM62 | −0.079 | −0.006 | −0.024 | +0.013 |
+| Grantham | −0.003 | +0.006 | −0.007 | −0.006 |
+| physicochemical | +0.075 | −0.180 | −0.015 | +0.041 |
+| position only | +0.089 | +0.191 | −0.029 | +0.009 |
+| position + Grantham | +0.094 | +0.204 | −0.001 | +0.021 |
+| position × chemistry | **+0.126** | +0.177 | −0.016 | **+0.062** |
+
+**Fixed substitution matrices explain essentially nothing** — BLOSUM62 and
+Grantham sit between −0.079 and +0.013 on every receptor.
+
+**Part 2 — and the negative control removes the rest.** Holding the position
+fixed and shuffling which chemical substitution it was:
+
+| screen | position + Grantham | chemistry shuffled |
+|---|---:|---:|
+| DMF5 | +0.204 | **+0.209** |
+| 1G4 | +0.094 | +0.080 |
+| Flu | +0.021 | +0.012 |
+| EBV | −0.001 | −0.032 |
+
+DMF5's apparent +0.204 is **identical** after the chemistry is destroyed. What
+the position-conditioned models learned is position, and nothing about which
+residue replaced which.
+
+**Part 3 — the cross-receptor split, and why it is not estimable.** Four
+receptors on one NNK library allow the decomposition the plan asks for: an
+effect shared across receptors is library or presentation, one that differs is
+recognition. On the 80 (position, a, b) cells measured on all four, mean
+cross-receptor ρ is **+0.169**, which looks like receptor-specificity.
+
+It is not, and the check that settles it is the noise ceiling — does a receptor
+agree with *itself*? Splitting each cell's pairs in half, 50 repeats:
+
+| | split-half ρ |
+|---|---:|
+| DMF5 | +0.360 |
+| 1G4 | +0.332 |
+| Flu | +0.314 |
+| EBV | +0.094 |
+| **mean reliability** | **+0.275** |
+| mean cross-receptor agreement | +0.169 |
+
+**A receptor barely agrees with itself.** The cross-receptor number sits just
+below a ceiling of 0.275, so the per-cell estimates are noise-dominated and
+**nothing can be concluded about receptor-specificity**. Without this check the
+result would have read as a clean finding.
+
+**Settled.** The substitution grammar is not recoverable from these screens at
+this noise level. That is a statement about the data, not about the models:
+fixed matrices genuinely carry nothing here, position carries a little, and the
+decomposition that would have been interesting cannot be made because single
+(position, a, b) cells are estimated from too few pairs. Recovering it would
+need replicate screens or far deeper sampling per cell, not a better model.
+Nothing here touches the frozen predictor.
