@@ -5525,3 +5525,203 @@ TCR-versus-peptide axis, and this is about TCR-versus-TCR similarity in a
 structural coordinate; the fingerprint being mildly useful does not mean Boltz
 resolves peptide specificity, and E75 measured that it builds nearly the same
 interface for every A\*02:01 nonamer.
+
+---
+
+## E84 — What are the three submissions actually disagreeing about?
+
+Three entries exist — frozen (public 0.8498), D (0.8600), F (0.8557) — and every
+quantity separating them comes from the published bands rather than from the
+private rows. So this asks something the private labels are not needed for:
+*what are they disagreeing about?* `scripts/75_submission_disagreement.py`.
+
+ROC AUC **is** a pairwise statistic, so the natural decomposition is pairwise.
+Within an epitope, every (positive, negative) pair falls in one of four cells —
+both right, neither right, only A, only B — and the first two cancel exactly.
+The macro difference is therefore *identically* the per-epitope mean of
+(only-A − only-B); the script asserts this to 1e-9, which is also a check that
+all three files are aligned on the same rows.
+
+| epitope | pairs | both | neither | only D | only frozen | ΔAUC |
+|---|---:|---:|---:|---:|---:|---:|
+| GILGFVFTL | 73914 | 0.863 | 0.108 | 0.023 | 0.006 | +0.0169 |
+| GLCTLVAML | 6160 | 0.723 | 0.225 | 0.034 | 0.018 | +0.0154 |
+| NLVPMVATV | 20566 | 0.846 | 0.108 | 0.027 | 0.019 | +0.0080 |
+| TTDPSFLGRY | 29240 | 0.819 | 0.129 | 0.031 | 0.022 | +0.0092 |
+| YLQPRTFLL | 35392 | 0.923 | 0.055 | 0.012 | 0.010 | +0.0015 |
+| **MACRO** | | | | | | **+0.0102** |
+
+**The whole difference between the entries is 5,745 discordant pairs out of
+165,272 — 3.5%**, of which D wins 66.0%. Ninety-six point five per cent of the
+ranking is common to all three. The disagreement is also not close on either
+side: D's median winning gap is 0.0384 and frozen's 0.0445, so these are not
+tie-breaks, they are genuine reorderings in the middle of the list.
+
+### The pool question, and why the obvious answer to it is wrong
+
+D holds a pool-expanded density term and E27 priced its public-to-private
+transfer at +0.0112 → +0.0013. So: are D's winning pairs on TCRs that actually
+acquired pool neighbours? Counting, per TCR, the share of its top-8 density
+neighbours that are pool rows:
+
+| pool share of top-8 | pairs | D wins | net pairs to D |
+|---|---:|---:|---:|
+| neither member (0) | 885 | 59.5% | +169 |
+| 0 < max ≤ 0.25 | 1264 | 52.4% | +60 |
+| 0.25 < max ≤ 0.5 | 404 | 67.8% | +144 |
+| max > 0.5 | 3192 | 72.9% | **+1460** |
+
+That reads as 91% of D's margin sitting on pool-affected pairs, which would be
+bad news. **It is confounded, and the confound is visible as soon as the epitope
+is held fixed:**
+
+| epitope | pool-free pairs | D wins | pooled pairs | D wins |
+|---|---:|---:|---:|---:|
+| TTDPSFLGRY | 696 | 57.0% | 836 | 60.3% |
+| YLQPRTFLL | 189 | 68.8% | 584 | 48.6% |
+
+Within TTD the two strata are indistinguishable and within YLQ the sign
+*reverses*. The pool-affected TCRs are simply the ones in the large cohorts
+(GIL 3,005 pool rows, NLV 9,881) and those are also where D wins for unrelated
+reasons. GIL, GLC and NLV contribute no pool-free pairs at all, so the table
+above is mostly an epitope effect wearing a pool label.
+
+**The decomposition that is a control rather than a correlation already
+exists**, because F *is* D with the pool removed everywhere:
+
+- `F − frozen` = **+0.0059**, 57% of D's margin, pool-free **by construction**
+- `D − F` = **+0.0044**, 43% of D's margin, the pool's own contribution
+
+and the pool term shows a clean dose–response against how much pool each cohort
+has:
+
+| epitope | pool rows | top-8 pool share | D − F |
+|---|---:|---:|---:|
+| NLVPMVATV | 9881 | 0.781 | +0.0058 |
+| GILGFVFTL | 3005 | 0.702 | +0.0044 |
+| GLCTLVAML | 459 | 0.556 | +0.0115 |
+| YLQPRTFLL | 54 | 0.100 | +0.0003 |
+| TTDPSFLGRY | 25 | 0.067 | −0.0002 |
+
+Spearman +0.700. **Below ~60 pool rows the term does nothing at all** — TTD and
+YLQ move by 0.0003 — and the three private epitopes hold **11, 191 and 5** pool
+rows. So D's pool half should contribute approximately nothing on CINGVCWTV and
+LTDEMIAQY and something on LLWNGPMAV alone, which is an independent measurement
+of E27's discount rather than a restatement of it: D's realisable advantage over
+F is about one third of +0.0044, and D's advantage over frozen on the private
+side is carried by the pool-free +0.0059.
+
+**The ordering is unchanged** — D > F > frozen — but the margin between D and F
+is now measured as mostly unavailable rather than assumed to transfer.
+
+---
+
+## E85 — Inverting the difficulty model into a private risk ranking
+
+E74 fitted the margin model forwards to get a private point estimate. This runs
+it backwards: *given a configuration, where is it most likely to fail?* No score
+follows. `scripts/76_private_risk_ranking.py`.
+
+The headroom fraction, per entry, over the five public epitopes:
+
+| epitope | tcrdist3 | headroom | frozen f | D f | F f |
+|---|---:|---:|---:|---:|---:|
+| GLCTLVAML | 0.690 | 0.310 | 0.166 | 0.216 | 0.178 |
+| NLVPMVATV | 0.809 | 0.191 | 0.293 | **0.335** | 0.304 |
+| TTDPSFLGRY | 0.826 | 0.174 | 0.081 | 0.134 | 0.135 |
+| GILGFVFTL | 0.871 | 0.129 | **−0.013** | 0.118 | 0.084 |
+| YLQPRTFLL | 0.928 | 0.072 | 0.075 | 0.097 | 0.093 |
+| **mean** | | | 0.120 | **0.180** | 0.159 |
+
+The frozen entry's fraction on GILGFVFTL is **negative** — it scores below
+tcrdist3's published 0.871 there — which is worth recording as the one place the
+frozen entry is beaten by the published baseline.
+
+**Band risk and fraction risk are separate failure modes** and the second is
+larger. Varying tcrdist3 across its published interval moves D's LTDEMIAQY
+prediction over [0.721, 0.738]; varying the fraction across its five observed
+values moves it over [0.702, 0.780], three times wider. LTDEMIAQY carries the
+widest total interval of the three (0.079 against 0.044), as both its band
+position and its headroom make it.
+
+**Sampling risk**, Hanley–McNeil at the private cohort sizes:
+
+| epitope | rows | SE @20% pos | SE @40% | SE @50% |
+|---|---:|---:|---:|---:|
+| CINGVCWTV | 243 | 0.0360 | 0.0270 | 0.0251 |
+| LLWNGPMAV | 229 | 0.0372 | 0.0278 | 0.0259 |
+| LTDEMIAQY | **130** | **0.0603** | 0.0465 | 0.0441 |
+
+LTDEMIAQY is first on every axis: worst band, widest fraction interval, smallest
+cohort.
+
+### The private cohorts are the opposite of GLCTLVAML
+
+The mechanism risk was expected to be GLC-like over-convergence, since E20 and
+E72 established that failure mode and the family diagnostics are label-free and
+therefore legitimate on the private rows. It is the other way round:
+
+| epitope | rows | singleton % | largest family | close pairs % | nn3 IQR | split |
+|---|---:|---:|---:|---:|---:|---|
+| CINGVCWTV | 243 | **97.5** | **2** | 0.01 | 0.1677 | private |
+| LLWNGPMAV | 229 | 95.6 | 4 | 0.03 | 0.2282 | private |
+| LTDEMIAQY | 130 | 85.4 | 7 | 0.23 | **0.1239** | private |
+| TTDPSFLGRY | 387 | 95.3 | 5 | 0.02 | 0.1360 | public |
+| NLVPMVATV | 366 | 81.7 | 17 | 0.15 | 0.2253 | public |
+| YLQPRTFLL | 419 | 81.6 | 12 | 0.11 | 0.3852 | public |
+| GILGFVFTL | 670 | 52.4 | 71 | 0.70 | 0.3445 | public |
+| GLCTLVAML | 192 | 44.8 | 32 | 1.27 | 0.3540 | public |
+
+**The private split has almost no family structure at all.** CINGVCWTV's largest
+family is two TCRs. There is no over-convergence risk there; the risk, if any, is
+the opposite — nothing to be typical *of*. That TTDPSFLGRY sits in the same
+regime (95.3% singleton, nn3 IQR 0.1360) and still scores 0.8493 is the
+reassurance, and it also makes TTD the natural analogue for the private split
+rather than GIL or GLC.
+
+**None of the four diagnostics predicts per-epitope AUC** over five points
+(|ρ| ≤ 0.400), so this table is descriptive. It says what the private cohorts
+look like, not what they will score.
+
+### The structure-matched fraction, which fails its own holdout
+
+The table above suggests a sharper model than E74's: if the private cohorts
+resemble TTDPSFLGRY, take the fraction from the structurally *nearest* public
+epitope rather than averaging over all five, which mixes in two family-rich
+cohorts the private split does not resemble. Matching on six standardised
+structural features gives CIN → TTD and LLW → TTD (f = 0.134) and LTD → NLV
+(f = 0.335), and raises D's private estimate from 0.809 to **0.820**.
+
+**It is rejected.** Under E74's own leave-one-epitope-out test:
+
+| margin model | held-out MAE |
+|---|---:|
+| uniform | 0.0301 |
+| **headroom (E74)** | **0.0157** |
+| structure-matched | 0.0261 |
+
+The failure is visible: holding out TTDPSFLGRY matches it to NLVPMVATV and
+predicts +0.0583 against an actual +0.0233, a 2.5× overshoot. Nearest-neighbour
+over four candidates is simply unstable, and the appeal of the story is not
+evidence. **E74's 0.809 stands** — this is the same shape as E30's withdrawn
+projection and E49's third part, a mechanism that reads well and does not
+survive its holdout.
+
+What does survive from the matching exercise is a risk flag: LTDEMIAQY's nearest
+public analogue sits at standardised distance **3.01**, against 1.68 for the
+other two, in a space where the public epitopes are 1.91–5.82 apart. **LTDEMIAQY
+has no good analogue in the public set on any axis** — band, cohort size or
+cohort structure.
+
+### Does the ordering survive an adversarial fraction?
+
+| entry | mean f | best f | worst f | macro @mean | @best | @worst |
+|---|---:|---:|---:|---:|---:|---:|
+| frozen | 0.120 | 0.293 | −0.013 | 0.7948 | 0.8350 | 0.7636 |
+| **D** | 0.180 | 0.335 | 0.097 | **0.8086** | 0.8448 | **0.7892** |
+| F | 0.159 | 0.304 | 0.084 | 0.8037 | 0.8377 | 0.7862 |
+
+D at its **worst** observed fraction (0.7892) still exceeds the best rival at its
+**best** (F, 0.7862). The ordering therefore does not depend on which fraction is
+the right one — though the margin is +0.0030, well inside every uncertainty on
+this page, so this is robustness of the ordering and not of the gap.
