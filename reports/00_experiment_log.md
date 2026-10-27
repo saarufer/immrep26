@@ -5024,3 +5024,73 @@ P4-dominant with a P9 secondary contact and a variable P7. The negative is
 therefore at least as much about what the folding model can resolve as about
 what distinguishes the epitopes, and separating those two would need
 experimental structures across these epitopes, not more folds.
+
+---
+
+## E76 — Is GLC's over-convergence a sampling artifact that more donors would erase?
+
+The proposal: if E72 is right that GLC's density comes from within-donor
+oligoclonality and a 20-donor cohort, then the epitope itself is unremarkable
+and a larger sample would bring its TCR distribution into line with the others.
+
+**The literal version is backwards.** GLC is the *smallest* cohort (192) with
+the *highest* close-neighbour fraction (55.2%), while GILGFVFTL has 670 rows at
+47.6%. Adding TCRs raises density; it cannot lower it. The testable version is
+the mechanism, not the count: **sample more donors, not more TCRs** — which is
+measurable now by counting only cross-donor neighbours, since that removes
+within-donor expansion without shrinking the cohort.
+
+### Removing within-donor neighbours
+
+| epitope | resolvable n | all neighbours | **cross-donor only** | drop |
+|---|---:|---:|---:|---:|
+| **GLCTLVAML** | 118 | 56.8% | **28.8%** | **−28.0 pp** |
+| GILGFVFTL | 576 | 47.2% | 42.0% | −5.2 |
+| NLVPMVATV | 326 | 14.7% | 8.6% | −6.1 |
+| YLQPRTFLL | 155 | 11.6% | 7.7% | −3.9 |
+| CINGVCWTV | 188 | 2.1% | 0.0% | −2.1 |
+| TTDPSFLGRY | 141 | 1.4% | 1.4% | −0.0 |
+
+**GLC loses more than half its density, a 28-point drop against 3.9–6.1 for
+everything else — five times larger.** The proposal is substantially right.
+
+**But not entirely.** What survives is 28.8%, still second only to GILGFVFTL's
+42.0% and three to four times NLVPMVATV and YLQPRTFLL. More donors would move
+GLC from first place to second, not into the pack.
+
+### Is the epitope itself low quality? No — the composition is
+
+Classifying each labelled TCR by what kind of neighbour it has:
+
+| epitope | cross-donor neighbour | only same-donor | singleton |
+|---|---|---|---|
+| **GLCTLVAML** | n=**32**, 94% validated | n=**33**, 55% | n=76, 51% |
+| GILGFVFTL | n=**195**, 94% validated | n=**34**, 50% | n=317, 48% |
+| NLVPMVATV | n=28, 75% | n=23, 74% | n=252, 15% |
+
+**GLC and GILGFVFTL behave identically group for group** — a cross-donor
+neighbour means 94% validated on both, and a same-donor-only neighbour means
+50–55%, which is the base rate. What differs is the **mix**: GLC runs 32 : 33,
+a one-to-one ratio of informative to uninformative clustered TCRs, while GIL
+runs 195 : 34, six to one.
+
+So the epitope's biology is not mediocre and its labels are not noisier. **Its
+cohort's donor composition is what is unusual**, and it dilutes the one feature
+the model depends on. This also disposes of a competing reading: E4 found
+VDJdb's own confidence score anti-correlates with validation overall (pooled
+0.455) but reaches 0.581 on GLCTLVAML — the only epitope where it is above
+chance, which argues against "GLC's metadata is worse".
+
+### The prediction this makes
+
+If the mix is the problem, then a GLCTLVAML cohort assembled from **more donors
+with fewer TCRs each** should have a density feature that behaves like
+GILGFVFTL's, and its AUC should rise from 0.757 toward the 0.85–0.89 the other
+epitopes reach. That is a prediction about data collection, not about method,
+and it cannot be tested on this cohort — capping TCRs per donor here leaves
+too few rows to measure density on.
+
+**Caveat.** GLCTLVAML's donor resolution is 61%, so 51 of its 192 rows are
+unclassified and every number above rests on the other 141. GIL and NLV are at
+86% and 89%, so the comparison is between a well-resolved and a
+partly-resolved cohort.
