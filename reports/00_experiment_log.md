@@ -6191,3 +6191,109 @@ structurally absent from the private split, and the second, sequencing
 platform, is a property of 15 studies rather than of a TCR. The entry does not
 change. This is the kind of finding worth a paragraph in a paper and worth zero
 on the leaderboard, and both halves of that should be said plainly.
+
+---
+
+## E91 — Can the sequencing platform be a discriminative feature?
+
+E90 found the platform is the one study-level attribute surviving the
+collinearity check. That is a statement about **populations**; a feature has to
+order **individuals**. `scripts/82_platform_as_feature.py`. Three gates, in the
+order that closes the question earliest.
+
+**A data trap first, which reversed one of my own statements.** An initial
+diagnostic grouped VDJdb records by `(method.sequencing, reference.id)` and
+reported CINGVCWTV as 100% Sanger from two studies. That was wrong: **164 of
+CIN's 243 records carry no `reference.id`** and pandas drops NaN group keys
+silently, so two thirds of the cohort vanished from the table. Those records do
+carry a platform. 4.3% of all 3,780 matched records lack a reference.id. E90's
+per-study table is unaffected — it is about keys that *do* resolve to a study —
+but its coverage is lower than stated for CIN.
+
+### 1–2. Availability, and whether it varies inside a cohort
+
+The metric is **mean per-epitope ROC AUC**, so a feature that is constant inside
+a cohort contributes *exactly zero*, however predictive it looks pooled across
+epitopes. This gate is easy to skip and it does most of the work here.
+
+| epitope | split | rows | populated | levels | composition |
+|---|---|---:|---:|---:|---|
+| CINGVCWTV | private | 243 | 243 | **2** | sanger 59%, rna-seq 41% |
+| LLWNGPMAV | private | 229 | 229 | **1** | rna-seq 100% |
+| LTDEMIAQY | private | 130 | **3** | 1 | amplicon-seq 100% |
+| GILGFVFTL | public | 670 | 666 | 3 | sanger 63%, amplicon 34%, rna-seq 3% |
+| GLCTLVAML | public | 192 | 192 | 3 | sanger 52%, amplicon 47%, rna-seq 2% |
+| NLVPMVATV | public | 366 | 365 | 3 | rna-seq 47%, amplicon 28%, sanger 24% |
+| TTDPSFLGRY | public | 387 | 141 | **1** | sanger 100% |
+| YLQPRTFLL | public | 419 | 233 | 2 | sanger 67%, amplicon 33% |
+
+**It varies on one private epitope of three**, and on four public of five.
+
+### 3. The decisive test: it does not rank, even where it varies
+
+Each level scored by its validation rate on the **other** public epitopes, so
+the feature is never fitted on the epitope it is scored on:
+
+| epitope | levels | leave-epitope-out AUC |
+|---|---:|---:|
+| GILGFVFTL | 3 | 0.5155 |
+| GLCTLVAML | 3 | 0.5540 |
+| NLVPMVATV | 3 | **0.3056** |
+| YLQPRTFLL | 2 | 0.6235 |
+| TTDPSFLGRY | 1 | — (constant) |
+| **macro** | | **0.4996** |
+
+**Exactly chance.** And NLVPMVATV is the informative cell: at 0.3056 the
+platform ordering learned elsewhere is not merely useless there, it is
+*actively inverted*. E90's population effect is real, but it does not survive
+transfer between epitopes at the level of individual TCRs — which is the only
+level this competition scores.
+
+Blended into D with the platform fitted on **all** public rows, including the
+epitope being scored, i.e. the most favourable possible fitting:
+
+| blend | macro | vs D |
+|---|---:|---:|
+| D alone | 0.8600 | — |
+| D + platform, w=0.05 | 0.8611 | +0.0011 |
+| D + platform, w=0.10 | 0.8611 | +0.0011 |
+| D + platform, w=0.20 | 0.8580 | −0.0020 |
+| D + platform, w=0.30 | 0.8481 | −0.0119 |
+
++0.0011 in-sample, against E15's **−0.0048** selection cost and a **+0.02** bar.
+
+### 4. The other route: carry a study's own measured rate across the boundary
+
+Rather than the platform, use a study's public validation rate on its private
+contributions. Only **four** references span both sides:
+
+| reference | public side | private side |
+|---|---|---|
+| PMID:27645996 | GIL 40 @ 0.90 (base 0.66), GLC 18 @ 0.67 (0.66) | CIN 24 |
+| PMID:28934479 | NLV **5** @ 0.80 (0.29) | LLW 50 |
+| PMID:34793243 | GIL 109 @ 0.89, GLC 73 @ 0.75, NLV 13 @ 1.00, YLQ 71 @ 0.74 | LTD **3** |
+| PMID:35383307 | TTD 246 @ 0.57 (0.50), YLQ 188 @ **0.35** (0.41) | LTD **127** |
+
+**The one that matters fails.** PMID:35383307 supplies 127 of LTDEMIAQY's 130
+rows, so its quality estimate would determine nearly that whole cohort — and
+its two public epitopes give **opposite signs**, +0.07 on TTDPSFLGRY and −0.06
+on YLQPRTFLL. There is no single number to carry. PMID:34793243 is the best
+study in the whole dataset and contributes **3** private rows. PMID:28934479's
+estimate rests on **5** public TCRs.
+
+And even with a perfect estimate the second gate still bites: a study-level
+constant applied to 127 of 130 rows in one cohort is a constant within that
+cohort, and contributes zero to a within-epitope AUC.
+
+### The answer
+
+**No.** The platform is a real population-level effect (E90) and three separate
+things stop it becoming a feature: it is constant inside two of the three
+private cohorts, its quality ordering does not transfer between epitopes
+(macro 0.4996, inverted on NLVPMVATV), and the study-quality route rests on one
+reference whose public evidence points both ways.
+
+This is worth having tested rather than assumed. E90's result made the feature
+look obvious, and the reason it fails — a population contrast is not a ranking
+— is the same reason `n_ref` failed in E90 and provenance failed on the private
+split, now with three independent demonstrations of the same mechanism.
