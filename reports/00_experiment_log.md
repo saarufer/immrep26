@@ -5234,3 +5234,44 @@ variance from the distances, not from the weighting, so **the gate can pass a
 feature whose novel component is constant**. Checking the variance of the new
 *ingredient*, not just of the resulting score, is the stricter test and it is
 what caught this.
+
+---
+
+## E80 — Cross-epitope reference expansion constrained by peptide similarity
+
+Proposed externally (as "E76"). Genuinely untried: every pool experiment here
+(E12, E27, E33, E35) used **same-epitope** TCRs. This uses TCRs annotated to
+*different but similar* peptides, on the reasoning that a receptor specific to
+a near neighbour of the target may be a legitimate reference.
+
+**Availability first.** Paired-αβ VDJdb TCRs on peptides of the same HLA class
+and length within Hamming 4 of each target:
+
+| target | split | nearest similar peptide | records available |
+|---|---|---|---:|
+| NLVPMVATV | public | ALVPMVATV (d=1) | 399 |
+| **CINGVCWTV** | private | CVNGSCFTV (d=3) | **14** |
+| **LLWNGPMAV** | private | LLEWLAMAV (d=4) | **3** |
+| **LTDEMIAQY** | private | AMDEFIEQY (d=4) | **3** |
+| GILGFVFTL | public | GILEFVFTL (d=1) | 2 |
+| GLCTLVAML | public | SLYNLVATL (d=4) | 1 |
+| YLQPRTFLL / TTDPSFLGRY | public | — | 0 |
+
+**The three private epitopes can gain 20 records between them**, against 602
+rows — a multiplier of 1.03, where E27 measured that even 1.834 yields +0.0013
+realisable.
+
+**NLVPMVATV is the only case where the idea can be evaluated at all**, and
+testing it exposes why the counts are misleading. Its 126 "similar peptides"
+include ALVPMVATV, CLVPMVATV, DLVPMVATV and ELVPMVATV all at Hamming 1 —
+**a positional scanning mutagenesis panel of NLVPMVATV itself**, with the same
+receptors tested against every variant. After deduplicating by paired clonotype
+and removing TCRs already in the cohort, the 399 records collapse to **13 new
+clonotypes**, worth **+0.0011** (0.8330 → 0.8341).
+
+**Settled, with a data-structure finding worth keeping.** Hamming-based peptide
+similarity in VDJdb retrieves **mutagenesis variants of the same epitope**, not
+biologically distinct similar epitopes, so the TCRs it returns are largely the
+ones already present. Any future cross-epitope expansion has to filter the
+peptide list by provenance — a variant panel from one study is not a second
+epitope — before counting what it adds.
