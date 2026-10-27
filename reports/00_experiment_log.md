@@ -4958,3 +4958,69 @@ fraction" is true only on average and MAE 0.0156 is the price of that. And
 LTDEMIAQY's published band (0.66–0.68) sits just below the public range's
 minimum (GLC at 0.690), so its projection is a short extrapolation rather than
 an interpolation.
+
+---
+
+## E75 — Structurally, how does GLCTLVAML differ? It does not.
+
+Every GLC analysis so far has been distributional. This asks the structural
+question from the 2,636 Boltz-2 complexes, with a control already built into
+the data: **six of eight epitopes are HLA-A\*02:01 9-mers**, so HLA and peptide
+length are fixed and anything left is peptide-specific.
+`scripts/67_structural_comparison.py`.
+
+The hypothesis from E72 was that GLC's over-convergence reflects a narrow set
+of docking solutions, which should show as a tighter ensemble, a narrower
+contact footprint and less variable geometry.
+
+**1. The docking geometry is unexceptional.** Across six spread measures
+(crossing angle, TCR height, α and β contact counts, CDR3 shares), GLCTLVAML's
+mean rank is **4.3 of 6** where 1 is tightest. Its crossing-angle spread is
+15.13°, second *highest* after YLQPRTFLL's 15.75°.
+
+**2. The contact footprint is nearly identical across all six**, median
+α+β contacts per peptide position:
+
+| epitope | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | P9 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| GLCTLVAML | 0 | 0 | 7 | **34** | 1 | 0 | 27 | 11 | 26 |
+| GILGFVFTL | 0 | 0 | 8 | **35** | 1 | 0 | 16 | 10 | 26 |
+| NLVPMVATV | 2 | 0 | 8 | **34** | 1 | 0 | 22 | 12 | 26 |
+| YLQPRTFLL | 3 | 1 | 7 | **32** | 2 | 0 | 30 | 16 | 26 |
+| LLWNGPMAV | 9 | 0 | 7 | **35** | 0 | 0 | 18 | 7 | 27 |
+| CINGVCWTV | 0 | 1 | 6 | 33 | 1 | 0 | **35** | 12 | 26 |
+
+P4 dominates everywhere but CINGVCWTV, P9 sits at 26–27 for all six, P3 at
+7–8 for all six. The only position that genuinely varies is **P7 (16–35)**.
+
+**3. "Ensemble tightness" is a Boltz artifact, not biology.** The pairwise
+fingerprint distance within an epitope correlates with cohort size at
+**ρ 0.000** and with interface ipTM at **ρ −0.810** — an epitope Boltz folds
+confidently produces similar structures whatever the biology. After regressing
+tightness on ipTM, **GLCTLVAML's residual is +0.0000, rank 5 of 8: exactly
+average.** LLWNGPMAV looked tightest (0.0783) purely because it has the highest
+ipTM (0.9472).
+
+**4. The one apparent relationship does not survive.** Footprint width
+(effective number of contacted positions) against close-neighbour fraction
+gives ρ −0.486 — the two narrowest footprints, GLCTLVAML (4.48) and GILGFVFTL
+(4.49), are exactly the two most sequence-convergent epitopes. But the **exact
+p over all 720 permutations is 0.356**, and removing those two flips the
+remaining four to **+0.800**. Two points out of six carry it and the rest
+reverse.
+
+### Settled, and it is partly a statement about Boltz
+
+**GLC is structurally indistinguishable from the other A\*02:01 9-mers in
+anything these structures resolve.** Its sequence convergence (55.2% with a
+close neighbour, the highest of eight) has no structural counterpart.
+
+That joins E36 from a second direction. There, folding each TCR against
+anchor-matched decoy peptides gave a margin of **+0.0061** in ipTM — Boltz
+assigns a TCR's true target and an unrelated A2 nonamer essentially the same
+confidence. Here the contact profiles say the same thing in a different
+currency: **Boltz builds nearly the same interface for every A\*02:01 9-mer**,
+P4-dominant with a P9 secondary contact and a variable P7. The negative is
+therefore at least as much about what the folding model can resolve as about
+what distinguishes the epitopes, and separating those two would need
+experimental structures across these epitopes, not more folds.
