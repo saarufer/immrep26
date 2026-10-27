@@ -4685,3 +4685,26 @@ ordering is systematically wrong there — and even if it is, E69 already showed
 the route is closed for the competition: V-gene identity is inside D through
 the V-domain term (E42), and any fix would need a label-free way to order V
 genes that works on three private cohorts with no families at all.
+
+**Addendum to E71 — is GLC's optimal top-k larger, because it is saturated?**
+E20's mechanism for GLC is that *everything is dense*, so the natural reading
+is that top-3 saturates there and a larger k would restore resolution. E17
+killed the analogous idea for kernel bandwidth, but its direction argument does
+not obviously carry: for top-k, dense→large and sparse→small *is* geometric.
+
+Tested on the density term alone, k ∈ {1,2,3,5,8,12,20,30,50,80}:
+
+| epitope | close-neighbour fraction | oracle k | gain over k=8 |
+|---|---:|---:|---:|
+| GLCTLVAML | 0.552 | **8** | **+0.000** |
+| GILGFVFTL | 0.476 | 12 | +0.002 |
+| YLQPRTFLL | 0.184 | 20 | +0.001 |
+| NLVPMVATV | 0.183 | **1** | +0.022 |
+| TTDPSFLGRY | 0.047 | 3 | +0.009 |
+
+**The idea dies on GLC specifically: its oracle k is already 8, the value D
+uses, and larger k buys exactly nothing.** The oracle gain (+0.0069 overall)
+comes entirely from the *sparse* cohorts wanting *small* k — E17's mechanism
+again, where the few genuinely close pairs must dominate. Spearman between the
+close-neighbour fraction and the oracle k is +0.500 on five points with
+YLQPRTFLL breaking it outright. Not a usable rule, and no headroom on GLC.
