@@ -5189,3 +5189,48 @@ a coarse background, E77 measured it by de-duplicating the top-8 (−0.0033, wit
 effective family count scoring 0.2957 on its own), and E78 measures it with a
 matched background. **Local crowding is the signal, not a nuisance to be
 normalised away.**
+
+---
+
+## E79 — Weighting a neighbour's contribution by its annotation quality
+
+Proposed externally (as "E75"). Genuinely different from what is closed: E4
+scored `vdjdb_score` as a feature **of the query** (pooled 0.455, below chance)
+and E33's S05 did the same for provenance (0.534–0.557, constant within private
+epitopes). This weights **the neighbour**, using only VDJdb metadata and no
+validation labels.
+
+**E3's gate fires before the experiment**, on the fields the weighting needs:
+
+| epitope | split | distinct `n_refs` | distinct `score` | distinct `n_methods` |
+|---|---|---:|---:|---:|
+| GILGFVFTL | public | 11 | 3 | 7 |
+| GLCTLVAML | public | 7 | 4 | 4 |
+| NLVPMVATV | public | 5 | 4 | 4 |
+| CINGVCWTV | private | 2 | 2 | **1** |
+| LLWNGPMAV | private | 2 | **1** | 2 |
+| **LTDEMIAQY** | private | **1** | **1** | **1** |
+| TTDPSFLGRY | public | **1** | **1** | **1** |
+
+**On LTDEMIAQY all three weights are constant**, so the weighting is a no-op
+there, and TTDPSFLGRY is the same, leaving four usable validation folds.
+
+Run anyway, weights floored at 1 so a `score = 0` neighbour is not erased:
+
+| weighting | macro | vs unweighted |
+|---|---:|---:|
+| unweighted | 0.8414 | — |
+| by `n_refs` | **0.8421** | +0.0007 |
+| by `n_methods` | 0.8409 | −0.0005 |
+| by `vdjdb.score` | 0.8388 | −0.0026 |
+
+Into configuration D, an oracle allowed a single global weight picks **w = 0.00**
+for **+0.0000**.
+
+**A gate limitation worth recording.** `private_variance_gate` *passes* every
+one of these (243/229/130 distinct values on the private epitopes) even though
+the weight itself is constant on LTDEMIAQY. The weighted density inherits its
+variance from the distances, not from the weighting, so **the gate can pass a
+feature whose novel component is constant**. Checking the variance of the new
+*ingredient*, not just of the resulting score, is the stricter test and it is
+what caught this.
