@@ -5470,3 +5470,58 @@ observed statistic.
 **The standing rule this re-earns:** an experiment without a retained script is
 not a result, whoever ran it. The five scripts were written after the fact and
 checked against the logged numbers rather than trusted.
+
+---
+
+## E83 — The contact fingerprint as a density space, not a confidence score
+
+Every structural feature tried before (E14, E19, E28, E36) is a **scalar
+summarising one interface**, and E36 settled that those carry no peptide-
+specific information — the anchor-matched decoy margin was +0.0061 against a
+decoy-choice noise of 0.036. This is a different axis: the 60-dimensional
+contact fingerprint from `scripts/24` is indexed **by peptide position**, and
+within an epitope the peptide is identical, so two TCRs can be compared by
+*where they touch the antigen*. Not "how confident is this interface" but
+"**do TCRs that engage the peptide the same way validate the same way**".
+`scripts/74_structural_neighbourhood.py`.
+
+Both scalings are reported rather than one being chosen, since the 60 columns
+mix contact counts, capped distances and CDR3 shares:
+
+| feature | macro | GIL | GLC | NLV | TTD | YLQ |
+|---|---:|---:|---:|---:|---:|---:|
+| `pae_tcr_pep_min` (D's term) | **0.7565** | 0.779 | 0.736 | 0.763 | 0.629 | 0.875 |
+| fingerprint, column-standardised | 0.7510 | 0.827 | 0.730 | 0.764 | 0.581 | 0.853 |
+| fingerprint, raw cosine | 0.7428 | 0.817 | 0.736 | 0.723 | 0.553 | 0.884 |
+
+**The structural neighbourhood is slightly worse than the structural scalar it
+would replace** — but it is genuinely decorrelated, at within-epitope ρ **+0.444**
+with `pae_tcr_pep_min` and **+0.535** with D as a whole, against blosum's +0.905
+(E81) and the matched-background enrichment's +0.826 (E78). It also clears the
+typicality gate (0.7510 against 0.6378, ρ +0.216).
+
+**Adding it to D gives +0.0007 at an oracle weight and −0.0024 nested.** But
+*combining the two structural views inside D's existing structure slot* is
+different:
+
+| D's structure term | macro | vs D |
+|---|---:|---:|
+| `pae` alone (D as submitted) | 0.8600 | — |
+| fingerprint alone | 0.8557 | −0.0043 |
+| **pae 0.7 + fingerprint 0.3** | **0.8617** | **+0.0017** |
+| pae 0.5 + fingerprint 0.5 | 0.8616 | +0.0015 |
+| **nested LOEO over the three forms** | **0.8616** | **+0.0015** |
+
+**This is the first candidate in thirty-odd experiments whose nested LOEO is
+positive**, which is worth recording even though +0.0015 is far below the +0.02
+bar and the entry does not change. The reason it behaves differently from the
+other near-misses is visible in the correlations: it is not re-encoding what D
+already has. E28's rule was "decorrelation without margin over chance buys
+nothing" — this has both and still buys only +0.0015, which sets the price of
+the one structural axis that was still unexplored.
+
+**What it does not do** is overturn E36. That result is about the
+TCR-versus-peptide axis, and this is about TCR-versus-TCR similarity in a
+structural coordinate; the fingerprint being mildly useful does not mean Boltz
+resolves peptide specificity, and E75 measured that it builds nearly the same
+interface for every A\*02:01 nonamer.
