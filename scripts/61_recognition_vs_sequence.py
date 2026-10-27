@@ -114,13 +114,25 @@ def main() -> int:
         keep = (r4 > 0) & (r1 > 0)
         draws = []
         for _ in range(5):
-            left = rng.binomial(r4[keep].astype(int), 0.5)
-            right = r4[keep].astype(int).to_numpy() - left
-            base = (r1[keep] + ALPHA) / (r1[keep].sum() + ALPHA)
-            a = np.log10(((left + ALPHA) / (left.sum() + ALPHA)) / base)
-            b = np.log10(((right + ALPHA) / (right.sum() + ALPHA)) / base)
+            # Both halves must get their OWN round-1 denominator. A first
+            # version divided both by the same r1 term, which is perfectly
+            # correlated between them and inflated the ceiling by +0.221
+            # (0.652 against 0.431 measured across eight receptors).
+            counts4 = r4[keep].astype(int)
+            counts1 = r1[keep].astype(int)
+            left4 = rng.binomial(counts4, 0.5)
+            right4 = counts4.to_numpy() - left4
+            left1 = rng.binomial(counts1, 0.5)
+            right1 = counts1.to_numpy() - left1
+            a = np.log10(((left4 + ALPHA) / (left4.sum() + ALPHA))
+                         / ((left1 + ALPHA) / (left1.sum() + ALPHA)))
+            b = np.log10(((right4 + ALPHA) / (right4.sum() + ALPHA))
+                         / ((right1 + ALPHA) / (right1.sum() + ALPHA)))
             draws.append(spearmanr(a, b).statistic)
-        ceiling[tcr] = float(np.mean(draws))
+        # Spearman-Brown: a split-half uses half the reads, so it understates
+        # the reliability of the full-depth profile.
+        half = float(np.mean(draws))
+        ceiling[tcr] = 2 * half / (1 + half) if half > -1 else np.nan
     mean_ceiling = float(np.mean(list(ceiling.values())))
     print(f"  split-half rho per receptor: {min(ceiling.values()):.3f} to "
           f"{max(ceiling.values()):.3f}, mean **{mean_ceiling:.3f}**")

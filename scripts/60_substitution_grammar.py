@@ -289,10 +289,43 @@ def main() -> int:
                 if len(both) >= 20:
                     draws.append(spearmanr(both.iloc[:, 0],
                                            both.iloc[:, 1]).statistic)
-            ceiling[name] = float(np.mean(draws)) if draws else np.nan
+            # Spearman-Brown: a split-half uses half the pairs per cell.
+            half = float(np.mean(draws)) if draws else np.nan
+            ceiling[name] = (2 * half / (1 + half)
+                             if np.isfinite(half) and half > -1 else np.nan)
             print(f"    {name:<6} split-half rho {ceiling[name]:+.3f} "
                   f"({len(draws)} usable repeats)")
         mean_ceiling = float(np.nanmean(list(ceiling.values())))
+        # A cross-receptor correlation is attenuated by BOTH receptors' noise,
+        # so comparing the raw number with the ceiling understates sharing.
+        # Disattenuate per pair, and DROP any receptor whose own reliability is
+        # too low to divide by -- a first version concluded "nothing can be
+        # concluded" from the raw comparison alone.
+        print("\n  Disattenuated per pair, r_obs / sqrt(rel_a * rel_b):")
+        usable = [n for n in ceiling if ceiling[n] >= 0.3]
+        dropped = [n for n in ceiling if ceiling[n] < 0.3]
+        corrected = []
+        for i, a in enumerate(corr.index):
+            for b in list(corr.index)[i + 1:]:
+                value = corr.loc[a, b] / np.sqrt(ceiling[a] * ceiling[b])
+                flag = ("  <- dropped, reliability "
+                        f"{min(ceiling[a], ceiling[b]):.2f}"
+                        if a in dropped or b in dropped else "")
+                print(f"    {a}-{b:<6} observed {corr.loc[a, b]:+.3f}  "
+                      f"disattenuated {value:+.3f}{flag}")
+                if a in usable and b in usable:
+                    corrected.append(value)
+        if dropped:
+            print(f"    dropped for low self-reliability: {dropped}")
+        if corrected:
+            shared = float(np.mean(corrected))
+            print(f"\n  Among the {len(usable)} usable receptors, the shared "
+                  f"component is {shared:.0%};")
+            print(f"  about {1 - shared:.0%} of a substitution's effect is "
+                  "receptor-specific.")
+            print("  Wide uncertainty: dividing by a reliability near 0.5 "
+                  "roughly")
+            print("  doubles the estimate and its error bars with it.")
         print(f"\n    mean within-receptor reliability {mean_ceiling:+.3f}")
         print(f"    mean cross-receptor agreement      {off.mean():+.3f}")
         if np.isnan(mean_ceiling) or mean_ceiling < 0.3:

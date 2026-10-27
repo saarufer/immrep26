@@ -4155,3 +4155,85 @@ evidence of a threshold or saturation in the measured range, and E61's estimate
 was not inflated by leakage. Getting further would need flow on peptides that
 were *not* chosen for being top-ranked, which no public dataset here provides.
 Nothing in E62–E64 touches the frozen predictor.
+
+---
+
+## Code review of E62–E64 (2026-10-27)
+
+Three bugs, all in the same part of the machinery — the noise models. Two of
+them changed a conclusion.
+
+### 1. E64: the two-piece knot was never fitted — **conclusion reversed**
+
+`knot(x, intercept, slope1, slope2, position)` was handed `p0 = [20, 10, -10,
+2.0]` with no bounds. The observed range of `log10(r2_r1_ratio)` is
+**[−0.44, 1.13]** on TCR59, so a knot at 2.0 sits outside the data,
+`np.clip(x − 2.0, 0, None)` is zero everywhere, `slope2` has no gradient, and
+it stayed at exactly −10.0 in all five folds. **The model was a straight line
+by construction**, which is why it returned the linear numbers to three
+decimals — and why the write-up said "its second slope fits to about zero, so
+no knot is supported". The slope never fitted.
+
+Refitting with `position` bounded to the 10th–90th percentile of x:
+
+| TCR | linear | knot, bounded | gain |
+|---|---:|---:|---:|
+| TCR59 | **+0.683** | +0.658 | −0.026 |
+| TCR63 | +0.309 | **+0.581** | **+0.272** |
+
+Under the human↔virus split TCR63's knot reaches **+0.632**, and the knot lands
+at log10(r2_r1) ≈ **0.33** in every fold. **The corrected conclusion is the
+opposite of the one logged**: shape buys nothing on TCR59, which is linear, and
+a great deal on TCR63, which has a genuine threshold the broken model hid. The
+E64 entry above is superseded on this point; TCR63's best held-out ρ rises from
+0.427 to **0.632**.
+
+### 2. E62: the ceiling was uncorrected and the comparison unadjusted — **conclusion softened**
+
+Two faults in one comparison. The split-half reliability used half the pairs
+per cell with no Spearman–Brown correction, understating full-depth
+reliability; and the cross-receptor correlation was compared against it raw,
+although that correlation is attenuated by **both** receptors' noise.
+
+| | as logged | corrected |
+|---|---:|---:|
+| mean within-receptor reliability | 0.275 | **0.419** |
+| cross-receptor agreement (raw) | 0.169 | 0.169 |
+| disattenuated, per pair | — | 1G4–Flu 0.641, DMF5–Flu 0.381, 1G4–DMF5 0.363 |
+
+EBV's own reliability is 0.171 even after correction, so it is **dropped**
+rather than disattenuated — dividing by 0.17 manufactures numbers from noise,
+and it would otherwise have contributed a spurious DMF5–EBV value of 0.704.
+
+Among the three usable receptors the shared component is **46%**, so roughly
+**54% of a substitution's effect is receptor-specific**. E62 concluded "nothing
+can be concluded" — **too pessimistic**. The honest statement is that about half
+the effect is shared and half is receptor-specific, with wide uncertainty,
+since dividing by a reliability near 0.5 doubles the estimate and its error
+bars together. What stands unchanged: fixed matrices explain nothing, and the
+position-conditioned models survive only position, not chemistry.
+
+### 3. E63: the ceiling shared its denominator — **conclusions unaffected**
+
+Both halves of the split divided by the *same* Round-1 term, which is perfectly
+correlated between them. Measured across eight receptors that inflates the
+ceiling by **+0.221** (0.652 against 0.431 when Round 1 is split too). The
+missing Spearman–Brown correction pulled the other way, so the reported 0.687
+was wrong in method but close in value; the corrected ceiling is **0.527**.
+
+**None of E63's conclusions use the ceiling.** Identical CDR3β still gives
+median ρ 0.259 against 0.282 for all other pairs, and CDR3β Levenshtein against
+profile distance is still ρ **+0.015** (n=156). Only the `ρ / ceiling` column
+and one narrative sentence change. One receptor has a *negative* split-half
+reliability after correction, i.e. its profile is noise, which the inflated
+version had hidden.
+
+### What this says about the method, not the data
+
+All three are the same mistake in different clothes: **a noise model that was
+not itself checked.** E62 was nearly misread in one direction and E64 in the
+other, both because a reliability number was taken at face value. The rule
+worth keeping: when a conclusion rests on comparing an observed correlation
+with a ceiling, the ceiling needs its own validation — split the right thing,
+correct for the split, and drop any unit whose self-agreement is too low to
+divide by.

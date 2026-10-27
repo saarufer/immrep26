@@ -11,13 +11,13 @@ Essentially no near-neighbour structure, so E61's plain KFold was not leaking. G
 
 ## Held-out Spearman by validation scheme and model
 
-|                                               |   gene holdout |   origin holdout (human<->virus) |   plain KFold (E61) |
-|:----------------------------------------------|---------------:|---------------------------------:|--------------------:|
-| ('TCR59', 'isotonic, direction from data')    |         0.6393 |                           0.665  |              0.6348 |
-| ('TCR59', 'linear (log x)')                   |         0.6835 |                           0.6798 |              0.6824 |
-| ('TCR59', 'saturating sigmoid')               |         0.5881 |                           0.6568 |              0.5776 |
-| ('TCR59', 'two-piece linear, learnable knot') |         0.6835 |                           0.6798 |              0.6824 |
-| ('TCR63', 'isotonic, direction from data')    |         0.4237 |                           0.5135 |              0.4271 |
-| ('TCR63', 'linear (log x)')                   |         0.3091 |                           0.3185 |              0.3199 |
-| ('TCR63', 'saturating sigmoid')               |         0.4048 |                           0.3676 |              0.3863 |
-| ('TCR63', 'two-piece linear, learnable knot') |         0.3091 |                           0.3185 |              0.3199 |
+|                                                  |   gene holdout |   origin holdout (human<->virus) |   plain KFold (E61) |
+|:-------------------------------------------------|---------------:|---------------------------------:|--------------------:|
+| ('TCR59', 'isotonic, direction from data')       |         0.6393 |                           0.665  |              0.6348 |
+| ('TCR59', 'linear (log x)')                      |         0.6835 |                           0.6798 |              0.6824 |
+| ('TCR59', 'saturating sigmoid')                  |         0.5881 |                           0.6568 |              0.5776 |
+| ('TCR59', 'two-piece linear, knot bounded in x') |         0.658  |                           0.6406 |              0.6485 |
+| ('TCR63', 'isotonic, direction from data')       |         0.4237 |                           0.5135 |              0.4271 |
+| ('TCR63', 'linear (log x)')                      |         0.3091 |                           0.3185 |              0.3199 |
+| ('TCR63', 'saturating sigmoid')                  |         0.4048 |                           0.3676 |              0.3863 |
+| ('TCR63', 'two-piece linear, knot bounded in x') |         0.5812 |                           0.6323 |              0.5671 |

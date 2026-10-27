@@ -58,18 +58,45 @@ def knot(x, intercept, slope1, slope2, position):
     return intercept + slope1 * x + slope2 * np.clip(x - position, 0, None)
 
 
+# A first version left `position` unbounded with p0 = 2.0, which is OUTSIDE the
+# observed range of log10(r2_r1_ratio) ([-0.44, 1.13] on TCR59). With the knot
+# past the data, clip() is zero everywhere, `slope2` has no gradient and stays
+# at its initial -10, and the model is a straight line by construction -- which
+# is why it returned EXACTLY the linear numbers and was misread as "the second
+# slope fits to about zero, so no knot is supported". The knot is now bounded
+# inside the 10th-90th percentile of x.
+
+
 class Curve:
     """A fitted shape, falling back to a line if the optimiser does not
-    converge -- which on 192 rank-selected points it sometimes will not."""
+    converge -- which on 192 rank-selected points it sometimes will not.
 
-    def __init__(self, func, p0):
+    `bounds_from_x` lets a parameter be constrained to the observed range of x,
+    which is what stops an unidentifiable knot from sitting outside the data.
+    """
+
+    def __init__(self, func, p0, bounds_from_x=None):
         self.func, self.p0, self.params = func, p0, None
+        self.bounds_from_x = bounds_from_x
+        self.converged = None
 
     def fit(self, x, y):
+        p0, bounds = list(self.p0), (-np.inf, np.inf)
+        if self.bounds_from_x is not None:
+            index = self.bounds_from_x
+            lo, hi = np.quantile(x, [0.1, 0.9])
+            low = [-np.inf] * len(p0)
+            high = [np.inf] * len(p0)
+            low[index], high[index] = lo, hi
+            p0[index] = float(np.clip(p0[index], lo, hi))
+            bounds = (low, high)
         try:
-            self.params, _ = curve_fit(self.func, x, y, p0=self.p0, maxfev=20000)
+            self.params, _ = curve_fit(self.func, x, y, p0=p0, bounds=bounds,
+                                       maxfev=40000)
+            self.converged = True
         except Exception:                                    # noqa: BLE001
             self.params = None
+            self.converged = False
             self.linear = LinearRegression().fit(x.reshape(-1, 1), y)
         return self
 
@@ -130,8 +157,8 @@ def main() -> int:
         "linear (log x)": LinearRegression,
         "isotonic, direction from data":
             lambda: IsotonicRegression(out_of_bounds="clip", increasing="auto"),
-        "two-piece linear, learnable knot":
-            lambda: Curve(knot, [20.0, 10.0, -10.0, 2.0]),
+        "two-piece linear, knot bounded in x":
+            lambda: Curve(knot, [20.0, 10.0, -5.0, 0.3], bounds_from_x=3),
         "saturating sigmoid":
             lambda: Curve(sigmoid, [0.0, 80.0, 2.0, 0.5]),
     }
@@ -182,15 +209,24 @@ def main() -> int:
             block["validation"] == "origin holdout (human<->virus)"]["spearman"].max()
         print(f"  {tcr}: KFold {kfold:+.3f} -> gene holdout {gene:+.3f} "
               f"-> origin holdout {origin:+.3f}")
-    lin = table[(table["model"] == "linear (log x)")
-                & (table["validation"] == "gene holdout")]["spearman"]
-    best_shape = table[(table["model"] != "linear (log x)")
-                       & (table["validation"] == "gene holdout")]["spearman"]
-    print(f"\n  Model shape under gene holdout: linear {lin.max():+.3f} against "
-          f"the best curved form {best_shape.max():+.3f}.")
-    print("  192 points selected on the predictor cannot identify a")
-    print("  four-parameter curve, so any gap this small is shape fitting")
-    print("  noise, not an estimated threshold.")
+    print("\n  Model shape, per receptor and not pooled -- they disagree:")
+    for tcr in frames:
+        block = table[(table["tcr"] == tcr)
+                      & (table["validation"] == "gene holdout")]
+        lin = block[block["model"] == "linear (log x)"]["spearman"].iloc[0]
+        curved = block[block["model"] != "linear (log x)"]
+        best = curved.loc[curved["spearman"].idxmax()]
+        print(f"    {tcr}: linear {lin:+.3f}   best curved "
+              f"{best['model'][:32]:<34} {best['spearman']:+.3f}   "
+              f"gain {best['spearman'] - lin:+.3f}")
+    print("\n  TCR59 is linear and shape buys nothing. TCR63 is not: a knot")
+    print("  bounded inside the data reaches +0.581 under gene holdout and")
+    print("  +0.632 across the human/virus split, against linear's +0.309,")
+    print("  with the knot landing at log10(r2_r1) about 0.33 in every fold.")
+    print("  An earlier version of this script left that knot unbounded, it")
+    print("  settled outside the data, and the model silently became a line --")
+    print("  which read as 'no knot is supported' when the knot had never")
+    print("  been fitted at all.")
 
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(
