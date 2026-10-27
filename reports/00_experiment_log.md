@@ -6297,3 +6297,108 @@ This is worth having tested rather than assumed. E90's result made the feature
 look obvious, and the reason it fails — a population contrast is not a ranking
 — is the same reason `n_ref` failed in E90 and provenance failed on the private
 split, now with three independent demonstrations of the same mechanism.
+
+---
+
+## E92 — E90 re-run against a pre-revalidation snapshot, with the fields it skipped
+
+A collaborator raised three objections to E90. All three are correct as
+methodology. `scripts/83_snapshot_leakage_and_full_provenance.py`.
+
+### 1. Snapshot leakage: a real hazard that did not bite
+
+E90 used `vdjdb-2026-06-03`, the current rolling release. The IMMREP26 labels
+come from a 2026 revalidation, so anything VDJdb absorbed afterwards is not part
+of the historical provenance being analysed. The 2026 release holds **192,754**
+rows against **62,178** in `2023-06-01`, a 3.1× growth, so the concern is not
+hypothetical. The nearest release to the suggested May-2023 cut is
+**2023-06-01**; no May 2023 release exists. Both were run side by side.
+
+| snapshot | matched records | keys | refs | subject populated | verification |
+|---|---:|---:|---:|---:|---:|
+| 2023-06-01 (pre-revalidation) | 3,099 | 2,631 | 36 | 61.7% | 11.8% |
+| 2026-06-03 (E90's) | 3,780 | 2,631 | 57 | 67.5% | 10.2% |
+
+**No competition receptor is new**: 0 of the 2,631 matched keys are present in
+2026 and absent from 2023, and the per-epitope match counts are identical.
+
+**But the attribution was rewritten, exactly as warned.** 22 references appear
+only in 2026, and one is large: **PMID:35383307, with 561 records**. In the
+2023 snapshot those same TCRs sit under the generic
+`https://github.com/antigenomics/vdjdb-db` submission URL. E90's second-largest
+cell is therefore a retroactive re-attribution.
+
+**It changes nothing measurable.** Over the 22 cells present in both,
+Spearman(excess 2023, excess 2026) = **+0.991**, maximum absolute difference
+**0.045**. The worst contributor is the same medRxiv preprint in both
+(−0.355, z −8.59 in 2023; −0.360, z −8.68 in 2026). **Every E90 conclusion
+stands**, now with the leakage measured rather than assumed away.
+
+### 2. One receptor, several studies
+
+E90's primary analysis kept the 1,615 single-reference TCRs, which is clean for
+attribution but discards the multi-source evidence. Re-run with every
+(TCR, reference) pair contributing and each TCR weighted `1/n_refs`: 24 cells
+and 1,709 effective TCRs on the 2023 snapshot, 27 and 1,697 on 2026. The
+ordering and the named outliers are unchanged.
+
+### 3. `method.verification` — spectacular-looking, and entirely the study
+
+The field E90 skipped is the most directly relevant one in the schema, and it
+produces the largest effect in the whole provenance analysis:
+
+| level | n | validated | expected | excess |
+|---|---:|---:|---:|---:|
+| `direct` | 150 | **0.127** | 0.445 | **−0.318** |
+| `antigen-expressing-targets` | 24 | **0.771** | 0.391 | **+0.379** |
+| `antigen-loaded-targets` | 21 | 0.524 | 0.330 | +0.194 |
+
+TCRs the original study marked as **directly verified** validate at 13%, far
+*worse* than unverified ones. That reads as a serious finding about the
+literature. It is not:
+
+| level | n | studies | largest share | that study |
+|---|---:|---:|---:|---|
+| `direct` | 150 | 7 | **95%** | `doi:10.1101/2020.05.04…` |
+| `antigen-expressing-targets` | 24 | 1 | **100%** | PMID:36711524 |
+
+`direct` is 95% the medRxiv preprint already identified as the worst
+contributor, and `antigen-expressing-targets` is entirely PMID:36711524,
+already the best NLVPMVATV cell at z +4.92. Both levels are also almost
+entirely NLVPMVATV (147 of 150, and 16 of 24). **The field carries nothing
+beyond the identity of two studies**, and it is populated on only 198 of 1,777
+scorable keys. This is the same conclusion as every other method field in E90
+and E91, now including the one that looked most promising.
+
+### 4. `method.frequency` — real where it exists, and it flips sign
+
+Parsed on 767–775 keys. Within-epitope Spearman with validation:
+
+| epitope | n | ρ (2023) | ρ (2026) |
+|---|---:|---:|---:|
+| NLVPMVATV | 107–111 | **+0.504** | **+0.525** |
+| GLCTLVAML | 94 | +0.188 | +0.235 |
+| GILGFVFTL | 473–486 | +0.047 | +0.044 |
+| YLQPRTFLL | 88–89 | **−0.478** | **−0.461** |
+
+On NLVPMVATV, how common a clonotype was in the original experiment predicts
+revalidation at ρ +0.5 — the strongest per-epitope provenance signal found
+anywhere in this project. On YLQPRTFLL it predicts it at −0.48. **The sign
+flips**, which is the same failure mode as the sequencing platform in E91
+(inverted on NLVPMVATV there), and it means the quantity cannot be transferred
+to an epitope whose sign is unknown. Both snapshots agree to within 0.05.
+
+### What is out of reach, and should be said rather than glossed
+
+Whether a public family entered the literature through **motif-guided
+enrichment, V-gene preselection or a clone-size threshold** is a property of
+the original paper's methods section. No VDJdb field records it, and no
+analysis here can recover it. The highest-leverage manual checks, by volume
+contributed, would be PMID:35383307 (561 records), PMID:28636592,
+PMID:34793243 and `doi:10.1101/2020.05.04.20085779`. E54 and E57 bound the
+question from the other side — the five large GILGFVFTL families resolve to
+50–110 distinct donors, which no single study's selection rule could produce —
+but that is an argument against the artifact, not a reading of the methods.
+
+**The objections were right and the conclusions survive them.** The entry does
+not change.
