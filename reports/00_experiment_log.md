@@ -5929,3 +5929,140 @@ headroom-fraction interval, cohort size, analogue distance — remains worth
 knowing. The distances say what the private cohorts look like. They do not say
 which configuration will win there, and now that has been tested rather than
 assumed in either direction.
+
+---
+
+## E88 — The antigen-switch counterfactual: can the mechanism pick the peptide?
+
+Proposed by a collaborator, and it isolates the one claim never tested here.
+Everything measured so far is **task A, revalidation**: given a (TCR, peptide)
+annotation, is it real? D scores 0.860. **Task B, specificity** is different:
+given one TCR and several peptides, which is the real target? A model can be
+excellent at A and useless at B, because A can be won by asking only "is this
+TCR typical of the TCRs validated against this peptide" — a question about the
+TCR and the cohort, with the peptide appearing nowhere.
+
+So for one TCR compute the density against every epitope's cohort —
+`z_GIL(t), z_GLC(t), … z_LTD(t)` — and ask whether the annotated epitope wins.
+`scripts/79_antigen_switch_counterfactual.py`.
+
+**The within-TCR experimental panel does not exist here, and the proposal is
+right to insist on the distinction.** The competition data holds exactly **one**
+αβ pair under two epitopes, negative under both. The PRP panel (16 peptides ×
+21 TCRs) has genuine tested negatives but no reference cohort for any of its
+peptides, so no density can be computed against them. The eight cohorts are
+therefore the panel, and the contamination is bounded rather than waved away:
+of **16,253** distinct αβ pairs in VDJdb annotated to any of the eight, **9
+(0.06%)** are annotated to more than one. The contamination also runs one way —
+real cross-reactivity makes a true signal look *worse*, never better.
+
+**One methodological correction, which reversed a number.** The first version
+standardised each cohort's density against that cohort's own leave-one-out
+distribution. That is not symmetric — cohort members have their relatives
+present while queries have theirs excluded by the ladder — and it produced a
+degenerate predictor that assigned **62%** of all queries to NLVPMVATV, which
+then "scored" 0.998 on its own epitope. Standardising each column over the
+query set removes every cohort-level scale difference by construction. All
+numbers below are the corrected ones; the predictor now spreads 0.066–0.227
+across the eight.
+
+### The exclusion ladder
+
+30 subsamples of 110 per cohort, so a large reference set cannot win on size.
+
+| exclusion level | argmax accuracy | mean rank of true |
+|---|---:|---:|
+| (i) query only | 0.483 | 2.35 |
+| (ii) + single-linkage family | 0.486 | 2.34 |
+| (iii) + same donor | 0.483 | 2.33 |
+| (iv) + same publication | **0.473** | 2.43 |
+| permuted-label null | 0.156 | 4.69 |
+
+**MHC restriction held fixed** — TTDPSFLGRY and LTDEMIAQY are the only
+HLA-A\*01:01 cohorts and V-gene usage differs by restriction element, so the
+panel above could be won by identifying the HLA with no peptide information at
+all. On the six A\*02:01 epitopes alone: (i) 0.576, (ii) 0.580, (iv) **0.566**,
+null 0.235.
+
+**Symmetric nearest-neighbour excision** — the ladder is weak in absolute terms
+(it removes 10–20 of 110 reference TCRs), so the query's `m` nearest TCRs are
+removed from *every* cohort, which needs no family radius, donor field or
+citation to be populated:
+
+| m removed per cohort | accuracy | null | ratio |
+|---:|---:|---:|---:|
+| 0 | 0.563 | 0.214 | 2.64 |
+| 10 | 0.510 | 0.196 | 2.60 |
+| 20 | 0.521 | 0.199 | 2.62 |
+| 40 | 0.531 | 0.201 | **2.64** |
+
+Flat. **And it is not V-gene usage**: `cdr3_only`, which drops V and J from the
+representation entirely, scores 0.510 at ratio 2.53 against the full model's
+0.516 at 2.65. α alone (0.530, ratio 2.98) beats β alone (0.427, 2.51), the
+same ordering E6 found on task A.
+
+**So the distance space does place a TCR nearer its own epitope's cohort, at
+2.6× the permutation null, and nothing in the obvious list of confounds
+explains it.** On its face this says the mechanism carries antigen information
+and this project has been underselling it.
+
+---
+
+## E89 — The control that decides what E88 means, and the feature it suggests
+
+`scripts/80_contrastive_specificity.py`.
+
+### 1. It is sequence-space geometry, not antigen selection
+
+E81's sharpest control is a SCEPTR trained purely on OLGA-generated sequences —
+zero antigen exposure anywhere in its training. On task A it scored 0.8337
+against the real model's 0.8414. Run the whole E88 pipeline on it:
+
+| representation | switch accuracy | null | ratio | task A AUC |
+|---|---:|---:|---:|---:|
+| real SCEPTR (default) | 0.521 | 0.200 | 2.60 | 0.8414 |
+| **`synthetic_data` (OLGA-trained)** | 0.558 | 0.209 | **2.67** | 0.8337 |
+| **`shuffled_data` (αβ pairing randomised)** | 0.543 | 0.195 | **2.78** | 0.8377 |
+
+**The antigen-naive model separates the cohorts slightly better than the real
+one.** E88's effect is real and large, and it is a statement about sequence
+space rather than about recognition: repertoires responding to different
+epitopes differ in generation-level properties — CDR3 length, composition,
+generation probability — that a model which has never seen an antigen captures
+in full. V genes were already excluded, and this shows what remains is still
+germline-flavoured rather than learned.
+
+This is E81's result arriving on the other task. **Neither task A nor task B
+requires antigen-specific learning in the representation**, which is a cleaner
+statement of the project's central finding than either experiment alone.
+
+### 2. The contrastive feature is the typicality gravity well again
+
+E88's statistic is different *in kind* from what D uses. D asks how dense a
+TCR's neighbourhood is inside its own cohort, which is antigen-agnostic. The
+contrastive version asks how much *more* typical it is of its own epitope than
+of any other — a spurious annotation should look typical of TCRs in general and
+not preferentially typical of its own cohort. It is label-free, so it is
+computable on the private rows.
+
+| feature | task A AUC | ρ with typicality | gate |
+|---|---:|---:|---|
+| `z_own − mean_other` (m=0) | 0.8041 | +0.858 | FAIL |
+| `z_own − max_other` (m=0) | 0.7781 | +0.784 | FAIL |
+| `z_own − mean_other` (m=20) | 0.7724 | +0.675 | FAIL |
+| `z_own − max_other` (m=20) | 0.7544 | +0.614 | FAIL |
+| typicality itself (top-8 density) | **0.8414** | +1.000 | — |
+
+All four fail the `typicality_gate` (0.6378) and **all four score below plain
+typicality**. The usual trade is visible: the variant with the least typicality
+contamination (+0.614) is also the weakest (0.7544). This is the fifth feature
+to land in the gravity well, and it does not go near the +0.02 bar.
+
+### What stands
+
+The entry does not change. What E88 and E89 add is that **the two-task framing
+is now measured rather than asserted**: the mechanism does separate antigens at
+2.6× chance under heavy controls, that separation needs no antigen exposure to
+exist, and converting it into a contrastive feature recovers typicality. The
+collaborator's experiment was the right one to run, and its decisive control is
+the one that tells us what the positive result means.
