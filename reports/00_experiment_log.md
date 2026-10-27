@@ -4708,3 +4708,100 @@ comes entirely from the *sparse* cohorts wanting *small* k — E17's mechanism
 again, where the few genuinely close pairs must dominate. Spearman between the
 close-neighbour fraction and the oracle k is +0.500 on five points with
 YLQPRTFLL breaking it outright. Not a usable rule, and no headroom on GLC.
+
+---
+
+## E72 — Why is GLCTLVAML over-converged? The proximate cause, measured
+
+E20 established *that* GLC's density fails because "everything is dense". This
+asks *why* its cohort is dense, against four competing explanations: a narrow
+recognition solution space, a database artifact of deeply-sampled donors,
+generation bias, or cohort composition. Six of the eight epitopes are
+HLA-A\*02:01, so **HLA is held fixed by the design** and any explanation must
+be peptide-specific.
+
+**The shape of the convergence.** GLC is not one big motif:
+
+| epitope | n | has a close neighbour | clusters | largest | in 2–4 member clusters |
+|---|---:|---:|---:|---:|---:|
+| **GLCTLVAML** | 192 | **55.2%** | 22 | 32 | **41.5%** |
+| GILGFVFTL | 670 | 47.6% | 39 | 71 | 21.6% |
+| NLVPMVATV | 366 | 18.3% | 21 | 17 | 56.7% |
+| YLQPRTFLL | 419 | 18.4% | 19 | 12 | 51.9% |
+
+**V-gene restriction is not the explanation.** Rarefied to n=192, TRBV Simpson
+diversity is **0.390 on GILGFVFTL** against GLC's 0.853 and 0.886–0.955 for the
+rest. GIL is far more V-restricted than GLC, yet density works there.
+
+**Generation bias is not the explanation either**, and this was already
+measured: E33's R08 found GIL's clustering-to-validation gap collapses from
+0.400 to 0.067 once Pgen and length are matched, while **GLC's survives, 0.281
+→ 0.375**. GLC's clusters are genuinely selected, not easy-to-generate.
+
+**Donor concentration alone is not sufficient.** GLC draws on 20 resolvable
+donors with the top three contributing 47%; NLVPMVATV is *more* concentrated
+(43 donors, top three 69%) and shows none of the pathology.
+
+### What the data does say
+
+| epitope | donor resolution | close pairs | cross-donor | **same-donor** |
+|---|---:|---:|---:|---:|
+| GILGFVFTL | 86% | 1304 | 72% | 28% |
+| NLVPMVATV | 89% | 53 | 68% | 32% |
+| YLQPRTFLL | 37% | 13 | 69% | 31% |
+| **GLCTLVAML** | 61% | 145 | **53%** | **47%** |
+
+And the keystone, restricted to donors contributing ≥5 TCRs — **how convergent
+is one person's response to this epitope?**
+
+| epitope | qualifying donors | within-donor pairs ≤0.12 |
+|---|---:|---:|
+| **GLCTLVAML** | 9 | **8.7%** |
+| GILGFVFTL | 74 | 4.2% |
+| YLQPRTFLL | 11 | 0.6% |
+| NLVPMVATV | 12 | 0.1% |
+| TTDPSFLGRY | 8 | 0.0% |
+| CINGVCWTV | 4 | 0.0% |
+
+**Inside a single donor, GLC's TCRs sit within the clustering radius of each
+other at twice GILGFVFTL's rate and 15–90× everything else.**
+
+### The mechanism, as a chain
+
+1. One person's GLC response is **oligoclonal** — 8.7% of within-donor pairs
+   are inside the radius, the highest of all eight epitopes.
+2. GLC's cohort draws on only **20 donors**, so those within-donor pairs are a
+   large share of all close pairs: **47% same-donor**, against GIL's 28%.
+3. E57 measured what that costs: on GLC, conditional on *having* a neighbour,
+   a cross-donor neighbour predicts validation at **94.0%** and a same-donor-only
+   neighbour at **60.0%** (odds ratio 10.4, p 1.5e-04).
+4. So GLC's density is high but **spent on the uninformative kind of
+   neighbour** — within-donor clonal expansion carries no convergence evidence.
+5. Hence density collapses exactly where E20 found it: 0.551 on GLC's
+   singletons, 0.677 for nn3 alone, the lowest of the eight.
+
+**This replaces "everything is dense" with "the wrong things are dense"**,
+which is both more specific and testable.
+
+### The biology, separated from the measurement
+
+What is measured above is the *proximate* cause. The *ultimate* cause — why one
+person's GLC response is oligoclonal — this dataset cannot settle, and the
+obvious candidate fails:
+
+GLCTLVAML is the immunodominant HLA-A\*02:01 epitope of EBV's lytic BMLF1
+protein, and EBV persists for life with periodic reactivation, so decades of
+repeated restimulation focusing the response is the natural story. **But CMV's
+NLVPMVATV is also a lifelong herpesvirus epitope with famously large responses,
+and it shows 0.1% within-donor close pairs — essentially none.** "Persistent
+herpesvirus" does not separate them. Something more specific to the GLC
+response is responsible, and distinguishing the candidates (episodic lytic
+reactivation versus continuous low-level stimulation; a narrower peptide
+contact surface; founder effects in the acute infectious-mononucleosis
+response) needs per-donor clone sizes and longitudinal sampling, neither of
+which VDJdb carries here.
+
+**Caveat on the keystone number.** GLC qualifies only 9 donors at 61% donor
+resolution, so 8.7% rests on thin data. The contrast with NLVPMVATV — 12
+donors at 89% resolution and 0.1% — is large enough that noise is an unlikely
+explanation, but the number itself should not be quoted precisely.
