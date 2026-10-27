@@ -6066,3 +6066,128 @@ is now measured rather than asserted**: the mechanism does separate antigens at
 exist, and converting it into a contrastive feature recovers typicality. The
 collaborator's experiment was the right one to run, and its decisive control is
 the one that tells us what the positive result means.
+
+---
+
+## E90 — Which prior studies contributed the false positives, and why?
+
+Proposed by the user. Every TCR-epitope pair here came from a published screen,
+and the competition label is the outcome of **re-testing** that annotation — so
+`pos = 0` is, to a first approximation, a false positive in the source
+literature. That makes a question available that no amount of model tuning
+reaches: do some studies produce more of them, and what distinguishes those
+studies? `scripts/81_study_false_positive_rate.py`.
+
+This is not E56, which asked whether distinct *donors* could be resolved in
+order to decide whether convergent families were a citation artifact. And it is
+not "can metadata predict validation", which was settled negatively on the
+private split. This is about data quality in the source literature.
+
+**The confound that dominates is the epitope.** Base validation rates run from
+0.262 on NLVPMVATV to 0.632 on GLCTLVAML, and groups specialise. Every
+comparison below is against the epitope's base rate computed **with that study
+removed**, so a large contributor is not scored against a mean it defines.
+1,615 of the 1,782 scorable rows carry exactly one VDJdb reference and form the
+primary analysis.
+
+### 1. The between-study variation is real, and large
+
+23 (study, epitope) cells with n ≥ 10, covering 15 studies and 1,559 TCRs.
+Dispersion statistic **383.1**; the within-epitope label-permutation null has
+mean 57.3, 95th percentile 75.5 and **maximum 94.7** over 2,000 draws.
+**p < 0.0005.** On the same epitope, study validation rates run from **0.084 to
+0.923**.
+
+### 2. The outliers, named
+
+| study | epitope | n | validated | expected | excess | z |
+|---|---|---:|---:|---:|---:|---:|
+| doi:10.1101/2020.05.04.20085779 | NLVPMVATV | 143 | **0.084** | 0.424 | −0.340 | **−8.23** |
+| PMID:29997621 | GILGFVFTL | 81 | 0.358 | 0.626 | −0.268 | −4.99 |
+| PMID:35750048 | TTDPSFLGRY | 129 | 0.380 | 0.568 | −0.188 | −4.32 |
+| doi:10.1016/j.xcrm.2023.101017 | YLQPRTFLL | 39 | 0.154 | 0.435 | −0.281 | −3.54 |
+| PMID:28636589 | NLVPMVATV | 36 | 0.028 | 0.294 | −0.267 | −3.51 |
+| … | | | | | | |
+| PMID:29483513 | GILGFVFTL | 52 | 0.923 | 0.532 | +0.391 | +5.65 |
+| PMID:35383307 | TTDPSFLGRY | 213 | 0.568 | 0.380 | +0.188 | +5.66 |
+| PMID:34793243 | GILGFVFTL | 75 | 0.853 | 0.522 | +0.332 | +5.75 |
+| PMID:34793243 | YLQPRTFLL | 64 | 0.734 | 0.338 | +0.397 | **+6.71** |
+
+A preprint is the single worst contributor by a wide margin: 143 NLVPMVATV
+annotations of which **8.4%** survived re-testing. PMID:34793243 is the
+opposite, strongly positive on all three epitopes it touches. Note that
+PMID:28636592 appears on both sides — −0.138 on GILGFVFTL and +0.254 on
+NLVPMVATV — so this is not a clean ranking of laboratories.
+
+### 3. Replication across studies is the strongest single predictor
+
+| epitope | 1 reference | rate | >1 reference | rate |
+|---|---:|---:|---:|---:|
+| GILGFVFTL | 445 | 0.578 | 129 | **0.961** |
+| GLCTLVAML | 152 | 0.632 | 13 | **1.000** |
+| NLVPMVATV | 301 | 0.262 | 14 | **0.714** |
+| YLQPRTFLL | 375 | 0.405 | 6 | **1.000** |
+
+Epitope-stratified Mantel–Haenszel odds ratio **17.1**. A TCR-epitope pair
+independently reported by two groups almost always survives re-testing.
+
+It also **passes the typicality gate** — within-epitope ρ with top-8 density is
+**+0.200** against the gate's 0.6378 — so it is not merely a citation count
+standing in for convergence, though GILGFVFTL alone reaches +0.509.
+
+**And it is useless here.** The private cohorts carry essentially no replicated
+annotations: CINGVCWTV **0 of 243**, LTDEMIAQY **0 of 130**, LLWNGPMAV **1 of
+229**. TTDPSFLGRY is 0 of 387 on the public side too. This is why provenance
+died on the private split, now with the mechanism visible rather than inferred:
+the private epitopes were each contributed by two or three papers (E56), so
+cross-study replication cannot exist there.
+
+### 4. Most of the apparent method effects are one study wearing a method label
+
+The honest check is how many distinct studies stand behind each level, since a
+group generally uses one protocol throughout:
+
+| level | excess | distinct studies | largest study's share |
+|---|---:|---:|---:|
+| `rna-seq` | −0.304 | 2 | **96.6%** |
+| `tissue = lung` | −0.371 | 1 | **100%** |
+| `vdjdb.score = 3` | −0.255 | 5 | **91.7%** |
+| `cell.subset` missing | −0.175 | 3 | 94.3% |
+| `dextramer-sort` | −0.059 | 3 | 72.6% |
+| **`sanger`** | **−0.090** | **12** | **36.2%** |
+| **`amplicon-seq`** | **+0.169** | **9** | **51.8%** |
+
+So the alarming-looking results are not method effects. In particular
+**VDJdb's own confidence score carries no usable ordering**: score 3 — its
+highest — validates at 0.147 against an expected 0.402, but 91.7% of score-3
+rows come from one study, and scores 0, 1, 2 run +0.106, +0.023, +0.287 with no
+monotone trend. The score is a statement about documentation completeness, not
+about whether the annotation is right.
+
+### 5. What does survive: the sequencing platform
+
+`sanger` (**12 studies**, largest share 36.2%) validates **0.090 below**
+expectation and `amplicon-seq` (**9 studies**, 51.8%) **0.169 above**, both at
+permutation p < 0.0005 with the epitope mix held fixed. These are the only
+levels spread across enough independent groups to be read as a method effect
+rather than a study effect.
+
+**Era does not explain it**, at least not at this sample size: Spearman between
+PMID-as-recency and the excess z is **+0.204, permutation p 0.392** over the 20
+cells carrying a PMID. Median PMIDs do differ by platform (sanger ≈ 29.5M,
+amplicon-seq ≈ 34.8M, roughly 2018 versus 2021), so platform and era cannot be
+fully separated with 15 studies — but recency on its own buys nothing.
+
+### What this is and is not
+
+**It is a real result about the source literature**: between-study variation in
+false-positive rate is large and significant, one preprint contributed 143
+annotations of which 8.4% held up, replicated annotations are almost always
+real, and Sanger-era single-clone work validates measurably worse than
+amplicon-based repertoire sequencing.
+
+**It is not a feature.** The strongest signal, cross-study replication, is
+structurally absent from the private split, and the second, sequencing
+platform, is a property of 15 studies rather than of a TCR. The entry does not
+change. This is the kind of finding worth a paragraph in a paper and worth zero
+on the leaderboard, and both halves of that should be said plainly.
