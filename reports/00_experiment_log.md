@@ -5150,3 +5150,42 @@ was that "crowded regions of TCR space are where genuinely public clonotypes
 live, so normalising subtracts signal rather than noise". E77 now says the same
 thing from a third angle: local redundancy *is* the signal. A finer matched
 background is a refinement of a design whose sign is already known.
+
+---
+
+## E78 — Matched-background neighbourhood enrichment. E8's mechanism survives the refinement.
+
+Proposed externally (as "E74"; renumbered). The question: a TCR has many
+references nearby, but **given its V gene, CDR3 length and generation
+background, how unusual is that?** E8 ran the coarse version and lost; this is
+the fine-grained one it did not run, with the background matched per query on
+**TRBV stem × CDR3β length bin × paired-Pgen tercile**, relaxing through
+`trbv+len`, `len+pgen`, `len only` and finally the whole foreign pool.
+`scripts/68_matched_background_enrichment.py`. Median background pool 238.
+
+**The prediction was recorded before running**, because a prediction is not a
+measurement — the same discipline E36, E50 and E58 applied to their own
+controls.
+
+| feature | macro | GIL | GLC | NLV | TTD | YLQ |
+|---|---:|---:|---:|---:|---:|---:|
+| own-cohort top-8 (raw) | **0.8414** | 0.880 | 0.714 | 0.833 | 0.851 | 0.930 |
+| **matched background alone** | **0.5881** | 0.596 | 0.694 | 0.574 | 0.601 | 0.476 |
+| enrichment = own − background | 0.8154 | 0.883 | 0.675 | 0.812 | 0.793 | 0.914 |
+
+**Dividing the background out costs 0.026.** And into configuration D: the
+enrichment correlates with D at within-epitope ρ +0.826, an **oracle allowed to
+choose a single global weight picks w = 0.00** for a gain of +0.0000, and
+nested LOEO gives −0.0014.
+
+**E8's mechanism survives the refinement intact.** The matched background
+scores **0.5881 on its own** — against E8's 0.60 for the coarse version — so it
+is positively informative, and subtracting it removes signal however finely it
+is matched. Crowded regions of TCR space are where genuinely public clonotypes
+live, and conditioning on germline and generation class does not change that.
+
+This is the third independent route to the same conclusion. E8 measured it with
+a coarse background, E77 measured it by de-duplicating the top-8 (−0.0033, with
+effective family count scoring 0.2957 on its own), and E78 measures it with a
+matched background. **Local crowding is the signal, not a nuisance to be
+normalised away.**
