@@ -4332,3 +4332,104 @@ least exposed to this bug class, not the most.
 lesson stands as a standing rule: *a noise model is a result and needs its own
 validation.* Split the right thing, correct the split for its own halving, and
 drop any unit whose self-agreement is too low to be a denominator.
+
+---
+
+## E67 / E68 — Configuration D's error anatomy, and whether any of it is label-free
+
+Commissioned by `IMMREP26_E62-E64_Audit_and_E67-E70_Outlier_Roadmap.md`. No
+model is trained and the submitted file is untouched.
+`scripts/63_outlier_anatomy.py`. D's four components are rebuilt and verified
+against the submitted CSV at **r = 0.999999** before anything is measured.
+
+**The hazard the brief flagged is real and is honoured.** This project uses two
+different 0.12 thresholds — the single-linkage *edge* radius that defines
+families, and `nn3_dist`, the mean distance to the three nearest members.
+Cluster state here is the edge radius on the **full cohort** including
+unlabelled rows, as in E54 and E57; `nn3_dist` appears only as a continuous
+covariate and is never thresholded.
+
+### E67 — where D's remaining loss sits
+
+| class | share of pairs | mean error rate | share of loss |
+|---|---:|---:|---:|
+| positive singleton × negative singleton | 49.4% | 0.192 | **64.0%** |
+| positive singleton × negative cluster | 3.9% | **0.634** | 19.3% |
+| cluster × cluster | 5.6% | 0.215 | 10.2% |
+| positive cluster × negative singleton | 41.1% | 0.026 | 6.6% |
+
+**D did not change the shape of the error.** E22 put `both_singleton` at 62% of
+loss on the frozen entry and E50 at 59.8% under the label-free partition; D
+gives 64.0%. The adversarial class is still ~19% of loss at a 63% error rate.
+Buying +0.0102 of macro AUC moved the level, not the structure.
+
+**Pair weight against independent TCRs**, which the brief rightly insists on
+separating:
+
+| epitope | misranked pair-slots | TCRs | carried by the worst 5% of TCRs |
+|---|---:|---:|---:|
+| GILGFVFTL | 16,820 | 575 | 34.7% |
+| YLQPRTFLL | 4,602 | 382 | **43.2%** |
+| NLVPMVATV | 5,220 | 317 | 32.7% |
+| TTDPSFLGRY | 8,806 | 342 | 23.0% |
+| GLCTLVAML | 2,996 | 166 | 17.7% |
+
+The loss is concentrated in few receptors on four of five epitopes — but **not
+on GLCTLVAML**, where it is the most evenly spread. GLC is not failing because
+of a handful of outliers; it is failing broadly.
+
+Casebook of the worst 40 at `reports/38_outlier_casebook.tsv`: **26 high-scoring
+negatives against 14 low-scoring positives**, and 26 of the 30 GILGFVFTL cases
+are negatives.
+
+### E68 — is the failure visible without labels? Four gates, and it dies on the last two
+
+`U = SD(rank_density, rank_pool, rank_Vdomain, rank_structure)`, computable on
+the private split.
+
+**Gate A** — misranked pairs rise with U on GLC (12.5 → 24.1 across quartiles)
+and NLV, but not monotonically on GIL or TTD, and flat on YLQ.
+
+**Gate B — passes.** Poisson regression of the misranked-pair count on D's own
+score, `nn3`, cluster state and epitope, with standard errors clustered by
+family: **U coefficient +1.148, p = 0.0047**, pseudo-R² 0.0854 → 0.0904. So U
+does carry residual information about *where D fails*.
+
+**Gate C — fails, and this is the one that matters.** A misranked pair means a
+positive was scored too low *or* a negative too high, so a correction needs U
+to say which. Fitted separately:
+
+| side | n | U coefficient | p |
+|---|---:|---:|---:|
+| positives (scored too low) | 910 | **+1.122** | <0.0001 |
+| negatives (scored too high) | 872 | **+1.573** | <0.0001 |
+
+**Same sign on both.** U marks risk in both directions at once. A shift
+`s' = s + δ(U)` moves high-risk positives and high-risk negatives the same way.
+
+**Gate D — priced anyway, and it is worth nothing.** Over a grid of
+`s' = s + c·U_rank`:
+
+| | macro AUC | vs D |
+|---|---:|---:|
+| D as submitted | 0.8600 | — |
+| best single global c (+0.025) | 0.8601 | **+0.0000** |
+| oracle per-epitope c | 0.8614 | **+0.0014** |
+
+And the per-epitope oracle directions **contradict each other** — GIL +0.100,
+TTD +0.150, NLV 0.000, GLC −0.050, YLQ −0.150 — which is exactly what a
+label-blind risk flag should do.
+
+### Settled
+
+**U is a real uncertainty statistic with no usable direction.** It survives the
+controls the brief specified and is worth +0.0014 to an oracle that is allowed
+to choose its sign per epitope. No correction is built; the brief's own warning
+that E68 "must not become E49/E50/E52 under a new name" is honoured by stopping
+here rather than by searching for a form that works.
+
+The substantive finding is E67's: **D changed the level of the error and not
+its shape**, 64% of the loss is still in pairs where neither member has
+relatives, and GLCTLVAML's failure is diffuse rather than concentrated in
+outliers — which argues against the "fix a handful of GLC cases" reading that
+the macro-AUC sensitivity arithmetic invites.
