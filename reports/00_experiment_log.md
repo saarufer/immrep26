@@ -6657,3 +6657,98 @@ that CINGVCWTV's traceable TCRs come from in vitro cell lines — is on the
 record. None of it is a feature: all three facts are study-level and constant
 within their cohorts, which E91 established contributes exactly zero to a
 within-epitope AUC.
+
+---
+
+## E95 — What the antigen-naive model is actually using
+
+E88 found the cohorts separate at 2.6× the permutation null; E89 found a SCEPTR
+trained purely on OLGA sequences does it at 2.67×, slightly better. That closed
+the "is it recognition" question and opened a sharper one: **sequence space
+along which axis?** An OLGA-trained model knows the shape of V(D)J
+recombination and nothing else, so whatever it is reading must be legible to a
+generative model. `scripts/85_what_the_naive_model_uses.py` replaces the
+learned representation with explicit features and re-runs E88's pipeline
+unchanged — same HLA-A2 panel, same family exclusion, same 20-nearest-neighbour
+excision from every cohort, same permutation null.
+
+| feature space | dim | switch accuracy | null | ratio | share of SCEPTR's excess |
+|---|---:|---:|---:|---:|---:|
+| SCEPTR (reference, E88) | 64 | 0.521 | 0.200 | **2.60** | — |
+| **CDR3 lengths only** | **2** | 0.476 | 0.271 | 1.76 | **47%** |
+| OLGA Pgen only | 2 | 0.331 | 0.209 | 1.58 | 36% |
+| lengths + Pgen | 4 | 0.443 | 0.232 | 1.91 | 57% |
+| AA composition | 40 | 0.563 | 0.262 | 2.15 | 72% |
+| V/J gene usage | 203 | 0.637 | 0.296 | 2.15 | 72% |
+| all of the above | 247 | 0.632 | 0.291 | 2.17 | **73%** |
+
+**Two numbers recover half of it.** The lengths of CDR3α and CDR3β, nothing
+else, give 47% of SCEPTR's excess over chance. Composition alone and V/J usage
+alone each give 72%, and stacking all 247 dimensions gives 73% — so these
+features are near-redundant rather than additive, all reading the same
+underlying difference. SCEPTR's remaining 27% is what the learned
+representation adds on top.
+
+The blunt view confirms it needs no model at all. Mean CDR3α length runs from
+**11.55** on LLWNGPMAV to **14.20** on GILGFVFTL, a 2.65-residue gap against
+within-cohort standard deviations of 1.7–2.2:
+
+| epitope | split | CDR3α len | CDR3β len | log10 Pgen α | log10 Pgen β |
+|---|---|---:|---:|---:|---:|
+| GILGFVFTL | public | **14.20** ± 1.72 | 13.44 ± 1.29 | −6.97 | −8.04 |
+| CINGVCWTV | private | 13.82 ± 2.15 | **15.42** ± 1.79 | −8.65 | **−10.02** |
+| TTDPSFLGRY | public | 13.39 ± 1.74 | 14.35 ± 1.59 | −7.34 | −9.18 |
+| LTDEMIAQY | private | 13.25 ± 2.00 | 14.55 ± 1.61 | −7.03 | −9.24 |
+| NLVPMVATV | public | 13.23 ± 2.00 | 14.55 ± 1.96 | −7.50 | −9.34 |
+| YLQPRTFLL | public | 12.76 ± 1.99 | 13.82 ± 1.76 | −7.83 | −8.93 |
+| GLCTLVAML | public | 12.43 ± 1.78 | 13.96 ± 1.30 | −7.40 | −9.28 |
+| LLWNGPMAV | private | **11.55** ± 1.89 | 14.05 ± 1.31 | −6.81 | −8.38 |
+
+One-way ANOVA across the six HLA-A\*02:01 cohorts, where HLA is held fixed:
+
+| scalar | F | p | η² |
+|---|---:|---:|---:|
+| CDR3α length | 87.06 | 2×10⁻⁸³ | **0.171** |
+| CDR3β length | 65.67 | 7×10⁻⁶⁴ | 0.135 |
+| log10 Pgen β | 53.61 | 2×10⁻⁵² | 0.113 |
+| log10 Pgen α | 13.86 | 2×10⁻¹³ | 0.032 |
+
+### This refines E89's wording, which overreached slightly
+
+E89 concluded that E88's effect "is sequence-space geometry rather than
+recognition". That is right about the **representation** and sloppy about the
+**biology**. OLGA models generation, not selection, so an OLGA-trained encoder
+supplies the *coordinates* — length, composition, gene usage — without knowing
+any labels. The cohorts' differences *along* those coordinates are presumably
+antigen-driven: a peptide imposes geometric constraints on the groove, which
+selects CDR3 loops that can reach it, which shows up as a length distribution.
+
+So the precise statement is: **the discriminating coordinates are generic, the
+differences along them are not.** Reading antigen specificity at this coarse
+level requires no antigen-specific learning, because the signal has already
+been projected onto axes any sequence model represents. That is a weaker claim
+than "the model does specificity" and a stronger one than "the separation is
+meaningless", and it is the one the measurements support.
+
+It also explains why this cannot become a feature, without needing E91's
+argument: the quantity is a **per-cohort** property. Within one epitope, where
+the competition scores, the length distribution is a constant backdrop and only
+its variance remains — which is why `cdr3_only` and the length features never
+appear anywhere near the top of a task-A table.
+
+### Closed alongside: no fusion of the three submissions beats D
+
+Zero-parameter rank averages of the submitted entries, for completeness:
+
+| candidate | macro | vs D |
+|---|---:|---:|
+| **D** | **0.8600** | — |
+| D+F | 0.8582 | −0.0019 |
+| D+frozen | 0.8565 | −0.0035 |
+| D+F+frozen | 0.8563 | −0.0037 |
+| F | 0.8557 | −0.0044 |
+| frozen | 0.8498 | −0.0102 |
+
+Nested LOEO over the six selects **D in all five folds**, returning 0.8600
+exactly. D is not improved by averaging with the entries it already dominates,
+and its selection is unanimous across folds.
