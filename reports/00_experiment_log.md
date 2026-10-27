@@ -4433,3 +4433,83 @@ its shape**, 64% of the loss is still in pairs where neither member has
 relatives, and GLCTLVAML's failure is diffuse rather than concentrated in
 outliers — which argues against the "fix a handful of GLC cases" reading that
 the macro-AUC sensitivity arithmetic invites.
+
+---
+
+## E70 — Validating TCR63's hinge, because it appeared only after a bug fix
+
+The code review found E64's two-piece model never fitted — its knot started
+outside the data, so the hinge term was zero everywhere. Bounding it reversed
+the conclusion. **A result that appears only after a bug fix has to be
+validated harder than one that was there all along.**
+`scripts/64_hinge_validation.py`, six checks, the first of which can kill it.
+
+**Check 1 — synthetic recovery, both halves.** x resampled from TCR63's own
+values so the leverage structure matches:
+
+| scenario | recovered slope change | held-out gain over linear |
+|---|---:|---:|
+| true hinge, change −60 | **−61.6** | +0.148 |
+| true hinge, change −25 | −30.5 | **−0.021** |
+| **pure line, change 0** | **+0.04** | **−0.006** |
+
+**The fitter does not manufacture a knot**: on pure lines it recovers a change
+of +0.04 and *loses* 0.006 out of sample. And the middle row is a useful
+calibration — a moderate hinge is recovered as a parameter but does not pay off
+out of sample, so a positive held-out gain requires a large one.
+
+**Checks 2–5 on the real data.**
+
+| | TCR59 | TCR63 |
+|---|---|---|
+| knot | 0.327 | 0.321 |
+| slopes | +131.0 → +12.9 | **+248.9 → −65.5** |
+| points each side | 98 / 94 | 73 / 119 |
+| knot sitting at a bound | no | no |
+| folds failing identifiability | 0/7 | 0/7 |
+| knot after dropping 5/10/20 extreme-x points | 0.322 / 0.322 / 0.288 | 0.301 / 0.289 / 0.276 |
+| bootstrap knot, 95% CI | [0.230, 0.577] | **[0.270, 0.447]** |
+| gene holdout gain | **−0.020** | **+0.267** |
+| origin holdout gain | −0.038 | **+0.310** |
+
+**Check 6 — and it changes what the result means.** Saturation would put the
+post-knot slope at zero; TCR63's goes *below* it:
+
+| | slope after knot | 95% CI | P(slope<0) | Spearman above the knot |
+|---|---:|---|---:|---:|
+| TCR59 | +12.9 | [−55.0, +54.5] | 0.368 | +0.050 (n=94) |
+| **TCR63** | **−65.5** | **[−129.0, −20.7]** | **1.000** | **−0.360** (n=119) |
+
+**TCR63's relationship is not saturating, it reverses.** Above
+`r2_r1_ratio ≈ 10^0.32 ≈ 2.1`, higher screen enrichment goes with *lower* flow
+activation, and the model-free rank correlation in that region is **−0.360** on
+119 peptides. That is why isotonic, which is constrained to be monotone,
+reached only 0.424 while the hinge reaches 0.576–0.629 — the data are
+non-monotone and a monotone model cannot represent them.
+
+TCR59 flattens but does not reverse: its post-knot slope CI spans zero and the
+rank correlation above the knot is +0.050, so a line captures its ordering just
+as well and the hinge costs 0.020–0.038.
+
+### Settled
+
+**The hinge survives every check the brief specified**, and the finding is
+sharper than first logged: TCR63 shows a **reproducible non-monotone reversal**
+between screen enrichment and flow activation within the assayed range, stable
+under gene holdout and the human↔virus split, not driven by extreme points, and
+with a knot bootstrap CI of [0.270, 0.447].
+
+It joins E61 from the other side. There, first-round abundance ran *negative*
+against flow on TCR59 while the later-round gain ran +0.687. Here the
+later-round gain itself reverses above a threshold on TCR63. Both say the same
+thing: **beyond some point the screen stops tracking function**, which is what
+to expect if the top of a selection is shaped by amplification, bottlenecking
+or non-functional enrichment rather than by activation strength.
+
+**What still cannot be claimed**, exactly as the brief states: this is not a
+measured T-cell activation threshold, not a TCR–pMHC binding threshold and not
+kinetic proofreading. SEEKER's two readouts are both functional-screen
+quantities, and the 192 measured peptides were selected for being top-ranked.
+Establishing a biological threshold needs peptides chosen *without* reference
+to enrichment, across a dose gradient, with expression and presentation
+controls.
