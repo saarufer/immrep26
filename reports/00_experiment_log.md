@@ -5348,3 +5348,75 @@ of 0.10–0.15 and **−0.0035 under nested LOEO**; it correlates with D at
 within-epitope ρ +0.905, so it is measuring what D already measures.
 
 **The entry is unchanged.**
+
+---
+
+## E82 — The two-task control: is antigen specificity in the pretraining or in the retrieval?
+
+A collaborator reframed E81 correctly and more sharply than "protein language
+models have not learned immunology". The system decomposes into three layers —
+a pretrained sequence representation, an **antigen-conditioned reference set**
+of TCRs known to bind the target peptide, and a ranking of functional
+revalidation against that reference. On that reading, an antigen-agnostic
+embedding can still support good prediction because **the retrieval, not the
+representation, carries the antigen information**:
+
+> antigen-conditioned retrieval over an antigen-agnostic sequence representation
+
+The proposed decisive control is two tasks with the same representations:
+**A**, IMMREP26-style functional revalidation (done, E81), and **B**, independent
+recognition generalisation measured experimentally rather than from VDJdb.
+
+### Task B is runnable, in a reduced form
+
+What each external source can and cannot supply turned out to matter:
+
+| source | paired sequences | shared peptide panel |
+|---|---|---|
+| PRP | **CDR3β only** (GitHub `tcr_cdr3b.csv`) | yes — 38k–100k common peptides per pair |
+| SEEKER PacBio | **yes**, 101 full αβ with V/J | **no** — 59,812 rows hold 59,812 distinct peptides, each assigned to one TCR, so every pair shares zero |
+| SEEKER 4TCR | no sequences in the package | yes — 236 peptides across all four, but only 4 receptors |
+| SEEKER B27 | — | 2 receptors |
+
+**The pieces exist but never together.** What is available is PRP: 21 receptors
+over a shared library, β sequence only. Every SCEPTR variant will embed from
+CDR3β alone, so the comparison can be made β-only.
+
+### Result: nothing works, including the real-pretrained model
+
+156 comparable pairs, recognition distance = 1 − Spearman on ≥5,000 common
+peptides within one anchor library:
+
+| representation | pretrained on | ρ with recognition distance | p |
+|---|---|---:|---:|
+| default | real repertoire | **+0.015** | 0.850 |
+| blosum | real, BLOSUM embedding | +0.009 | 0.914 |
+| shuffled_data | real, αβ pairing randomised | +0.028 | 0.725 |
+| **synthetic_data** | **OLGA synthetic only** | **+0.039** | 0.628 |
+| cdr3_only | real, CDR3 only | +0.034 | 0.669 |
+| b_sceptr | real, β chain only | +0.043 | 0.598 |
+| Levenshtein (E63's baseline) | — | +0.015 | 0.854 |
+
+**Every value is indistinguishable from zero**, and the OLGA-pretrained model
+is numerically *above* the real-pretrained one.
+
+### Which branch of the proposal this lands in — neither, exactly
+
+The framework offered two outcomes: OLGA matching on A but losing on B (the
+pretraining carries task-specific value), or matching on both (recombination
+geometry already approximates the biophysics). **The actual outcome is a third:
+on task B nothing works at all**, so there is no difference to attribute. The
+conclusion is not "recombination structure suffices" but "**β sequence carries
+no recognition-profile similarity in any representation tested**".
+
+**The bound that matters.** This is β-only, because PRP has no α. E63 found the
+same dataset's five identical-CDR3β pairs recognise no more similarly than
+random pairs — and those pairs differ precisely in α. So α is doing work that β
+cannot, and this experiment does not test whether a *paired* representation
+would succeed.
+
+**What would settle it**, stated precisely because the proposal deserves it:
+**≥10 fully paired αβ TCRs profiled over a shared peptide panel.** Neither PRP
+(β only) nor SEEKER (pairs without a shared panel, or a shared panel without
+sequences) provides it, and that gap is worth more as a specification for the
+next dataset than as a reason to weaken the claim.
