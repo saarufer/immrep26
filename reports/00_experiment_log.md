@@ -5094,3 +5094,59 @@ too few rows to measure density on.
 unclassified and every number above rests on the other 141. GIL and NLV are at
 86% and 89%, so the comparison is between a well-resolved and a
 partly-resolved cohort.
+
+---
+
+## E77 — De-duplicating the top-8 neighbourhood by family. The hypothesis is backwards.
+
+Proposed externally (as "E73" in a collaborator's plan; renumbered here because
+E73–E76 are taken). The idea: a TCR's eight nearest neighbours may represent
+only two or three independent recognition modes, so capping each family's
+contribution should sharpen the ranking. It is motivated by our own E57, E72
+and E76, and it is genuinely new — E11 tested graph topology, E17 adaptive
+bandwidth, E50 class-conditioned weights, but nobody had de-duplicated the
+top-k set. It also uses *family* rather than donor, so unlike E57's machinery
+it is computable on the private split.
+
+**The premise holds on two epitopes and fails on six.** Effective number of
+distinct families among the top 8:
+
+| epitope | split | effective families | top-8 all one family |
+|---|---|---:|---:|
+| GILGFVFTL | public | **4.34** | 28% |
+| GLCTLVAML | public | **4.06** | 28% |
+| YLQPRTFLL | public | 6.50 | 3% |
+| NLVPMVATV | public | 6.71 | 5% |
+| **LTDEMIAQY** | private | **7.27** | 0% |
+| **LLWNGPMAV** | private | **7.79** | 0% |
+| **CINGVCWTV** | private | **7.91** | 0% |
+
+**On all three private epitopes the top-8 already spans 7.3–7.9 distinct
+families**, so there is essentially nothing to de-duplicate where the ranking
+is decided. That alone closes it for the competition.
+
+**And de-duplication makes the density worse**, macro 0.8414 → **0.8381**
+(−0.0033). It helps only GLCTLVAML (+0.0170) and costs GILGFVFTL (−0.0122) and
+NLVPMVATV (−0.0186).
+
+**The proposal's own stopping conditions both fire.** The within-epitope
+Spearman between the standard and de-duplicated score is **+0.9667** ("stop if
+the new feature is nearly identical to D's ranking"), and the only epitope that
+gains is the public-motif one ("stop if it only moves public motif scores").
+
+**The hypothesis is backwards, and the mechanism is explicit.** Scoring the
+*effective family count* on its own gives **0.2957** — far below chance, so
+more independent families means *less* likely to validate. A top-8 that
+collapses into one family is not redundancy to be discounted; it is the
+strongest convergence evidence available, and E54 measured that large families
+are 96.2% validated. De-duplication removes exactly that.
+
+**A prediction for the companion proposal** (background-corrected neighbourhood
+enrichment, matched on V/J, length and Pgen): the same failure, for a reason
+already measured. E8 ran the core version — dividing cohort density by density
+against the other epitopes' TCRs — and got 0.8396 → 0.8262, with **background
+density alone scoring 0.60 in the positive direction**. Its settled mechanism
+was that "crowded regions of TCR space are where genuinely public clonotypes
+live, so normalising subtracts signal rather than noise". E77 now says the same
+thing from a third angle: local redundancy *is* the signal. A finer matched
+background is a refinement of a design whose sign is already known.
