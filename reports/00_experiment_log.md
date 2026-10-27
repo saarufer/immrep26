@@ -4513,3 +4513,86 @@ quantities, and the 192 measured peptides were selected for being top-ranked.
 Establishing a biological threshold needs peptides chosen *without* reference
 to enrichment, across a dose gradient, with expression and presentation
 controls.
+
+---
+
+## E69 — Does GLCTLVAML's public motif explain where D fails?
+
+Groups fixed from the known GLC biology **before any error was examined**, as
+the brief requires: TRAV5, TRBV20-1, and the single single-linkage family with
+≥20 members (which E54 found is 27/27 TRBV20-1).
+`scripts/65_glc_motif_decomposition.py`. The design is not vacuous — TRAV5
+covers 96 of 192 cohort rows, TRBV20-1 covers 50, the family has 32.
+
+**The groups, with D's behaviour inside each** (166 labelled rows):
+
+| group | n | validated | mean D rank | AUC within group | share of misranking |
+|---|---:|---:|---:|---:|---:|
+| public motif family | 27 | **0.963** | 0.834 | **0.923** | 3.0% |
+| TRAV5 only | 46 | 0.826 | 0.642 | 0.651 | 23.3% |
+| **neither** | **80** | 0.512 | 0.315 | 0.627 | **61.2%** |
+| TRAV5+TRBV20-1, no family | 8 | 0.500 | 0.569 | — | 8.7% |
+| TRBV20-1 only | 5 | 0.200 | 0.308 | — | 3.8% |
+
+**D is excellent inside the public motif (AUC 0.923) and mediocre outside it**
+(0.627 and 0.651), and 61.2% of the misranking sits in the 80 rows that carry
+no public motif at all. The whole-epitope AUC of 0.7568 is what those two
+regimes average to.
+
+**The residual-error test, conditioning on D's own score and nn3**, with
+standard errors clustered by family:
+
+| added term | coefficient | p | pseudo-R² |
+|---|---:|---:|---|
+| TRAV5 | +0.187 | 0.376 | 0.1675 → 0.1708 |
+| TRBV20-1 | −0.044 | 0.896 | 0.1675 → 0.1677 |
+| **in_big_family** | **−1.369** | **<0.0001** | 0.1675 → **0.2288** |
+
+**TRAV5 and TRBV20-1 add nothing on their own** — E42's boundary holding
+exactly as the brief predicted: V-gene identity is already inside D through the
+V-domain term. Family membership does survive, and survives a provenance
+control too (adding donor count leaves the coefficient at −1.349, p<0.0001,
+with donors resolvable for 106/166 rows).
+
+### The two checks that close it anyway
+
+Surviving a residual regression is not enough. A correction must vary on the
+private split and must say which way to move.
+
+**(a) The family does not exist where it would be needed.** Rows in a family of
+≥20, by epitope:
+
+| | GIL | GLC | NLV | TTD | YLQ | **CIN** | **LLW** | **LTD** |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| share | 30.6% | 16.7% | 0.0% | 0.0% | 0.0% | **0.0%** | **0.0%** | **0.0%** |
+
+`in_big_family` is **identically false on all three private epitopes** — it
+fails E3's `private_variance_gate` by construction, so a correction built on it
+contributes exactly nothing where the ranking is decided. It is also false on
+three of the five public epitopes, so it could not be validated across folds
+either.
+
+**(b) The direction is not estimable, and that explains the survival.**
+
+| side | n | in family | coefficient | p |
+|---|---:|---:|---:|---:|
+| positives (scored too low) | 110 | 26 | −1.288 | <0.0001 |
+| negatives (scored too high) | 56 | **1** | — | **not estimable** |
+
+Only **1 of 56** GLC negatives is in the family. The family is 26/27 positive,
+so conditioning on D's score does not stop it being very nearly the label
+itself — which is why it survived the regression, and why nothing can be built
+on it.
+
+### Settled
+
+**This line closes.** The pre-fixed hypothesis was partly right about the
+biology: GLC does hold a reliable TRAV5/TRBV20-1 public motif, D ranks inside
+it at 0.923, and the epitope's low overall AUC comes from the 80 rows outside
+any motif. But the motif identity that explains it is already in the model
+(E42), and the one term that adds something is label-like, directionless and
+absent from every private epitope.
+
+This also confirms E67's reading against the macro-AUC sensitivity arithmetic.
+GLC's loss is diffuse — spread over 80 non-motif rows, not concentrated in
+outliers — so there is no handful of cases to fix.
