@@ -6962,3 +6962,97 @@ roughly a third transfers. Against a +0.02 bar and E15's −0.0048 selection
 cost, the entry does not change. What is worth keeping is the dynamic-range
 criterion: three label-free rules, one helps, and which one is predicted
 entirely by whether its spread across cohorts matches the oracle's.
+
+---
+
+## E98 — Do the three positive results add? Yes, almost perfectly, and it still is not enough
+
+Thirty-odd experiments produced exactly three modifications with a positive
+nested LOEO. They have no mechanism in common — a structural view, a sequence
+length statistic, a kernel scale — so the question is whether they sum, and the
+measurement has to be made **once jointly**: adding them one at a time pays a
+selection cost per step, which is how E15's −0.0048 is incurred in the first
+place. `scripts/88_joint_candidate.py`. The all-off build reproduces the
+submitted D to **1.1e-16**, asserted in code.
+
+### 1. They add at 98% of additive
+
+| combination | macro | vs D |
+|---|---:|---:|
+| **ALL THREE** | **0.8621** | **+0.0020** |
+| bandwidth + structure | 0.8618 | +0.0018 |
+| bandwidth + lenfreq | 0.8613 | +0.0013 |
+| structure + lenfreq | 0.8612 | +0.0012 |
+| structure combo (E83) | 0.8610 | +0.0009 |
+| bandwidth (E97) | 0.8607 | +0.0007 |
+| lenfreq (E96) | 0.8606 | +0.0005 |
+| D | 0.8601 | — |
+
+Sum of the three individually **+0.0021**, joint **+0.0020** — **98% of
+additive**, with no interference in either direction.
+
+**They really are independent.** Within-epitope Spearman between the per-TCR
+score changes each one induces: bandwidth–structure **+0.006**,
+bandwidth–lenfreq **−0.016**, structure–lenfreq **+0.155**. Three orthogonal
+mechanisms, which is the first time this project has found any.
+
+The per-epitope picture is also favourable in one respect: the gain is carried
+by **NLVPMVATV (+0.0047)** and **TTDPSFLGRY (+0.0058)**, with GLCTLVAML
+(−0.0016) and YLQPRTFLL (−0.0007) slightly down. E86 established TTDPSFLGRY is
+the private split's structural twin.
+
+### 2. The number collapses once the parameters are nested too
+
+Section 1 holds the three parameters at the values E83, E96 and E97 chose — on
+these same five epitopes. Re-selecting all three inside every fold, over a
+5×4×3 = 60-point grid:
+
+| held out | p | struct_fp | lenfreq | AUC |
+|---|---:|---:|---:|---:|
+| GILGFVFTL | 1 | 0.15 | 0.05 | 0.8874 |
+| GLCTLVAML | 0.5 | 0.3 | 0.05 | 0.7552 |
+| NLVPMVATV | 1 | 0.15 | 0.05 | 0.8762 |
+| TTDPSFLGRY | 1 | 0 | 0.05 | 0.8519 |
+| YLQPRTFLL | 1 | 0.3 | 0.05 | 0.9342 |
+
+| | macro | vs D |
+|---|---:|---:|
+| oracle over the grid | 0.8621 | +0.0020 |
+| **fully nested** | **0.8610** | **+0.0009** |
+| selection cost of three parameters | | **−0.0011** |
+
+**Selection eats more than half of it.** And the picks are unstable: the
+bandwidth exponent lands on 1 in four folds and 0.5 in one, the structure
+weight wanders over 0 / 0.15 / 0.3, and only the **lenfreq weight 0.05 is
+unanimous across all five** — the smallest individual contributor is the only
+stable one.
+
+### 3. What reaches the private split
+
+| modification | CINGVCWTV | LLWNGPMAV | LTDEMIAQY |
+|---|---|---|---|
+| bandwidth (E97) | σ **unchanged** | σ **unchanged** | σ 0.1 → 0.07 |
+| contact fingerprint (E83) | 243/243 | 229/229 | 130/130 |
+| lenfreq (E96) | 47 levels | 44 levels | 39 levels |
+
+Two of the three reach every private row in full. The bandwidth rule changes
+nothing on two of the three, so roughly a third of its +0.0007 transfers.
+Realisable private gain is on the order of **+0.0006**.
+
+### Verdict: the entry does not change
+
+**+0.0009 fully nested against a pre-registered +0.02 bar** — 4% of it — and
+smaller than E15's −0.0048 selection cost for a comparable search. Kaggle
+truncates to three decimals, so the oracle version would read 0.862 against
+D's 0.860 on the public board, and roughly +0.0006 of that would be real on
+the private rows.
+
+What this experiment is actually worth is the negative stated precisely:
+**three mechanistically independent improvements, summing at 98% of additive
+with no interference, still total less than a tenth of the inclusion bar.**
+Every earlier near-miss could be dismissed as one idea re-encoding another —
+E87's proximity weighting, E89's contrastive feature, the four typicality
+re-encodings. This one cannot. The ceiling is not being hit because the ideas
+overlap; it is being hit because the signal available to this family of methods
+is close to exhausted, which is the sharpest version of E20's "density
+saturates at ~0.84" that the project has produced.
