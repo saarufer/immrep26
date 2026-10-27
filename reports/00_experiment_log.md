@@ -6525,3 +6525,135 @@ unreadable and is a never-peer-reviewed preprint whose TCRs are controls. No
 study shows a selection signature that explains its false-positive rate once
 the per-TCR density effect is removed, and the large public families are not
 one study's selection rule. The entry does not change.
+
+---
+
+## E94 — The five unreadable papers, read
+
+The user supplied the five papers E93 could not retrieve. All five are now
+read, and they change one conclusion and add a fact about a private epitope.
+PDFs under `ref/`, not committed.
+
+### The worst contributor is explained completely
+
+**`doi:10.1101/2020.05.04.20085779`** — Chour, Xu, Ng … Heath (ISB), medRxiv
+8 May 2020, never peer-reviewed. Contributes **168 NLVPMVATV TCRs at 0.097
+validation** against a 0.287 base, the worst cell in the dataset at z −8.23.
+
+Its NLVPMVATV receptors are **not a scientific result of the paper**. They are
+a reagent-validation positive control:
+
+> "To validate the functionality of SCTs, we expressed an SCT that incorporates
+> an immunogenic peptide derived from human cytomegalovirus hCMV-pp65 protein
+> (NLVPMVATV) … We compared antigen-specific T cell capture using this CMV SCT
+> construct and its folded pMHC counterpart **as a positive control**. … The
+> FACS-sorted cells were sequenced using 10X T-cell receptor sequencing."
+
+Three features compound:
+
+1. The pMHC is a **single-chain trimer** — peptide covalently tethered to β2m
+   and the heavy chain — not a conventionally refolded complex.
+2. Capture is **NP-NACS**: streptavidin magnetic nanoparticles, ~28.2 million
+   particles per analysis of <100,000 cells, enriched by magnet pulldown.
+3. **No specificity threshold is applied to the sequencing output at all.** The
+   strings "threshold" and "UMI" appear **zero times** in the paper.
+
+One healthy A\*02:01 donor, a novel capture chemistry, a tethered-peptide
+construct, no post-hoc filtering, and no peer review. 9.7% of those annotations
+survived re-testing.
+
+**E93's data-driven signature predicted this before the paper was read.** That
+study's TCRs scored `z_nn3` **+5.79** (unusually scattered) and `z_topfam`
+**−2.99** (unusually unclustered) against size-matched draws — the profile of
+non-specific bulk capture rather than of a selected repertoire. The signature
+method was built precisely for the papers that could not be read, and on the
+one case where it can now be checked against the text, it was right.
+
+### Neither Nature 2017 paper pre-selected by motif
+
+This was the sharpest version of the worry, because **PMID:28636589 is the
+GLIPH paper** — an algorithm that clusters TCRs by motif. If its deposited
+TCRs were the GLIPH clusters, the public families would be partly circular.
+
+**PMID:28636589 (Glanville et al.)** — GIL 119, NLV 46, GLC 6. The viral
+epitope data is a **plain pMHC-tetramer panel sorted from 4–13 blood bank
+donors per specificity, 33 donors total**, and it is the *training* set from
+which GLIPH was derived, not its output. The motif-guided selection in that
+paper — "clusters containing TCRs from at least 3 individuals… at least four
+uniquely derived TCRβ clones" — applies to the *M. tuberculosis CD4* validation
+set, which contributes nothing here.
+
+**PMID:28636592 (Dash et al.)** — GIL 225, GLC 86, NLV 63. pMHC tetramer
+selection plus single-cell paired amplification, 4,635 pairs from 78 mice and
+32 humans. **"No samples were excluded from analysis."** Outlier receptors were
+cloned into TCR-null cells and confirmed to bind, i.e. the divergent ones were
+functionally validated rather than discarded. One selection rule does exist and
+is worth recording: **"Clonally expanded TCRs were reduced to a single
+datapoint"** — the deposited set is deduplicated clonotypes, so clone-size
+information is removed at source. That bears on E92's finding that
+`method.frequency` predicts validation at ρ +0.5 on NLVPMVATV.
+
+**So motif-guided enrichment is excluded for the two largest contributors**,
+from the text, joining E57's donor argument and E93's reference-share argument.
+Three independent directions now.
+
+### CINGVCWTV, a private epitope, is substantially cell-line derived
+
+Both readable sources for CINGVCWTV involve **in vitro expansion**, which no
+VDJdb field records:
+
+**PMID:26860370 (Eltahla et al., Immunol Cell Biol 2016)** — CIN 55, private.
+A **single subject** who spontaneously cleared HCV, **63 cells total** (56 TCRs
+reconstructed, 89%), across three conditions: direct from PBMC (PB-T), from an
+**ex vivo peptide-stimulated T cell line** (CL-Unstim), and from that line
+**after peptide restimulation** (CL-Stim). TCRs come from scRNA-seq via
+VDJPuzzle, not targeted amplification. **Two of the three conditions are
+in vitro expanded.**
+
+**PMID:27645996 (Grant et al., JBC 2016)** — CIN 24 private, GIL 40, GLC 18.
+NS3₁₀₇₃ (= CINGVCWTV) TCRs come from healthy donors after **tetramer magnetic
+enrichment** and from **CD8⁺ T cell lines from donors with chronic HCV
+infection**. Also cell lines.
+
+This is new and it is about a private epitope. E85 recorded that CINGVCWTV is
+97.5% singletons with a largest family of two — unusually unstructured. An
+origin in short-term cell lines from one or two subjects is a plausible reason,
+and it is not something any provenance field would have revealed.
+
+### The 164 unattributed CINGVCWTV records: a fingerprint
+
+164 of CINGVCWTV's 243 rows carry a VDJdb record with **no `reference.id` at
+all** — 67% of a private cohort with no traceable source. Their metadata is
+internally consistent and specific:
+
+| field | value |
+|---|---|
+| `meta.subject.id` | **3023**, all 164 — a single donor |
+| `meta.subject.cohort` | **HCV+** (not "cleared") |
+| `method.frequency` | denominator **249** for all 164 (numerators 1–7, summing to 182) |
+| `method.identification` | `dextramer-sort` |
+| `method.sequencing` | **`rna-seq` 99 and `sanger` 65** — two assays on one donor |
+| `method.verification`, `meta.study.id` | empty |
+| `vdjdb.score` | 0 |
+
+This is **not** PMID:26860370 (63 cells, a subject who *cleared*, no donor ID
+"3023"). It is a larger experiment, ~249 sorted cells from one chronically
+infected HCV patient, assayed by both scRNA-seq and Sanger — the shape of a
+follow-up from the same UNSW group (Lloyd / Bull / Luciani / Eltahla /
+Rizzetto, VDJPuzzle lineage). Sequences exported to
+`reports/61_cin_unattributed_164.tsv` for manual identification.
+
+A second unattributed group is small and public: 16 TCRs (NLVPMVATV 15,
+GILGFVFTL 1) deposited under the VDJdb GitHub submission URL with no paper,
+exported in `reports/60_unattributed_tcrs.tsv`.
+
+### What changed and what did not
+
+The entry does not change. What changed is that the single worst data source in
+the competition is now explained mechanistically rather than named, the
+motif-enrichment worry is closed from the text for the two largest
+contributors, and a previously invisible property of a **private** epitope —
+that CINGVCWTV's traceable TCRs come from in vitro cell lines — is on the
+record. None of it is a feature: all three facts are study-level and constant
+within their cohorts, which E91 established contributes exactly zero to a
+within-epitope AUC.
