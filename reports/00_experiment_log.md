@@ -7453,3 +7453,107 @@ the private split either. The per-epitope spread of −0.0003 to +0.0086 at an
 average of +0.0042, with contribution profiles correlating at −0.110, says the
 remaining signal is not a single exploitable axis at all — it is a handful of
 cohort-specific effects that happen to average positive.
+
+---
+
+## E103 — Germline-encoded docking, and the diagnostic that explains the whole ceiling
+
+Every structural feature built here has been a confidence scalar from the
+folding model (E14, E19, E28, E36) or a contact count treated as coordinates
+(E83). None asks what structural immunology asks of a TCR-pMHC complex: **does
+this receptor dock the way its V genes are built to dock?**
+
+The literature basis is the germline-encoded interaction codon (Marrack &
+Kappler; Garcia and colleagues; Feng et al. 2007): V-gene segments carry
+evolutionarily conserved CDR1/CDR2 contacts with the MHC helices, and class I
+complexes show a canonical diagonal polarity — **α chain over the MHC α2 helix,
+β chain over α1** — that is V-gene specific. Computed here from the 2,636 Boltz
+PDBs directly (chains A/B/M/P, 5 Å heavy-atom contacts, MHC α1 = 57–84,
+α2 = 138–176). `scripts/93_germline_docking.py`.
+
+### 1. The polarity is real and varies inside every cohort
+
+| epitope | split | mean | sd | % canonical |
+|---|---|---:|---:|---:|
+| LLWNGPMAV | private | 0.630 | 0.093 | 93.0 |
+| GILGFVFTL | public | 0.618 | 0.109 | 90.3 |
+| CINGVCWTV | private | 0.691 | 0.151 | 90.1 |
+| TTDPSFLGRY | public | 0.672 | 0.151 | 88.4 |
+| GLCTLVAML | public | 0.631 | 0.124 | 87.5 |
+| LTDEMIAQY | private | 0.645 | 0.161 | 81.5 |
+| **NLVPMVATV** | public | 0.553 | 0.155 | **64.2** |
+
+Boltz does not simply reproduce the canonical pose for everything — 7–36% of
+complexes dock non-canonically, and **NLVPMVATV is a marked outlier** at only
+64% canonical against 81–93% elsewhere.
+
+### 2. V-gene docking conformity is a genuine new quantity
+
+For each V gene, the modal MHC-contact profile over the other TCRs carrying it
+(leave-one-out), and each TCR scored by cosine similarity to it. 51 TRAV and 49
+TRBV genes have ≥5 members; coverage 99%.
+
+| feature | macro | ρ with typicality | gates |
+|---|---:|---:|---|
+| **conformity (both chains)** | **0.7272** | **+0.152** | pass / pass |
+| TRAV conformity | 0.7078 | +0.116 | pass / pass |
+| TRBV conformity | 0.6616 | +0.145 | pass / pass |
+| canonical polarity | 0.5861 | +0.086 | pass / pass |
+
+0.7272 standalone, clearing both standing gates, at ρ +0.152 with typicality —
+so it is **not** the typicality gravity well. Nor is it the Boltz-confidence
+well that E14 named: within-epitope ρ is **+0.369** with `pae_tcr_pep_min`,
++0.356 with ipTM, +0.399 with `confidence_score`, against those features'
+own macro scores of 0.69–0.76.
+
+### 3. And it adds nothing
+
+Blended into D, every variant is nested ≤ 0 (best: TRAV conformity, oracle
++0.0007, nested −0.0021). As a *replacement* for D's structure slot rather than
+an addition — the E83 test — it also loses:
+
+| structure slot | macro | vs D |
+|---|---:|---:|
+| pae 0.7 + fingerprint 0.3 (E100's) | 0.8610 | +0.0009 |
+| pae 0.7 + conformity 0.3 | 0.8605 | +0.0004 |
+| pae (current) | 0.8601 | — |
+| conformity alone | 0.8534 | −0.0066 |
+
+Nested over the eight slot forms: −0.0014.
+
+### 4. The diagnostic that explains all of it
+
+The question is why a feature decorrelated from every *individual* existing
+quantity still carries nothing. Residualising each candidate on **D itself**,
+linearly and within each epitope, then rescoring:
+
+| feature | macro | ρ with D | **macro after removing D** |
+|---|---:|---:|---:|
+| structure fingerprint (E83) | 0.7428 | +0.488 | **0.5570** |
+| germline conformity (E103) | 0.7272 | +0.456 | **0.5458** |
+| lenfreq (E96) | 0.6971 | +0.423 | **0.5422** |
+| TwoNN LID (E100) | 0.6461 | +0.339 | **0.5355** |
+| typicality reference | 0.6378 | +0.265 | 0.5393 |
+| `pae_tcr_pep_min`, already *inside* D | 0.7565 | +0.656 | **0.5098** |
+
+**Every candidate retains 0.535–0.557 after D is removed**, and the control
+behaves as it must: a term already inside D retains 0.5098, i.e. nothing.
+
+This is the ceiling in one number. Each component carries roughly **0.04–0.06
+of AUC that D does not have**, they enter at weight 0.05, and five of them sum
+to +0.0035 — which is what E98 through E101 measured the hard way.
+
+**It is also a better gate than the one in use.** `typicality_gate` tests
+correlation against a single crude reference and passed all six features here.
+Residual-AUC-on-the-current-model tests what actually matters, is one line of
+code, and would have predicted every result in E96–E103 before the blending
+was run. Recorded for whatever comes after this competition.
+
+### What this closes
+
+Pure exploration, run into a different discipline. The feature is
+literature-grounded, computed from atomic coordinates, decorrelated from the
+typicality well (+0.152) and from the Boltz-confidence well (+0.37), and scores
+0.7272 on its own — and it is worth **zero**. Individual decorrelation is not
+the same as spanning new predictive space; D's four terms already span almost
+all of the subspace these features live in. The entry does not change.
