@@ -5275,3 +5275,76 @@ biologically distinct similar epitopes, so the TCRs it returns are largely the
 ones already present. Any future cross-epitope expansion has to filter the
 peptide list by provenance — a variant panel from one study is not a second
 epitope — before counting what it adds.
+
+---
+
+## E81 — Twelve representations, including three trained on corrupted data
+
+Proposed externally (as "E77": a new paired-αβ representation). No
+`transformers` or `esm` locally, but SCEPTR ships **fourteen variants** and E6
+tested only seven. The ten untested ones include three published **ablation
+controls**, which answer a question this project has circled for weeks: how
+much of the representation's value is learned antigen biology?
+
+A gene-name fix was needed first — every variant rejects `TRAV14_DV4*01`; the
+working path replaces `_` with `/` and drops genes outside the model vocabulary,
+exactly as `scripts/33`'s embedder does.
+
+**Top-8 density, per epitope:**
+
+| variant | GIL | GLC | NLV | TTD | YLQ | macro |
+|---|---:|---:|---:|---:|---:|---:|
+| **blosum** | 0.882 | 0.711 | 0.836 | **0.875** | 0.925 | **0.8460** |
+| left_aligned | 0.883 | 0.707 | 0.841 | 0.858 | 0.922 | 0.8422 |
+| default (used by D) | 0.880 | 0.714 | 0.833 | 0.851 | 0.930 | 0.8414 |
+| **dropout_noise_only** | 0.870 | 0.709 | 0.820 | 0.861 | 0.931 | 0.8381 |
+| **shuffled_data** | 0.878 | 0.705 | 0.827 | 0.853 | 0.925 | **0.8377** |
+| tiny | 0.884 | 0.741 | 0.815 | 0.803 | 0.933 | 0.8352 |
+| small | 0.884 | 0.720 | 0.821 | 0.832 | 0.919 | 0.8349 |
+| average_pooling | 0.877 | 0.709 | 0.830 | 0.849 | 0.909 | 0.8347 |
+| **synthetic_data** | 0.879 | 0.700 | 0.830 | 0.840 | 0.920 | **0.8337** |
+| mlm_only | 0.882 | **0.750** | 0.819 | 0.804 | 0.911 | 0.8333 |
+| large | 0.876 | 0.687 | 0.837 | 0.837 | 0.913 | 0.8300 |
+| finetuned | 0.872 | 0.720 | 0.789 | 0.795 | 0.929 | 0.8208 |
+
+### The controls are the result
+
+- **`synthetic_data`** was trained on a size-matched set of **OLGA-generated
+  sequences** — a probabilistic VDJ recombination model with **no antigen
+  selection whatever**. It scores **0.8337** against the real model's 0.8414, a
+  gap of **0.0077**.
+- **`shuffled_data`** was trained on the same real repertoire with **α-β chain
+  pairing randomised**. It scores **0.8377**, a gap of **0.0037**.
+
+**A representation that has never seen a correctly paired, antigen-selected TCR
+reaches within 0.008 of one that has.** The entire span across twelve
+architecturally and data-wise very different models is 0.8208–0.8460, 0.025
+wide. That is the sharpest version yet of what E6 found ("the metric space does
+not matter"), and it joins E7, E33's R08, E77 and E78: what these
+representations encode that matters here is recombination-space geometry, not
+learned antigen specificity. `shuffled_data`'s near-parity also agrees with E45
+and E63, where αβ pairing carried nothing beyond per-chain typicality.
+
+### And `blosum` is not a justified swap, for a measured reason
+
+It is the best single representation ever tested here, +0.0046 over the default
+D uses. But choosing it *is* a selection. Nested over the twelve, picking the
+best on four epitopes and applying it to the fifth:
+
+| | macro |
+|---|---:|
+| fixed `blosum`, chosen post hoc | 0.8460 |
+| fixed `default`, what D uses | 0.8414 |
+| **nested variant selection** | **0.8316** |
+
+**Selection costs −0.0144** — worse than either fixed choice. The mechanism is
+visible in the folds: `blosum` wins four of five, but the TTDPSFLGRY fold picks
+`tiny`, which scores 0.803 there against `blosum`'s 0.875, and that one pick
+erases the gain. This is E15's −0.0048 again at three times the magnitude,
+because the variants differ more than the configurations E15 swept.
+
+Blending `blosum` into D rather than swapping gives +0.0006 at an oracle weight
+of 0.10–0.15 and **−0.0035 under nested LOEO**; it correlates with D at
+within-epitope ρ +0.905, so it is measuring what D already measures.
+
+**The entry is unchanged.**
