@@ -6752,3 +6752,105 @@ Zero-parameter rank averages of the submitted entries, for completeness:
 Nested LOEO over the six selects **D in all five folds**, returning 0.8600
 exactly. D is not improved by averaging with the entries it already dominates,
 and its selection is unanimous across folds.
+
+---
+
+## E96 — Is CDR3 length contaminating the within-epitope distance? It is signal, not noise
+
+E95 showed CDR3 length separates the *cohorts*. That is a between-epitope fact
+and the metric is within-epitope, so it looked finished. It is not, because
+length also varies **inside** a cohort (SD 1.7–2.2 residues) and the density D
+runs on is a cosine distance in an isotropic 64-dimensional space. If a large
+share of that distance is just "these two CDR3s are different lengths", then
+typicality is partly **length commonness** — a TCR looks typical because most
+of its cohort happens to share its length — and removing the length component
+should sharpen what remains. `scripts/86_length_contamination.py`.
+
+### 1. The contamination is real and wildly uneven
+
+Linear fit of pairwise cosine distance on |Δ CDR3α| and |Δ CDR3β|, per cohort:
+
+| epitope | split | n | R² |
+|---|---|---:|---:|
+| GILGFVFTL | public | 670 | **0.328** |
+| GLCTLVAML | public | 192 | 0.225 |
+| LLWNGPMAV | private | 229 | 0.223 |
+| YLQPRTFLL | public | 419 | 0.140 |
+| NLVPMVATV | public | 366 | 0.037 |
+| LTDEMIAQY | private | 130 | 0.036 |
+| TTDPSFLGRY | public | 387 | 0.030 |
+| CINGVCWTV | private | 243 | **0.022** |
+
+**A third of GILGFVFTL's within-epitope distance variance is CDR3 length
+difference** — |Δ CDR3β| alone accounts for 0.280 — against 2.2% on
+CINGVCWTV, a 15× spread. The ordering tracks the family-rich cohorts, and two
+of the three private epitopes sit at the bottom.
+
+### 2. The hypothesis is wrong in the direction it was posed
+
+Removing length from the density does not sharpen it. It degrades it, badly:
+
+| feature | macro | ρ with typicality | gates |
+|---|---:|---:|---|
+| **density (reference)** | **0.8414** | +0.247 | pass / pass |
+| density minus quadratic length fit | 0.7665 | +0.135 | pass / pass |
+| density on length-residualised distance | 0.8121 | +0.143 | pass / pass |
+| density z within length stratum | 0.6826 | +0.101 | pass / pass |
+
+Residualising the distance matrix against |Δlength| before computing density
+costs **−0.029**; standardising each TCR's density against same-length TCRs
+costs **−0.159**. The length component of the distance is carrying real
+information, which is unsurprising once stated — CDR3 loop length is a genuine
+structural constraint on what can reach the peptide, not an artifact of the
+encoder.
+
+### 3. Length commonness is a legitimate standalone feature and still buys nothing
+
+Going the other way, "how common is my CDR3 length pair in this cohort" is a
+within-cohort quantity, so unlike E95's between-cohort lengths it is not
+structurally barred, and it varies in every cohort including all three private
+ones:
+
+| feature | macro | ρ with typicality | typicality gate | private gate |
+|---|---:|---:|---|---|
+| lenfreq joint | **0.7409** | +0.400 | pass | pass |
+| lenfreq product | 0.6971 | +0.433 | pass | pass |
+| lenfreq smoothed | 0.6546 | +0.514 | pass | pass |
+
+`lenfreq joint` at 0.7409 **beats the typicality reference** (0.6378) at
+ρ +0.400 and clears both standing gates — which is more than most candidates
+this project has tested, and worth noting because the gate's own reference
+already contains CDR3 length as one of its six z-scores. Empirical frequency
+captures multimodality that a z-score cannot.
+
+**Blended into D it is still nothing:**
+
+| feature | oracle w | oracle | vs D | nested LOEO | vs D |
+|---|---:|---:|---:|---:|---:|
+| lenfreq product | 0.05 | 0.8606 | +0.0005 | 0.8606 | **+0.0005** |
+| lenfreq joint | 0.05 | 0.8609 | +0.0008 | 0.8596 | −0.0004 |
+| lenfreq smoothed | 0.05 | 0.8602 | +0.0002 | 0.8597 | −0.0004 |
+| density on length-residualised distance | 0.05 | 0.8596 | −0.0004 | 0.8595 | −0.0006 |
+
+The best nested result is **+0.0005**, an order of magnitude inside E15's
+−0.0048 selection cost and two orders inside the +0.02 bar. Density at 0.8414
+already contains what lenfreq at 0.7409 knows.
+
+### 4. The contamination does not predict where density works
+
+The obvious worry would be that density performs well precisely where length
+explains most of the distance, which would make the two low-contamination
+private epitopes a transfer risk. Over the five public epitopes,
+Spearman(length-explained R², density AUC) = **+0.100, exact p 0.950**.
+YLQPRTFLL has density's best AUC (0.930) at R² 0.140 while GLCTLVAML has its
+worst (0.714) at R² 0.225. No relationship at n=5, so the uneven contamination
+is a fact about the cohorts and not a risk axis.
+
+### What this adds
+
+A clean negative on a hypothesis that was worth posing, plus one durable fact:
+**the length share of the within-epitope distance varies 15× across cohorts**,
+from 2.2% on CINGVCWTV to 32.8% on GILGFVFTL. Any future work that treats the
+SCEPTR cosine as a homogeneous quantity across epitopes is assuming something
+false. It happens not to matter for the ranking, which was measured rather than
+assumed. The entry does not change.
