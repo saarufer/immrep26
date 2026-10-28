@@ -7880,3 +7880,69 @@ collaborator's ledger, E77–E82 in mine, E103–E104 here). The pattern is
 specific and avoidable: it happens when a result arrives as a follow-up to a
 scripted experiment rather than as an experiment of its own, and the fix is to
 write the follow-up into the parent script before quoting its number.
+
+---
+
+## E109 — Where polar_frac's information lives: the germline loops facing the MHC, not CDR3 facing the peptide
+
+E104 found the N/O share of a TCR's interface atoms carries ~0.059 of AUC that
+D does not have, and E107 confirmed it is not reducible to CDR3 composition.
+This asks which part of the interface decides it, scored throughout by
+residual-on-D. `scripts/99_polar_frac_decomposition.py`. CDR3 was located by
+sequence match on **both chains in 100%** of the 2,636 structures; the median
+TCR interface has 170 peptide-facing atoms of ~326.
+
+| part | macro | inverted | ρ with D | **residual on D** |
+|---|---:|---:|---:|---:|
+| **`pf_all`** whole interface | 0.4612 | 0.5388 | −0.044 | **0.5586** |
+| `pf_germline` CDR1/2 + framework | 0.4420 | 0.5580 | −0.118 | **0.5510** |
+| `pf_mhc_only` facing MHC, not peptide | 0.4543 | 0.5457 | −0.060 | 0.5413 |
+| `pf_cdr3` | 0.5306 | 0.4694 | +0.103 | 0.5215 |
+| **`pf_pep_facing`** | 0.5163 | 0.4837 | +0.023 | **0.5120** |
+
+### E36 stands
+
+**The peptide-facing half carries essentially nothing** — 0.5120 against the
+0.5098 floor that a term already inside D reaches. E36 concluded from
+anchor-matched decoys that the peptide-specific component of any structural
+score is at chance, and the one structural feature that does carry new
+information turns out to carry none of it on the peptide-facing surface. Two
+independent routes to the same conclusion.
+
+The signal is on the other side: the **germline loops** (CDR1, CDR2 and
+framework) reach 0.5510 and the MHC-facing atoms 0.5413, while **CDR3 — the
+somatically generated part — reaches only 0.5215**.
+
+### But the whole exceeds every part, because the parts oppose each other
+
+| | all | pep_facing | mhc_only | cdr3 | germline |
+|---|---:|---:|---:|---:|---:|
+| pep_facing | +0.572 | +1.000 | **−0.218** | +0.581 | +0.253 |
+| cdr3 | +0.548 | +0.581 | +0.125 | +1.000 | **−0.067** |
+
+Peptide-facing and MHC-facing polarity are **anticorrelated** at −0.218, and
+CDR3 against germline is orthogonal at −0.067. Removing either half sharpens
+the other — `pf_pep_facing` rises 0.5120 → 0.5231 once `pf_mhc_only` is
+partialled out, and `pf_mhc_only` rises 0.5413 → 0.5496.
+
+So `pf_all` at 0.5586 beats its best component at 0.5510 because it is not a
+regional measurement at all: it is the **balance of polarity across the whole
+interface**, and a receptor that is polar where it should be apolar in one
+region tends to compensate in another.
+
+### The honest caveat
+
+`pf_germline` at 0.5510 sits where E103's V-gene docking conformity sat
+(0.5458), and that feature proved reducible to the V-domain term D already
+holds. So the germline half of this may be a third V-gene statistic rather
+than new physics. What is not reducible is the whole — `pf_all` beats both,
+and E107 showed it survives residualising on CDR3 composition.
+
+**What this adds to the science**, independent of ranking: the fold's effect on
+revalidation is a **docking-side** property, expressed through which germline
+loop atoms turn towards the MHC, and essentially nothing of it is about how
+CDR3 meets the peptide. That is the opposite of where the field looks, and it
+is consistent with every structural result this project has produced — E14's
+canonicality, E36's decoy null, E75's identical footprints, E103's germline
+docking — now from a measurement that does carry signal rather than one that
+does not.
