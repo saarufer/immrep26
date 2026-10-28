@@ -7654,3 +7654,88 @@ The selection cost is back at −0.0016 with four distinct picks across five
 folds, so +0.0058 carries real sampling uncertainty — the oracle is +0.0074
 and a different five epitopes could plausibly have given +0.004. The entry does
 not change.
+
+---
+
+## E105 — Stacking everything, and the permutation null that invalidates the stack
+
+The user asked the obvious question: several candidates produced a gain and
+were dropped when a better one arrived — stacked together, do they add? The
+honest form is a curve, because each extra component brings its residual signal
+*and* an extra parameter to select. `scripts/95_full_stack_curve.py`. Nine
+candidates ordered by residual-on-D, every weight plus the bandwidth exponent
+and structure split re-selected by greedy forward search **inside each fold**.
+
+### The curve does not turn over
+
+| k | newest component | nested | vs D | oracle | selection cost |
+|---:|---|---:|---:|---:|---:|
+| 0 | bandwidth + structure only | 0.8618 | +0.0018 | 0.8619 | −0.0001 |
+| 1 | polar_frac (E104) | 0.8652 | +0.0052 | 0.8664 | −0.0012 |
+| 2 | charge_product (E104) | 0.8676 | +0.0075 | 0.8708 | −0.0033 |
+| 4 | lenfreq (E96) | 0.8685 | +0.0084 | 0.8716 | −0.0031 |
+| 5 | packing (E104) | 0.8691 | +0.0091 | 0.8729 | −0.0037 |
+| 7 | cross-epitope LID (E101) | 0.8692 | +0.0091 | 0.8764 | −0.0072 |
+| **8** | mutual-kNN density (E99) | **0.8703** | **+0.0103** | 0.8775 | −0.0072 |
+
+**+0.0103, 52% of the bar** — by far the largest figure the project has
+produced, and the curve is still rising at k=8.
+
+### And it is not distinguishable from noise
+
+Per fold the spread is as large as the mean: **sd 0.0106 across the five**,
+carried by GLCTLVAML (+0.0274) with YLQPRTFLL at −0.0023 and four of five
+improved.
+
+So the whole procedure was re-run on **shuffled labels**, permuted within each
+epitope so base rates are preserved, 48 replicates:
+
+| | value |
+|---|---:|
+| observed | **+0.0103** |
+| null mean | −0.0001 |
+| null **sd** | **0.0059** |
+| null **max** | **+0.0127** |
+| **permutation p** | **0.082** |
+
+**A nine-parameter nested search on five epitopes produces up to +0.0127 on
+pure noise**, and three of forty-eight shuffled replicates beat the observed
+value. The nesting is honest about the held-out epitope — the inner search
+never touches it — but it cannot protect against the outer estimate being a
+mean over five folds, which is itself a small-sample selection.
+
+### This amends E98, E100, E101 and E104
+
+Every stacked gain reported in that sequence sits inside this null:
+
+| result | gain | in null SD |
+|---|---:|---:|
+| E98, three components | +0.0009 | 0.2 σ |
+| E100, four components | +0.0028 | 0.5 σ |
+| E104, five components | +0.0058 | 1.0 σ |
+| E105, nine components | +0.0103 | 1.8 σ, p 0.082 |
+
+**None of them is statistically distinguishable from the optimism of the
+selection procedure itself.** I reported them as measured improvements; they
+are measured *numbers*, and this is the null they needed and did not have.
+The correct reading of the whole arc is that the stack may well carry a real
+gain — the trend across k is monotone, which noise need not be — but five
+epitopes cannot demonstrate it.
+
+**What this does not touch** are the findings that were measured rather than
+selected: `polar_frac` is not reducible to CDR3 composition (three sequence
+analogues at chance, E104), local dimension separates GLCTLVAML at 3.58 against
+8–10.6 (E100), germline docking polarity varies 64–93% across cohorts (E103),
+the cohorts separate at 2.6× under an antigen-naive model (E88/E89). Those rest
+on all 1,782 scorable rows with their own controls and are unaffected.
+
+### It also validates the pre-registered bar
+
+The bar was set at **+0.02** before any of this. The null says the smallest
+reliably detectable effect under this evaluation design is about **+0.010**
+(1.7 σ) and a comfortable one about **+0.018** (3 σ). The bar was chosen well,
+and the right description of the last eight experiments is not "we could not
+find signal" but **"this evaluation design cannot resolve effects of the size
+we were finding"**.
+
+**The entry does not change**, now for a stronger reason than the bar.
