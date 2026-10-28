@@ -8410,3 +8410,78 @@ unit of selection and there are only five of them.
 That is also the clearest statement available of what would be needed to do
 better: **more epitopes**, not more TCRs, not better features, and not a
 cleverer search.
+
+---
+
+## E118 — Sixteen folds, and the answer is no
+
+E117 located the bottleneck as the fold count and named what would fix it:
+more epitopes, not more TCRs, features or search. Three routes were checked.
+
+**IMMREP25 is the wrong task.** Its description is "previously unpublished
+TCR-epitope **binding** data" against this year's "whether pairs reported in
+public databases can be **validated**" — task B against task A. Its epitopes
+carry no revalidation labels.
+
+**A VDJdb replication proxy does not have the epitopes.** E90 found
+multi-study annotations validate at odds ratio 17, which could stand in for a
+label. But it needs both single- and multi-reference TCRs inside one epitope,
+and of the 21 VDJdb epitopes with ≥80 paired-chain TCRs, **exactly one**
+has ≥15 on each side.
+
+**Pseudo-epitopes are obtainable.** Splitting each cohort by contributing study
+gives cells with their own donors, protocol and sampling — E90 measured
+same-epitope validation rates from 0.084 to 0.923 across studies. Requiring ≥40
+TCRs with both labels present yields **16 folds covering 1,528 TCRs**.
+`scripts/107_pseudo_epitope_folds.py`.
+
+### The result
+
+| evaluation | gain over D | null sd | p |
+|---|---:|---:|---:|
+| 5 epitope folds (E106) | +0.0058 | 0.0059–0.0198 | 0.200 |
+| frozen config, family bootstrap (E117) | +0.0074 ± 0.0040 | — | — |
+| **16 pseudo-folds** | **−0.0017** | **0.0045** | **0.683** |
+
+**The advantage disappears and goes slightly negative.** Six distinct
+configurations were chosen across the sixteen folds, against one or four at
+five folds — with more units to choose on, the search stops converging on
+anything.
+
+**The instrument worked.** The null sd fell from 0.0059 (five folds, signs
+fixed) to **0.0045**, exactly the tightening E117 predicted from more units.
+The evaluation became sharper and the effect it resolved was zero.
+
+**The peptide-sharing confound is not driving it.** Holding out a fold while
+its epitope's other folds stay in training gives −0.0017; holding out the whole
+epitope gives +0.0010. Both sit at zero and they agree, which is what E36 and
+E109 imply — the structural signal is not peptide-specific, so sharing a
+peptide across folds does not inflate the estimate.
+
+### This settles E96–E117
+
+The sequence of numbers is now interpretable end to end:
+
+- the **fitted** difference is real and precisely measured — +0.0074 ± 0.0040
+  under the family bootstrap, which resamples the data while holding the
+  configuration fixed;
+- the **transferred** difference is **zero** — −0.0017 over sixteen held-out
+  cohorts, p 0.683.
+
+Those are not in tension. They are the textbook signature of a configuration
+fitted to its evaluation set: the advantage is consistently present where it
+was fitted and absent everywhere else. Five folds were too few to show it;
+sixteen are enough.
+
+### Consequence for the entry
+
+**D is the right submission**, and now for a measured reason rather than a
+pre-registered bar. S2 and S4 — the five- and nine-component stacks — carry no
+advantage that survives held-out cohorts, and S4 additionally degrades
+YLQPRTFLL from 0.935 to 0.923. The public leaderboard will continue to rank S4
+highest at 0.871 because the public rows are the rows these configurations were
+fitted on.
+
+The eight experiments from E96 to E117 produced no improvement to the model.
+They produced the instrument that shows there was none, which is the part worth
+keeping.
