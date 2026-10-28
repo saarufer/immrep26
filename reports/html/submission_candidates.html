@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IMMREP26 提交候选</title>
+<style>
+:root {
+  --bg:#fbfaf8; --fg:#1c1a17; --muted:#6b6459; --line:#e3ded5;
+  --card:#ffffff; --accent:#8a5a2b; --warn:#9a3412; --ok:#166534;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#17161a; --fg:#eceae6; --muted:#a09a90; --line:#34312c;
+  --card:#201e22; --accent:#d9a06a; --warn:#f0a080; --ok:#86c99a;
+}}
+:root[data-theme="dark"] {
+  --bg:#17161a; --fg:#eceae6; --muted:#a09a90; --line:#34312c;
+  --card:#201e22; --accent:#d9a06a; --warn:#f0a080; --ok:#86c99a;
+}
+* { box-sizing:border-box }
+body { margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.6 -apple-system,"Segoe UI","PingFang SC","Noto Sans CJK SC",sans-serif; }
+.wrap { max-width:960px; margin:0 auto; padding:40px 16px 80px }
+h1 { font-size:1.65rem; margin:0 0 .3em; letter-spacing:-.01em }
+.sub { color:var(--muted); margin:0 0 2.2em; font-size:.95rem }
+h2 { font-size:1.12rem; margin:2.4em 0 .8em; padding-bottom:.35em;
+  border-bottom:1px solid var(--line) }
+.cand { background:var(--card); border:1px solid var(--line); border-radius:10px;
+  padding:18px 20px; margin:0 0 16px }
+.cand header { display:flex; flex-wrap:wrap; gap:8px; align-items:baseline;
+  justify-content:space-between; margin-bottom:.5em }
+.cand h3 { margin:0; font-size:1.05rem }
+.file { font:.78rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted); font-weight:400; margin-left:.5em }
+.badge { font-size:.76rem; padding:3px 9px; border-radius:999px; white-space:nowrap }
+.badge.sent { background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok) }
+.badge.pending { background:color-mix(in srgb,var(--muted) 16%,transparent); color:var(--muted) }
+.what { margin:.2em 0 .9em; font-weight:600 }
+.nums { display:flex; gap:26px; flex-wrap:wrap; margin:.6em 0 1em }
+.nums div { display:flex; flex-direction:column }
+.nums b { font:600 1.3rem/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--accent) }
+.nums span { font-size:.76rem; color:var(--muted); margin-top:3px }
+.perep { font:.82rem/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted); margin:.3em 0 1em }
+.perep span { font-family:inherit; opacity:.7; margin-right:.7em }
+.bet { margin:.4em 0 .7em }
+.note { color:var(--muted); font-size:.92rem; margin:.4em 0 .8em }
+.sha { font:.74rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted); margin:0 }
+table { width:100%; border-collapse:collapse; font-size:.9rem; margin:.5em 0 1em }
+th,td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line) }
+th { font-size:.78rem; color:var(--muted); font-weight:600 }
+.num { text-align:right; font-family:ui-monospace,SFMono-Regular,Menlo,monospace }
+.mono { font:.82rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace }
+.mono-s { font:.78rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--muted) }
+.caution { border-left:3px solid var(--warn); background:color-mix(in srgb,var(--warn) 7%,transparent);
+  padding:14px 18px; border-radius:0 8px 8px 0; margin:1em 0 }
+.caution b { color:var(--warn) }
+ul { padding-left:1.2em } li { margin:.4em 0 }
+code { font:.86em ui-monospace,SFMono-Regular,Menlo,monospace;
+  background:color-mix(in srgb,var(--muted) 14%,transparent);
+  padding:1px 5px; border-radius:4px }
+footer { margin-top:3em; color:var(--muted); font-size:.84rem;
+  border-top:1px solid var(--line); padding-top:1em }
+</style></head><body><div class="wrap">
+
+<h1>IMMREP26 提交候选</h1>
+<p class="sub">截止 2026-11-02 15:00 UTC · 规则允许多队提交 · 文件位于 <code>submissions/</code> · 生成于 E110</p>
+
+<div class="caution">
+<b>先读这一段。</b>五个候选的 E74 私有投影跨度只有 <b>0.007</b>（0.8108–0.8155），
+而两个独立测量说明这个跨度<b>不能当作排序</b>：
+<ul>
+<li><b>E106</b>——同样的嵌套选择在<b>打乱标签</b>上重跑 48 次，零分布 sd 0.0059、最大 +0.0127；
+把方向选择也诚实嵌套后最大达 <b>+0.0203</b>，叠加增益的置换 <b>p = 0.200</b>。</li>
+<li><b>E85</b>——私有队列逐表位抽样误差 <b>0.025–0.060</b>，比候选之间的差异大一个数量级。</li>
+</ul>
+这些是<b>跨假设的对冲，不是一份排名</b>。正确用法是分散到不同队伍，而不是挑最上面一行。
+若必须有一个配置承担主提交，<b>D 仍是可辩护的选择</b>——它的优势在这轮探索开始之前就被测出，
+并扛过了之后所有零假设。
+</div>
+
+<h2>五个候选</h2>
+<article class="cand">
+  <header><h3>S4 <span class="file">S4_D_stack9.csv</span></h3>
+  <span class="badge sent">已提交 2026-10-28</span></header>
+  <p class="what">D + 九成分全栈</p>
+  <div class="nums">
+    <div><b>0.871</b><span>公榜</span></div>
+    <div><b>0.8716</b><span>本地 LOEO</span></div>
+    <div><b>0.8155</b><span>E74 私有投影</span></div>
+  </div>
+  <p class="perep"><span>GIL/GLC/NLV/TTD/YLQ</span> .891/.793/.882/.869/.923</p>
+  <p class="bet"><b>押注：</b>每个小增益都是真的</p>
+  <p class="note">公榜最高。唯一在某表位退化的候选（YLQ 0.935→0.923）。九个参数全部在这 1,782 行上选出，E106 测得同类搜索在纯噪声上最高可达 +0.0203，而它对 D 的公榜优势是 +0.0116。</p>
+  <p class="sha">sha256 d6b588c4c69f57d7</p>
+ </article>
+<article class="cand">
+  <header><h3>S2 <span class="file">S2_D_stack5.csv</span></h3>
+  <span class="badge pending">未提交</span></header>
+  <p class="what">D + 五成分（E104 配置）</p>
+  <div class="nums">
+    <div><b>—</b><span>公榜</span></div>
+    <div><b>0.8675</b><span>本地 LOEO</span></div>
+    <div><b>0.8153</b><span>E74 私有投影</span></div>
+  </div>
+  <p class="perep"><span>GIL/GLC/NLV/TTD/YLQ</span> .886/.772/.888/.859/.932</p>
+  <p class="bet"><b>押注：</b>中心估计</p>
+  <p class="note">五折一致选中的配置：带宽 p=0.5、结构 pae0.7+指纹0.3、长度频率 0.05、TwoNN 0.05、polar_frac 0.15。E102 测得这套迁移接近完整（私有投影 +0.0039 对公榜 +0.0042）。</p>
+  <p class="sha">sha256 04afccd0b0584fe5</p>
+ </article>
+<article class="cand">
+  <header><h3>S5 <span class="file">S5_D_ttd_tuned.csv</span></h3>
+  <span class="badge pending">未提交</span></header>
+  <p class="what">D + 权重只在 TTDPSFLGRY 上调</p>
+  <div class="nums">
+    <div><b>—</b><span>公榜</span></div>
+    <div><b>0.8664</b><span>本地 LOEO</span></div>
+    <div><b>0.8144</b><span>E74 私有投影</span></div>
+  </div>
+  <p class="perep"><span>GIL/GLC/NLV/TTD/YLQ</span> .886/.768/.887/.860/.932</p>
+  <p class="bet"><b>押注：</b>E86 的相似性图能迁移</p>
+  <p class="note">E86 测得 CINGVCWTV 与 LLWNGPMAV 是 TTD 的结构孪生（标准化距离 1.40 / 1.47）。只按 TTD 调出的权重是 长度频率 0.05 / TwoNN 0.10 / polar 0.10——polar 权重低于宏平均选的 0.15。</p>
+  <p class="sha">sha256 be42ea85dc0adb1f</p>
+ </article>
+<article class="cand">
+  <header><h3>S1 <span class="file">S1_D_plus_polar.csv</span></h3>
+  <span class="badge pending">未提交</span></header>
+  <p class="what">D + polar_frac（w=0.15），仅此一项</p>
+  <div class="nums">
+    <div><b>—</b><span>公榜</span></div>
+    <div><b>0.8643</b><span>本地 LOEO</span></div>
+    <div><b>0.8113</b><span>E74 私有投影</span></div>
+  </div>
+  <p class="perep"><span>GIL/GLC/NLV/TTD/YLQ</span> .885/.771/.881/.853/.932</p>
+  <p class="bet"><b>押注：</b>叠加是噪声</p>
+  <p class="note">最保守的对冲。polar_frac 是残差诊断里最高的单项（0.5586），在三个私有队列中方差均正常（sd 0.010–0.014），且 E107 证明它不可归约为 CDR3 氨基酸组成。只引入一个参数。</p>
+  <p class="sha">sha256 4f088170ec34874d</p>
+ </article>
+<article class="cand">
+  <header><h3>S3 <span class="file">S3_F_stack5.csv</span></h3>
+  <span class="badge pending">未提交</span></header>
+  <p class="what">F（无 pool 基底）+ 同样五成分</p>
+  <div class="nums">
+    <div><b>—</b><span>公榜</span></div>
+    <div><b>0.8638</b><span>本地 LOEO</span></div>
+    <div><b>0.8108</b><span>E74 私有投影</span></div>
+  </div>
+  <p class="perep"><span>GIL/GLC/NLV/TTD/YLQ</span> .882/.764/.882/.859/.931</p>
+  <p class="bet"><b>押注：</b>pool 在私有侧是负贡献</p>
+  <p class="note">E84 测得 D−F = +0.0044（公榜），且剂量反应在 pool 行数低于约 60 时消失；私有三队列分别有 11 / 191 / 5 行。E27 估计残余为 +0.0013，这个候选押它其实是负的。</p>
+  <p class="sha">sha256 d04fff191f8764ac</p>
+ </article>
+
+<h2>已提交的三份（参照）</h2>
+<table>
+<tr><th>文件</th><th>状态</th><th class=num>公榜</th><th class=num>本地</th>
+<th class=num>E74 私有</th><th>逐表位</th></tr>
+<tr><td class=mono>d_density3_m30pool_m50_struct</td><td>已提交 2026-10-26</td><td class=num>0.860</td><td class=num>0.8601</td><td class=num>0.8086</td><td class=mono-s>.886/.757/.873/.849/.935</td></tr>
+<tr><td class=mono>f_density3_m30_m50_struct_nopool</td><td>已提交 2026-10-27</td><td class=num>0.855</td><td class=num>0.8557</td><td class=num>0.8037</td><td class=mono-s>.882/.745/.867/.850/.935</td></tr>
+<tr><td class=mono>density3_struct03</td><td>已提交 2026-10-21（冻结）</td><td class=num>0.849</td><td class=num>0.8498</td><td class=num>0.7948</td><td class=mono-s>.869/.741/.865/.840/.933</td></tr>
+</table>
+<p class="note">本地 LOEO 与 Kaggle 公榜逐位一致（Kaggle 截断到三位小数），
+所以公榜分数没有信息增量——公榜那 1,782 行就是我们手上有标签的那批。</p>
+
+<h2>Kaggle 界面上要做的事</h2>
+<ul>
+<li>Kaggle 默认把<b>公榜最高</b>的提交设为最终计分提交，所以 S4 现在会自动顶掉 D。
+若要让主队伍由 D 承担，需手动更改最终计分提交。</li>
+<li>每日提交额度在交完 S4 后已用尽（<code>0 submissions remaining today</code>）。</li>
+<li>剩下四个候选按队伍分散提交，而不是全部堆在同一队。</li>
+</ul>
+
+<footer>
+由 <code>scripts/100_submission_candidates.py</code> 生成候选，
+<code>reports/00_experiment_log.md</code> 的 E110 条目记录完整推导。
+冻结条目 <code>density3_struct03.csv</code> 的 sha256 在写入前后各断言一次，未被触碰。
+</footer>
+</div></body></html>
