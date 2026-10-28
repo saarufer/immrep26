@@ -8091,3 +8091,137 @@ has to be stated correctly: **the fold's contribution to revalidation is a
 germline property, read at the level of V-gene pairs, that sequence alignment
 of those same genes does not expose.** That is a narrower claim than E104's and
 it is the one the measurements support.
+
+---
+
+## E112 — The interface from the pMHC side, and a bug in my own diagnostic
+
+Every structural measurement here reads the TCR. The pMHC side is not
+symmetric with it in an interesting way: **within one epitope the peptide and
+the MHC are identical molecules**, so any variation is purely *which part of an
+unchanging surface a given receptor covers*.
+`scripts/102_pmhc_side_polarity.py`.
+
+### The diagnostic I proposed in E103 had a gap, and this found it
+
+`pep_frac_covered` — the share of distinct peptide residues a TCR covers —
+returned a residual-on-D of **0.6626**, far beyond anything any candidate had
+reached (0.5586), while blending to **−0.0005 nested**. A feature cannot be
+both.
+
+It is an artifact. The variable has **7 distinct values with 91.5% at exactly
+1.0**, and within each cohort 83–98% of TCRs share the modal value. Percentile
+rank gives every tied row the **same** rank, so subtracting a linear fit on D
+leaves a residual that is monotone in D *inside each tie group* — D comes back
+in, with an epitope-dependent sign:
+
+| epitope | ρ(residual, D) | ρ(raw, D) |
+|---|---:|---:|
+| CINGVCWTV | **+0.963** | −0.016 |
+| LLWNGPMAV | **−0.953** | +0.050 |
+| YLQPRTFLL | **−0.934** | +0.130 |
+| TTDPSFLGRY | **+0.687** | −0.097 |
+
+and `max(m, 1−m)` then picks up the sign-flipped reflection as a large number.
+
+**Every feature ever gated this way was re-audited.** The validity statistic is
+|ρ(residual, D)|, which must be ~0:
+
+| feature | distinct values | modal share | residual | leak | |
+|---|---:|---:|---:|---:|---|
+| `polar_frac` (E104) | 1395 | 1.5% | 0.5586 | 0.025 | ok |
+| structure fingerprint (E83) | 2636 | 0.0% | 0.5570 | 0.028 | ok |
+| `charge_product` (E104) | 164 | 10.8% | 0.5542 | 0.014 | ok |
+| `germline conformity` (E103) | 2581 | 2.0% | 0.5458 | 0.028 | ok |
+| `lenfreq` (E96) | 421 | 5.9% | 0.5422 | 0.030 | ok |
+| `saltbridges` (E104) | 17 | 25.1% | 0.5168 | 0.041 | ok |
+| `hbonds` (E104) | 31 | 9.7% | 0.5162 | 0.015 | ok |
+| `pae` (inside D) | 2636 | 0.0% | 0.5098 | 0.027 | ok |
+| **`pep_frac_covered`** | **7** | **91.5%** | 0.6626 | **0.806** | **INVALID** |
+
+**No earlier conclusion moves.** Even the integer counts audit clean — salt
+bridges at 17 values and 25% modal share leak only 0.041. Only a variable that
+is 92% constant breaks it. The check is now computed and returned by the
+function rather than assumed, with the history in its docstring.
+
+### The pMHC side itself
+
+| feature | macro | inverted | ρ with D | residual on D | leak |
+|---|---:|---:|---:|---:|---:|
+| **`polarity_mismatch`** | 0.4908 | 0.5092 | **−0.003** | **0.5405** | 0.021 |
+| `pmhc_n_pep` | 0.5587 | 0.4413 | +0.117 | 0.5226 | 0.028 |
+| `pep_cover_centroid` | 0.4670 | 0.5330 | −0.003 | 0.5220 | 0.029 |
+| `pmhc_pol_mhc` | 0.4285 | 0.5715 | −0.091 | 0.5211 | 0.010 |
+| `pmhc_pol_pep` | 0.5200 | 0.4800 | −0.004 | 0.5089 | 0.023 |
+
+Nothing clears `polar_frac`'s 0.5586, so by the gate's own rule nothing is
+carried forward. But the ordering is informative: the two pMHC-side polarities
+taken alone are near the floor, and the quantity that does best is
+**`polarity_mismatch`**, the difference between the TCR side and the pMHC side
+— the only measurement here that belongs to neither partner alone. It reaches
+residual 0.5405 at ρ **−0.003** with D, essentially perfect orthogonality, and
+blends to nested **+0.0019** — larger than `polar_frac`'s own +0.0016 next to D.
+
+That it is a *complementarity* rather than a property of either side is the
+point: a well-made interface pairs polar with polar and apolar with apolar, and
+the mismatch is what a structural biologist would actually measure.
+
+---
+
+## E113 — A supervised V-gene prior does not transfer, which rescues polar_frac
+
+E111 concluded `polar_frac`'s information sits at (TRAV, TRBV) resolution. The
+practical question follows: if the signal is a V-gene property, estimate it
+**directly from labels** and skip the structure.
+`scripts/103_vgene_prior.py`. The project's first supervised feature, so every
+gene effect is estimated after removing each epitope's own mean (TRBV19
+validates at 0.76 pooled, but it is GILGFVFTL's public-motif gene and that
+cohort's base rate is 0.66), fitted on four epitopes, applied to the fifth, and
+shrunk by n/(n+k).
+
+### It does not transfer
+
+| genes | best k | GIL | GLC | NLV | TTD | YLQ | macro | coverage |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| **TRBV only** | 2 | 0.384 | 0.458 | 0.479 | 0.396 | 0.424 | **0.4282** | 96% |
+| TRAV only | 50 | 0.493 | 0.769 | 0.541 | 0.439 | 0.607 | 0.5697 | 98% |
+| TRAV\|TRBV pair | 50 | 0.369 | 0.624 | 0.490 | 0.563 | 0.510 | 0.5113 | **54%** |
+
+**The TRBV prior is below chance on every single held-out epitope** — a gene
+effect learned on four epitopes is *inverted* on the fifth. TRAV reaches 0.5697
+but swings from 0.439 on TTDPSFLGRY to 0.769 on GLCTLVAML. With the gene set
+and shrinkage also chosen inside each fold, the prior alone scores **0.5368**.
+
+Blended into D with the prior rebuilt in every fold:
+
+| variant | nested | vs D |
+|---|---:|---:|
+| TRBV only | 0.8581 | −0.0020 |
+| TRAV\|TRBV pair | 0.8550 | −0.0051 |
+| **`polar_frac`, label-free** | **0.8616** | **+0.0016** |
+
+Single genes are seen in the public set for ~100% of private TCRs, but
+**(TRAV, TRBV) pairs for only 41–60%**, so the pair version would be undefined
+on half the private rows even if it worked.
+
+### The number that explains it
+
+Within-epitope ρ between the supervised V-gene prior and `polar_frac` is
+**+0.012** — they are unrelated, despite E111 measuring that 80–87% of
+`polar_frac`'s variance *is* the gene pair.
+
+Both statements are true and together they are the finding. Gene identity
+determines `polar_frac`; gene identity also has an empirical validation rate;
+**those two gene-level quantities are orthogonal.** The empirical rate is a
+gene × epitope interaction — a gene validates well where it belongs to that
+epitope's public response and badly elsewhere — and removing the epitope mean
+does not remove the interaction. The structural polarity of a V-gene pair is
+epitope-independent and predicts validation in every cohort.
+
+### This corrects E111's deflation
+
+E111 said `polar_frac` is "a V-gene statistic", which read as a reduction. It
+is a V-gene statistic in the sense that gene identity determines its value, and
+**not** in the sense that it restates what a gene's track record would tell
+you — that quantity exists, is directly measurable, and is worthless across
+epitopes. The structural detour is not a detour.
