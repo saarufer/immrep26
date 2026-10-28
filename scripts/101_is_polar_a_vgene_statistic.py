@@ -40,7 +40,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 warnings.filterwarnings("ignore")
 
@@ -155,8 +154,7 @@ def main() -> int:
           f"{'minus V-domain':>16}{'minus both':>12}")
     rows = []
     for nm, s in feats.items():
-        raw, _ = residual_auc(s, pd.Series(0.0, index=s.index) + 0.0) \
-            if False else residual_auc(s, dr)
+        raw, _ = residual_auc(s, dr)
         # gene-mean version: replace each TCR by the mean of its (TRAV,TRBV) cell
         gm = pd.Series(index=s.index, dtype=float)
         for e, g in test.groupby("epitope_aa"):
@@ -167,7 +165,6 @@ def main() -> int:
         a_gm, _ = residual_auc(res_gm, dr)
         _, res_vd = residual_auc(s, vd)
         a_vd = residual_auc(res_vd, dr)[0]
-        res_both = res_gm - res_gm.index.map(lambda t: 0)
         _, r2 = residual_auc(res_gm, vd)
         a_both = residual_auc(r2, dr)[0]
         print(f"  {nm:<18}{raw:8.4f}{a_gm:18.4f}{a_vd:16.4f}{a_both:12.4f}")

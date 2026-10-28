@@ -41,6 +41,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
+from sklearn.metrics import roc_auc_score
 
 warnings.filterwarnings("ignore")
 
@@ -114,7 +115,6 @@ def main() -> int:
                 m = yy.notna().to_numpy()
                 if m.sum() < 10 or yy[m].nunique() < 2:
                     continue
-                from sklearn.metrics import roc_auc_score
                 per[e] = roc_auc_score(yy[m], v.to_numpy()[m])
             mac = float(np.mean(list(per.values())))
             results[(nm, k)] = (per, mac, float(np.mean(cov)))
@@ -143,8 +143,7 @@ def main() -> int:
                     m = yy.notna().to_numpy()
                     if m.sum() < 10 or yy[m].nunique() < 2:
                         continue
-                    from sklearn.metrics import roc_auc_score
-                    inner.append(roc_auc_score(yy[m], v.to_numpy()[m]))
+                        inner.append(roc_auc_score(yy[m], v.to_numpy()[m]))
                 if inner and np.mean(inner) > bv:
                     bv, best_in = float(np.mean(inner)), (cols, nm, k)
         cols, nm, k = best_in
@@ -153,7 +152,6 @@ def main() -> int:
         v, _ = apply_effect(eff, cols, ids)
         yy = y.reindex(ids)
         m = yy.notna().to_numpy()
-        from sklearn.metrics import roc_auc_score
         held.append(roc_auc_score(yy[m], v.to_numpy()[m]))
         picks.append(f"{nm}/k={k}")
         print(f"  {e:<12} chose {nm:<5} k={k:<3} -> {held[-1]:.4f}")

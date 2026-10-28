@@ -144,7 +144,6 @@ def main() -> int:
     test = load_test()
     labels = build_training_frame()[["tcr_id", "epitope_aa", "pos"]]
     hyp = load_module("hyp", "scripts/40_new_hypotheses.py")
-    pub = sorted(labels.dropna(subset=["pos"])["epitope_aa"].unique())
     rank = lambda s: hyp.rank_within(s, test)      # noqa: E731
 
     if CACHE.exists():

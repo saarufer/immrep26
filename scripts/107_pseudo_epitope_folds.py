@@ -232,10 +232,6 @@ def main() -> int:
     rng = np.random.default_rng(3)
     nulls = []
     for _ in range(NULL_REPS):
-        yp = y.copy()
-        for e in eps_all:
-            ids = [t for t in y.index if test.set_index('tcr_id').loc[t, 'epitope_aa'] == e] \
-                if False else None
         ypv = y.copy()
         for e, g in m.groupby("epitope_aa"):
             ids = [t for t in g["tcr_id"] if t in ypv.index]

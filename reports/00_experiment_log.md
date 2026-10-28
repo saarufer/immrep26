@@ -8485,3 +8485,143 @@ fitted on.
 The eight experiments from E96 to E117 produced no improvement to the model.
 They produced the instrument that shows there was none, which is the part worth
 keeping.
+
+---
+
+## E119 — Code review of E107–E118
+
+Second review pass, covering `scripts/96`–`107`. The first (E106) found a
+substantive defect; this one finds none, and the two defects that *were* found
+during this stretch were both caught in-flight by the experiments themselves.
+
+### Nothing functional
+
+Pyflakes and a hand scan turned up four cosmetic items, all verified harmless
+before removal and the affected scripts re-run afterwards:
+
+| script | item | effect |
+|---|---|---|
+| `101` | `residual_auc(...) if False else residual_auc(s, dr)` | evaluates to the second branch; none |
+| `101` | `res_both = res_gm - res_gm.index.map(lambda t: 0)`, unused | none |
+| `103` | `roc_auc_score` re-imported inside three loops | same object each time; none |
+| `107` | a dead `for` loop whose body is `... if False else None` | none; the real permutation uses `ypv` |
+
+`scripts/107` re-run after cleaning reproduces **−0.0017, null sd 0.0045,
+p 0.683** to the digit.
+
+### The two real defects were caught by the experiments, not the review
+
+Worth recording because it is a change in how this project fails. E106's
+review found the sign-selection leak *after* four experiments had used it.
+This stretch found both of its defects **as part of doing the science**:
+
+- **E111's gene-mean self-inclusion** — subtracting a (TRAV, TRBV) cell mean
+  computed including the TCR itself, when 63–83% of cells hold one member, so
+  the residual was identically zero for most rows. Caught because the result
+  looked too clean, fixed with leave-one-out, and the conclusion survived.
+- **E112's tie-induced residual leakage** — `pep_frac_covered` has 7 values
+  with 91.5% at 1.0, percentile rank ties them, and the residual came back
+  monotone in D with |ρ| up to 0.806. Caught because residual 0.6626 and
+  blend −0.0005 cannot both be true. Every feature ever gated this way was
+  re-audited; all leak ≤ 0.041.
+
+### One structural caveat on E118, stated rather than fixed
+
+In the 16-fold design the **features are computed per epitope, not per fold**.
+A held-out fold's density, bandwidth, TwoNN and `polar_frac` therefore use
+neighbours that are in the training folds of the same epitope. No label
+crosses — every component is label-free — but the folds are not independent at
+the feature level, which the five-epitope design avoided because a held-out
+epitope's features use only its own cohort.
+
+The direction matters and is favourable: shared neighbours make a held-out
+fold *more* like its training folds, which would **inflate** the measured
+transfer. E118 measured −0.0017. The true transfer is therefore at most that,
+and the negative conclusion is conservative.
+
+---
+
+## E120 — What E89 onwards established
+
+Thirty experiments since E89, no change to the entry, and a conclusion that is
+sharper than "nothing worked". Grouped by what each line settled.
+
+### The model: nothing added, and now it is known why
+
+| | gain over D | status |
+|---|---:|---|
+| three components (E98) | +0.0009 | within 0.2 null σ |
+| four, with TwoNN LID (E100) | +0.0028 | 0.5 σ |
+| five, with `polar_frac` (E104) | +0.0058 | 1.0 σ |
+| nine, everything (E105) | +0.0103 | 1.8 σ, p 0.082 → **0.200** once the sign step is nested (E106) |
+| **sixteen held-out cohorts (E118)** | **−0.0017** | **p 0.683** |
+
+Three separate instruments were built to test this and they agree:
+
+- **E98** — the components are genuinely independent (per-TCR score changes
+  correlate +0.006, −0.016, +0.155) and sum at **98% of additive**, so the
+  ceiling is not caused by overlap.
+- **E102** — the gain transfers to the private split in projection (+0.0039
+  against +0.0042 public), so the ceiling is not caused by unreachable rows.
+- **E117/E118** — the fitted difference is precisely measured (+0.0074 ±
+  0.0040 under a family bootstrap) and the **transferred difference is zero**.
+  Five folds were too few to show it; sixteen are enough.
+
+**The entry stays D**, now for a measured reason rather than the pre-registered
+bar.
+
+### The science: three findings that do not depend on any of that
+
+These were measured on all 1,782 scorable rows with their own controls and no
+selection step, so E106's null does not apply to them.
+
+**1. Both tasks are antigen-naive** (E88, E89, E95). The cohorts separate by
+antigen at 2.6× chance under heavy controls — family, donor, publication, the
+40 nearest neighbours in every cohort, MHC held fixed, V/J genes dropped. A
+SCEPTR trained purely on OLGA sequences, with zero antigen exposure, does it at
+**2.67×**, slightly better. Decomposed, CDR3 α and β lengths alone recover 47%
+of the effect and all 247 explicit dimensions recover 73%. The discriminating
+coordinates are generic; the differences along them are not.
+
+**2. The fold contributes a germline property, not a recognition one**
+(E104, E107, E109, E111, E115). `polar_frac` — the N/O share of a TCR's
+interface atoms — is the only structural feature that ever carried new
+information. It is **not** CDR3 composition (three sequence analogues at
+chance), it **is** V-gene identity expressed structurally (η² 0.80–0.87), and
+it is **not** the V-gene's empirical track record (ρ +0.012 with a supervised
+V-gene prior, which itself does not transfer — TRBV is below chance on every
+held-out epitope). Its information sits in the **germline loops facing the
+MHC** (0.5510) and essentially none of it on the **peptide-facing** surface
+(0.5120 against a 0.5098 floor), which is E36's decoy conclusion reached from
+a measurement that does carry signal. It **replicates on an independent
+structural run** (ρ +0.856 between runs, residual 0.5490 against 0.5586), with
+single-structure reliability 0.812 and a disattenuated ceiling of 0.5650.
+
+**3. The source literature's false-positive rate varies enormously, and why**
+(E90–E94). Same-epitope validation rates run **0.084 to 0.923** across studies
+(dispersion 383 against a permutation null whose max is 94.7). The worst
+contributor is a never-peer-reviewed 2020 preprint whose 168 NLVPMVATV
+annotations were **reagent-validation positive controls** — a single-chain
+trimer with the peptide covalently tethered, nanoparticle pulldown, and no
+specificity threshold anywhere in the paper. Replication across studies
+predicts validation at odds ratio **17.1** and is structurally absent from the
+private split. VDJdb's own `vdjdb.score` is **not** a reliability ordering —
+its highest level validates at 0.147 against an expected 0.402.
+
+### The methods: five things worth carrying to the next project
+
+1. **A population contrast is not a ranking.** Four independent demonstrations.
+   Check within-stratum variation and sign transfer before building a feature
+   from a group-level effect.
+2. **Count the studies behind every attribute level.** `rna-seq`,
+   `tissue=lung`, `vdjdb.score=3` and `direct` verification were each one study
+   wearing a method label.
+3. **Residualise on the current model, not on one reference feature** — and
+   return |ρ(residual, model)| as a validity check, because ties let the model
+   back in.
+4. **Permute the labels and re-run the entire procedure**, including every
+   step that touches labels. Moving the sign decision inside the loop changed
+   p from 0.082 to 0.200.
+5. **More folds, not more features.** The resolution limit of a five-fold
+   design is ~0.010; sixteen folds cut the null sd from 0.0059 to 0.0045 and
+   turned +0.0058 into −0.0017.
