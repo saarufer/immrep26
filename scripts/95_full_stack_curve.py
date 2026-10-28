@@ -44,7 +44,6 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from scipy.sparse.csgraph import connected_components
-from scipy.spatial import cKDTree  # noqa: F401  (kept for parity with E104)
 
 warnings.filterwarnings("ignore")
 

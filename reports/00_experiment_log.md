@@ -7739,3 +7739,96 @@ find signal" but **"this evaluation design cannot resolve effects of the size
 we were finding"**.
 
 **The entry does not change**, now for a stronger reason than the bar.
+
+---
+
+## E106 — Code review of E96–E105, and the leak that made the null look better than it was
+
+A line-by-line review of the ten scripts behind E96–E105.
+`scripts/96_review_sign_leak.py` for the quantification,
+`scripts/97_polar_frac_controls.py` for the reconstructed controls.
+
+### The one substantive defect
+
+Four scripts oriented every candidate with
+
+```python
+signed = s if hyp.mean_auc(labels, s) >= 0.5 else -s
+```
+
+which decides each feature's **direction using the labels of all five
+epitopes**, including the held-out one. One bit per feature, eight features in
+E105's stack, and it sits **outside** the nested loop, so no amount of nesting
+catches it. Three versions of E105's nine-component stack were run:
+
+| version | nested | vs D |
+|---|---:|---:|
+| leaky — sign from all five (published) | 0.8695 | +0.0095 |
+| **honest** — sign from the four training epitopes | 0.8695 | **+0.0095** |
+| **signed** — symmetric weight grid, no orientation step at all | 0.8703 | +0.0103 |
+
+**The leak costs nothing in the point estimate**: four epitopes pick exactly
+the same eight signs as five. It is real and it is harmless to the number.
+
+**But it made the permutation null look far better than it is**, because E105's
+null held the signs fixed while the real procedure must choose them:
+
+| null measured under | mean | sd | max | observed | p |
+|---|---:|---:|---:|---:|---:|
+| E105, signs fixed outside the loop | −0.0001 | 0.0059 | +0.0127 | +0.0103 | 0.082 |
+| **honest, signs chosen per fold** | **+0.0028** | 0.0076 | **+0.0203** | +0.0095 | **0.200** |
+| **signed, symmetric weights** | +0.0009 | **0.0198** | **+0.0468** | +0.0103 | **0.200** |
+
+**p goes from 0.082 to 0.200.** Pure noise now reaches **+0.0203** with honest
+sign selection and **+0.0468** with symmetric weights, and the honest null's
+*mean* is **+0.0028** — the procedure produces a positive gain on shuffled
+labels before any signal exists. E105 already concluded the stack was not
+significant; it was more not-significant than measured.
+
+### A reproduction discrepancy worth recording
+
+The review script's reconstruction of the published procedure returns
+**+0.0095** where E105 reported **+0.0103**, a difference traced to
+`rank(-s)` versus `1 - rank(s)` differing in tie handling and the greedy path
+amplifying it. Both are inside the null. **Two implementations of the same
+procedure disagreeing by 0.0008 is itself the finding** — it is a direct
+demonstration that differences of this size carry no information here.
+
+### An undeclared parameter
+
+`scripts/89_hubness.py` built the mutual-kNN density as
+
+```python
+dens_mk = dens_mk + 0.01 * cnt      # reward reciprocity count
+```
+
+The `0.01` was chosen by hand, mixes a cosine distance with a neighbour count
+on an arbitrary scale, was never swept and never nested, and E99's +0.0009
+depends on it. Now named `RECIPROCITY_WEIGHT` with the history in a comment
+rather than silently changed, so the published number still reproduces.
+
+### Housekeeping
+
+Dead code removed from five scripts (unused imports in 86 and 95, unused module
+loads in 86 and 88 — verified to have no top-level side effects — and dead
+locals in 87, 89). `scripts/86` re-run after editing and reproduces its logged
+numbers exactly.
+
+### The process failure, again
+
+Three analyses behind E103 and E104 — the structure-slot replacement, the
+"is polar_frac CDR3 composition" control and the residual-on-D table — ran as
+inline shell commands and left **no retained code**, which is the same failure
+E60 criticised in a collaborator's ledger and that E77–E82 repeated here.
+Reconstructed as `scripts/97_polar_frac_controls.py`; **every number
+reproduces unchanged**, including conformity dropping 0.7272 → 0.5748 when
+residualised on the V-domain term, the three sequence analogues at 0.5095,
+0.5109 and 0.5026, and the full residual-on-D table.
+
+### What the review changes
+
+The **scientific** claims stand: they involve no selection, are measured on all
+1,782 scorable rows, and now have code. The **ranking** claims weaken further —
+the stacked gain is p = 0.200 under an honest null rather than p = 0.082. The
+entry does not change, and the margin by which it should not change is larger
+than E105 stated.

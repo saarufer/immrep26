@@ -289,7 +289,6 @@ def main() -> int:
     print("\n=== what the inverse-nn1 rule picks, all eight cohorts ===")
     # the constant chosen by a majority of folds above
     from collections import Counter
-    best_c = Counter(r[3] for r in results if r[0] == "inverse median nn1")
     coef = float(sorted(Counter(
         [float(x) for x in results[-1][3].split("/")]).items(),
         key=lambda kv: (-kv[1], kv[0]))[0][0])

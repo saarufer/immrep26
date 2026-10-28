@@ -37,8 +37,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-from sklearn.metrics import roc_auc_score
 
 warnings.filterwarnings("ignore")
 
@@ -68,7 +66,6 @@ def main() -> int:
     scored = labels.dropna(subset=["pos"]).copy()
     scored["pos"] = scored["pos"].astype(int)
     hyp = load_module("hyp", "scripts/40_new_hypotheses.py")
-    decomp = load_module("decomp", "scripts/20_auc_error_decomposition.py")
 
     cached = np.load(ROOT / "data/interim/sceptr/default.npz", allow_pickle=True)
     V = cached["vectors"]

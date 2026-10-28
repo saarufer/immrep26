@@ -149,9 +149,6 @@ def main() -> int:
     lfr = rank(lf)
 
     # ---------- rebuild D exactly, then vary ----------
-    decomp = load_module("decomp", "scripts/20_auc_error_decomposition.py")
-    rival = load_module("rival", "scripts/44_rival_configuration.py")
-    pool_mod = load_module("pool", "scripts/33_pool_negative_control.py")
     d_sub = pd.read_csv(ROOT / "submissions/d_density3_m30pool_m50_struct.csv"
                         ).set_index("tcr_id")["prediction"]
     dr = rank(d_sub)

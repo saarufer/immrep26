@@ -79,7 +79,6 @@ def main() -> int:
     scored = labels.dropna(subset=["pos"]).copy()
     scored["pos"] = scored["pos"].astype(int)
     hyp = load_module("hyp", "scripts/40_new_hypotheses.py")
-    epitopes = sorted(test["epitope_aa"].unique())
     pub = sorted(scored["epitope_aa"].unique())
 
     c = np.load(ROOT / "data/interim/sceptr/default.npz", allow_pickle=True)
@@ -119,13 +118,17 @@ def main() -> int:
         inknn = np.zeros((n, n), dtype=bool)
         np.put_along_axis(inknn, knn, True, axis=1)
         mutual = inknn & inknn.T
-        Dmk = np.where(mutual, D, np.inf)
         cnt = mutual.sum(axis=1)
         with np.errstate(invalid="ignore"):
             dens_mk = np.where(cnt > 0,
                                -np.where(mutual, D, 0).sum(axis=1)
                                / np.maximum(cnt, 1), -1.0)
-        dens_mk = dens_mk + 0.01 * cnt      # reward reciprocity count
+        # UNDECLARED PARAMETER, flagged by the E106 review: 0.01 was chosen by
+        # hand and mixes a cosine distance with a neighbour count on an
+        # arbitrary scale. It was never swept and never nested. Kept as-is so
+        # the published number reproduces; any future use should sweep it.
+        RECIPROCITY_WEIGHT = 0.01
+        dens_mk = dens_mk + RECIPROCITY_WEIGHT * cnt
 
         sk = float(pd.Series(indeg).skew())
         hub_stats.append([e, g["split"].mode().iloc[0], n, sk,
