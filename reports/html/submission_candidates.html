@@ -64,7 +64,7 @@ footer { margin-top:3em; color:var(--muted); font-size:.84rem;
 </style></head><body><div class="wrap">
 
 <h1>IMMREP26 提交候选</h1>
-<p class="sub">截止 2026-11-02 15:00 UTC · 规则允许多队提交 · 文件位于 <code>submissions/</code> · 生成于 E110</p>
+<p class="sub">截止 2026-11-02 15:00 UTC · 规则允许多队提交 · 文件位于 <code>submissions/</code> · 生成于 E110，E111–E114 后更新</p>
 
 <div class="caution">
 <b>先读这一段。</b>五个候选的 E74 私有投影跨度只有 <b>0.007</b>（0.8108–0.8155），
@@ -150,6 +150,59 @@ footer { margin-top:3em; color:var(--muted); font-size:.84rem;
   <p class="note">E84 测得 D−F = +0.0044（公榜），且剂量反应在 pool 行数低于约 60 时消失；私有三队列分别有 11 / 191 / 5 行。E27 估计残余为 +0.0013，这个候选押它其实是负的。</p>
   <p class="sha">sha256 d04fff191f8764ac</p>
  </article>
+
+
+<h2>候选之后的发现（E111–E114）</h2>
+<p class="note">S1–S5 建成后又跑了四个实验。<b>没有一个产生新的候选</b>——下面记录的是它们
+各自否定了什么，因为这直接影响如何解读上面五个候选。</p>
+
+<article class="cand">
+<header><h3>E111 <span class="file">polar_frac 是 V 基因统计量</span></h3>
+<span class="badge pending">不改变候选</span></header>
+<p class="what">80–87% 的方差就是 (TRAV, TRBV) 基因对；扣掉留一法基因效应后，个体残差 0.5073，地板是 0.5098。</p>
+<p class="note"><b>我自己的第一版检验有 bug</b>：扣基因均值时含自身，而 63–83% 的基因对单元只有一个成员，
+残差被构造性地压成零。改留一法后结论仍成立。<br>
+<b>但它不是 D 已有的那个 V 基因量</b>——对全 V 域序列比对项取残差完全碰不到它（0.5586→0.5602）。</p>
+</article>
+
+<article class="cand">
+<header><h3>E113 <span class="file">监督式 V 基因先验不迁移</span></h3>
+<span class="badge pending">否定了一条捷径</span></header>
+<p class="what">直接从标签学 (TRAV,TRBV) → 通过率，扣掉表位均值、四折拟合第五折应用：
+<b>TRBV 先验在每个留出表位上都低于随机</b>（宏平均 0.4282），基因对版覆盖仅 54%。掺进 D 是 −0.0020 到 −0.0051。</p>
+<p class="bet"><b>解释这一切的一个数：</b>ρ(监督式先验, polar_frac) = <b>+0.012</b>。</p>
+<p class="note">基因身份决定 polar_frac；基因身份也有经验通过率；<b>这两个基因层面的量正交</b>。
+经验通过率是基因 × 表位交互（某基因在它所属表位的公共应答里通过率高、别处低），扣表位均值扣不掉。
+<b>结构极性是表位无关的。</b>这反过来修正了 E111 的贬低——结构那条弯路不是弯路。</p>
+</article>
+
+<article class="cand">
+<header><h3>E112 <span class="file">pMHC 侧 + 一个诊断 bug</span></h3>
+<span class="badge pending">无新候选</span></header>
+<p class="what"><code>pep_frac_covered</code> 返回残差 0.6626（远超历史最好的 0.5586），混合却 −0.0005。</p>
+<p class="note">伪影：该变量只有 <b>7 个取值、91.5% 等于 1.0</b>，百分位秩把并列行给同一秩，
+减去对 D 的线性拟合后残差在并列组内单调于 D，<code>|ρ(残差,D)|</code> 达 <b>0.806</b> 且符号随表位翻转。<br>
+<b>所有用过该诊断的特征已全部重审，泄漏均 ≤ 0.041（含整数计数的氢键、盐桥），没有一个历史结论移动。</b>
+有效性检查现已固化进代码。</p>
+</article>
+
+<article class="cand">
+<header><h3>E114 <span class="file">polarity_mismatch 是 85% 的 polar_frac</span></h3>
+<span class="badge pending">S6 建了又删</span></header>
+<p class="what">E112 把"界面两侧极性之差"当作唯一不属于任一方的量，nested +0.0019。
+实测表位内 ρ = <b>+0.854</b>。</p>
+<p class="note">表位内肽和 MHC 是同一批分子，pMHC 侧变化小，差值由 TCR 侧主导——
+减掉的是一个近似常数。六成分 nested <b>0.8658</b>，对五成分的 0.8659 <b>什么都没加</b>；
+取用它的那两折只是把极性权重拆成 0.10/0.05 而不是 polar_frac 独占 0.15。<br>
+<b>S6 建成后被删除</b>：它会重复 S2，而不是对冲一个新假设。</p>
+</article>
+
+<div class="caution">
+<b>这四个实验对候选选择的净影响：零。</b>没有新候选，S1–S5 的相对关系不变。
+但它们收紧了对 S1/S2 中 <code>polar_frac</code> 那一项的理解——
+它是一个<b>结构读出的、表位无关的 V 基因性质</b>，而不是受体个体的性质，
+也不是对基因历史战绩的复述（后者可直接测量，且跨表位一文不值）。
+</div>
 
 <h2>已提交的三份（参照）</h2>
 <table>
