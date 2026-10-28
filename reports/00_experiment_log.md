@@ -8341,3 +8341,72 @@ the λ=2 variant does.
 +0.0035 nested is still deep inside E106's null (sd 0.0059, max +0.0203).
 Nothing here changes the entry. What changes is the standing of the underlying
 measurement: it is now replicated rather than merely reported.
+
+---
+
+## E117 — Separating selection optimism from sampling error, and why only one of them was ever the problem
+
+E106 found the bottleneck: a nested search over five epitopes produces up to
++0.0203 on shuffled labels, so the stacked gains cannot be distinguished from
+selection optimism. Every experiment since has run into that wall. But the wall
+is specifically about **selection**, and the other source of uncertainty —
+the sampling error of a **frozen** configuration — has never been measured.
+Five folds cannot resolve it; 1,782 scorable TCRs can.
+`scripts/106_high_power_evaluation.py`.
+
+E104's five-component configuration with its weights **frozen** scores
+**+0.0074** against D on all data. Paired bootstrap, 2,000 replicates, three
+resampling units of increasing conservatism:
+
+| resampling unit | mean | sd | 2.5% | 97.5% | P(gain > 0) |
+|---|---:|---:|---:|---:|---:|
+| TCRs (naive) | +0.0076 | 0.0029 | +0.0020 | +0.0132 | 99.7% |
+| donors | +0.0072 | 0.0033 | +0.0014 | +0.0142 | 99.0% |
+| **clonal families** | +0.0074 | **0.0040** | **−0.0000** | +0.0156 | 97.4% |
+
+Independent units available, which is why the three differ:
+
+| epitope | TCRs | donors | families | donor resolved |
+|---|---:|---:|---:|---:|
+| GILGFVFTL | 575 | 137 | 354 | 86% |
+| NLVPMVATV | 317 | 70 | 272 | 90% |
+| GLCTLVAML | 166 | 78 | 98 | 64% |
+| TTDPSFLGRY | 342 | 221 | 334 | 38% |
+| YLQPRTFLL | 382 | 281 | 327 | 36% |
+
+Donor resolution is 36–38% on TTDPSFLGRY and YLQPRTFLL, where unresolved TCRs
+become singleton groups and the donor bootstrap collapses toward the TCR one.
+**The family bootstrap is the trustworthy column** — it needs no metadata and
+covers every row — and it is the one whose interval touches zero.
+
+### What this does and does not establish
+
+**It does** establish that the +0.0074 is a precisely measured difference *on
+this data*: the sampling sd is 0.0029–0.0040, two to three times smaller than
+E106's selection null, and the gain is roughly twice its own standard error
+even under the most conservative clustering.
+
+**It does not** address transfer, and the distinction matters more than the
+numbers. The bootstrap resamples the evaluation set while holding the
+configuration fixed — but that configuration was *chosen by looking at this
+evaluation set*. A new draw of TCRs from the same five epitopes would show the
+same advantage; a configuration chosen without seeing them might not exist at
+all. That second question is precisely what E106 measured, and it answered
+negatively.
+
+**Both results are true and they are compatible.** A configuration can produce
+a difference that is consistent within the data it was fitted on and absent
+outside it — that is what overfitting is, not a contradiction. The bootstrap
+measures how sharply the fitted difference is pinned down; the permutation
+measures how easily fitting manufactures one.
+
+So the wall stands. What E117 adds is that the wall is made of **one** thing,
+not two: TCR-level sampling noise was never the limitation — at sd 0.0040 it
+would comfortably resolve a +0.0074 effect. The limitation is entirely that
+**five epitopes is too few to choose between configurations**, and no amount of
+resampling within those five epitopes can fix it, because the folds are the
+unit of selection and there are only five of them.
+
+That is also the clearest statement available of what would be needed to do
+better: **more epitopes**, not more TCRs, not better features, and not a
+cleverer search.
