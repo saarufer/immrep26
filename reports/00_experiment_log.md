@@ -8225,3 +8225,38 @@ is a V-gene statistic in the sense that gene identity determines its value, and
 **not** in the sense that it restates what a gene's track record would tell
 you — that quantity exists, is directly measurable, and is worthless across
 epitopes. The structural detour is not a detour.
+
+---
+
+## E114 — `polarity_mismatch` is 85% `polar_frac`, which corrects E112
+
+E112 reported `polarity_mismatch` — TCR-side interface polarity minus
+pMHC-side — as the best pMHC-side quantity, at residual-on-D 0.5405, ρ −0.003
+with D, and nested +0.0019 next to D, and framed it as "the only measurement
+that belongs to neither partner alone". Before building a candidate on it, the
+obvious check:
+
+**Within-epitope ρ between `polarity_mismatch` and `polar_frac` is +0.854.**
+
+They are nearly the same quantity. The reason is structural rather than
+accidental: within one epitope the peptide and the MHC are the *same
+molecules*, so the pMHC-side term varies far less than the TCR-side one and the
+difference is dominated by the TCR side. The subtraction removes a near-constant
+and the "complementarity" framing does not survive it.
+
+Confirmed in the stack, every parameter re-selected inside each fold:
+
+| configuration | combinations | nested | vs D | oracle | cost |
+|---|---:|---:|---:|---:|---:|
+| five components (E104) | 270 | 0.8659 | +0.0058 | 0.8675 | −0.0016 |
+| **six, adding `polarity_mismatch`** | 1350 | **0.8658** | +0.0057 | 0.8675 | −0.0017 |
+
+**Exactly nothing**, and the folds that do take it (GILGFVFTL, TTDPSFLGRY)
+simply split the polar weight 0.10/0.05 instead of spending 0.15 on
+`polar_frac` alone. A sixth candidate entry was built and then **deleted**: it
+would have duplicated S2 rather than hedging a different hypothesis.
+
+E112's measurement stands — the pMHC-side polarities taken alone are near the
+floor and the mismatch is the best of that set — but its interpretation does
+not. What looked like an interface-level complementarity is the TCR side
+measured again with a small offset subtracted.
