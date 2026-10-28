@@ -8009,3 +8009,85 @@ is to spread them over teams rather than to pick the top row. If one
 configuration must carry the main entry, **D is still the defensible choice**:
 it is the only one whose advantage over the frozen baseline was measured
 before this exploration began and survives every null applied since.
+
+---
+
+## E111 — polar_frac is a V-gene statistic, but not the one D already has
+
+E109 placed `polar_frac`'s information in the germline loops facing the MHC,
+and left an objection unresolved: 0.5510 is exactly where E103's V-gene docking
+conformity sat (0.5458), and that feature proved reducible to the whole-V-domain
+alignment term D carries. If `pf_germline` is the same thing, the one structural
+feature this project found is, in its useful half, a restatement of V-gene
+identity. `scripts/101_is_polar_a_vgene_statistic.py`.
+
+### The variance is mostly the V genes
+
+Variance explained with the cohort held fixed:
+
+| feature | η² TRAV | η² TRBV | **η² both** | η² epitope |
+|---|---:|---:|---:|---:|
+| `pf_germline` | 0.554 | 0.324 | **0.865** | 0.091 |
+| E103 conformity | 0.386 | 0.317 | 0.831 | 0.124 |
+| `pf_all` | 0.436 | 0.293 | **0.797** | 0.146 |
+| `pf_mhc_only` | 0.360 | 0.235 | 0.774 | 0.040 |
+| `pf_cdr3` | 0.251 | 0.210 | 0.676 | 0.082 |
+
+**80–87% of `polar_frac`'s variance is the (TRAV, TRBV) pair.**
+
+### A bug in my own deflation, caught and fixed
+
+The first test subtracted the (TRAV, TRBV) cell mean computed **including the
+TCR itself**. Between 63% and 83% of cells hold exactly one member, so for most
+TCRs the residual was identically zero and the feature collapsed to the floor
+by construction. That version reported 0.5586 → 0.5100 and was meaningless.
+
+Redone with a **leave-one-out** gene effect, pooled across cohorts with each
+cohort's mean removed first, and compared on the **same 83% of rows** where the
+quantity is defined:
+
+| feature | raw | LOO gene effect | within-gene residual |
+|---|---:|---:|---:|
+| `pf_all` | 0.5648 | **0.5434** | **0.5182** |
+| `pf_germline` | 0.5608 | **0.5555** | **0.5073** |
+
+Floor, for reference: 0.5098.
+
+**The conclusion survives the correction.** The gene effect carries nearly all
+of it — for `pf_germline` the gene effect (0.5555) is almost the whole raw
+value (0.5608) — and **the within-gene residual carries nothing**: 0.5073 for
+the germline half, at the floor. `pf_all` keeps slightly more individually
+(0.5182) but the gene effect still dominates.
+
+### But it is not the V-gene statistic D already holds
+
+Residualising on the whole-V-domain alignment term — the test that deflated
+E103's conformity from 0.7272 to 0.5748 — **does not touch it**:
+
+| feature | raw | − V-domain term | − gene mean | − both |
+|---|---:|---:|---:|---:|
+| `pf_all` | 0.5586 | **0.5602** | 0.5100 | 0.5037 |
+| `pf_germline` | 0.5510 | **0.5498** | 0.5115 | 0.5019 |
+| E103 conformity | 0.5458 | 0.5360 | 0.5162 | 0.5234 |
+
+So `polar_frac` is a V-gene quantity that **the sequence alignment of the V
+domain does not capture**. D's `m50` term compares V-domain sequences; this
+reads how those genes' loops are oriented in a folded complex. Two different
+functions of the same gene identity, and the structural one carries information
+the sequence one misses — but only at gene resolution.
+
+### What this corrects
+
+E104 framed `polar_frac` as the first feature the structure earns over
+sequence, and E107's control stands: it is **not** CDR3 composition, three
+sequence analogues sit at chance. But "not CDR3 composition" is not "about the
+individual receptor". **It is about the V genes**, expressed structurally, and
+the individual receptor's deviation from its own genes' pattern carries nothing
+(0.5073 against a floor of 0.5098).
+
+The practical consequence is small — the blend behaves the same either way,
+and E106 already placed all of it inside the noise — but the scientific claim
+has to be stated correctly: **the fold's contribution to revalidation is a
+germline property, read at the level of V-gene pairs, that sequence alignment
+of those same genes does not expose.** That is a narrower claim than E104's and
+it is the one the measurements support.
