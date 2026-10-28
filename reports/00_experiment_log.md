@@ -7832,3 +7832,51 @@ The **scientific** claims stand: they involve no selection, are measured on all
 the stacked gain is p = 0.200 under an honest null rather than p = 0.082. The
 entry does not change, and the margin by which it should not change is larger
 than E105 stated.
+
+---
+
+## E108 — The five remaining inline analyses, reconstructed
+
+E106 found three analyses behind E103 and E104 that had run as shell heredocs
+and left no retained code, and `scripts/97` recovered two of them. A second
+pass over the log found **five** in total, spread across four experiments —
+the count in E106 was wrong and is corrected here.
+`scripts/98_inline_reconstructions.py`.
+
+| | experiment | analysis |
+|---|---|---|
+| A | E95 | zero-parameter rank-average fusion of the three submissions, plus nested LOEO over six candidates |
+| B | E99 | mutual-kNN density on top of E98's all-three combination |
+| C | E103 | germline conformity as a **replacement** for D's structure slot, eight slot forms |
+| D | E104 | polar_frac on top of the four-component stack, every parameter nested |
+| E | E104 | raw versus sequence-residualised polar_frac in the same stack |
+
+The script asserts each recomputed figure against the number the log quotes,
+at a tolerance of 0.0002, and exits non-zero if any disagrees.
+
+| figure | log | recomputed |
+|---|---:|---:|
+| A, D+F | 0.8582 | 0.8582 |
+| A, D+F+frozen | 0.8563 | 0.8563 |
+| A, nested over six | 0.8600 | 0.8600 |
+| B, all-three | 0.8621 | 0.8621 |
+| B, nested with mutual-kNN | 0.8614 | 0.8614 |
+| C, pae 0.7 + fingerprint 0.3 | 0.8610 | 0.8610 |
+| C, conformity alone | 0.8534 | 0.8534 |
+| C, nested over eight slot forms | 0.8586 | 0.8586 |
+| D, four components | 0.8628 | 0.8628 |
+| D, five with polar_frac | 0.8659 | 0.8659 |
+| E, sequence-residualised | 0.8628 | 0.8628 |
+
+**11 of 11 reproduce.** Sections D and E carry the sign-orientation defect
+E106 identified; they are reproduced **as published** so the logged numbers
+stay checkable, with the defect noted inline rather than silently repaired —
+E106 measured its cost at +0.0000 in the point estimate.
+
+Every number quoted in E95–E105 now has code behind it. The gap this closes is
+not a correctness gap — nothing moved — but a reproducibility one, and it is
+the third time in this project the same lapse has been caught (E60 in a
+collaborator's ledger, E77–E82 in mine, E103–E104 here). The pattern is
+specific and avoidable: it happens when a result arrives as a follow-up to a
+scripted experiment rather than as an experiment of its own, and the fix is to
+write the follow-up into the parent script before quoting its number.
