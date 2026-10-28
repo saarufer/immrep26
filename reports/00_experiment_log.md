@@ -7946,3 +7946,66 @@ is consistent with every structural result this project has produced — E14's
 canonicality, E36's decoy null, E75's identical footprints, E103's germline
 docking — now from a measurement that does carry signal rather than one that
 does not.
+
+---
+
+## E110 — Five candidate entries, each betting on a different thing
+
+The rules permit several teams, so the question is not which configuration is
+best but **which small set covers the ways the private split could differ from
+the public one**. `scripts/100_submission_candidates.py`. The frozen entry's
+sha256 is asserted before and after writing.
+
+| candidate | public | GIL | GLC | NLV | TTD | YLQ | E74 private |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| frozen | 0.8498 | 0.869 | 0.741 | 0.865 | 0.840 | 0.933 | 0.7948 |
+| **D** (submitted) | 0.8600 | 0.886 | 0.757 | 0.873 | 0.849 | 0.935 | 0.8086 |
+| **F** (submitted) | 0.8557 | 0.882 | 0.745 | 0.867 | 0.850 | 0.935 | 0.8037 |
+| **S1** D + polar_frac | 0.8643 | 0.885 | 0.771 | 0.881 | 0.853 | 0.932 | 0.8113 |
+| **S2** D + five-component stack | 0.8675 | 0.886 | 0.772 | 0.888 | 0.859 | 0.932 | **0.8153** |
+| **S3** F + the same five | 0.8638 | 0.882 | 0.764 | 0.882 | 0.859 | 0.931 | 0.8108 |
+| **S4** D + nine-component stack | **0.8716** | 0.891 | 0.793 | 0.882 | 0.869 | **0.923** | **0.8155** |
+| **S5** D + weights tuned on TTDPSFLGRY | 0.8664 | 0.886 | 0.768 | 0.887 | 0.860 | 0.932 | 0.8144 |
+
+### What each one bets
+
+**S1 — one component, maximum transferability.** D plus `polar_frac` at 0.15,
+nothing else. The component with the best residual-on-D (0.5586), full coverage
+on all three private cohorts, and only one parameter chosen. The conservative
+hedge: if the stacking is noise, this loses least.
+
+**S2 — the measured configuration.** E104's five components at the weights five
+folds agreed on. The central estimate.
+
+**S3 — pool-free base.** The same five on F. E84 measured `D − F` at +0.0044
+publicly with a dose-response that vanishes below ~60 pool rows, and the
+private cohorts hold 11, 191 and 5. This bets the residual pool contribution is
+negative rather than the +0.0013 E27 estimated.
+
+**S4 — maximum public.** All nine components. Public 0.8716, the highest
+available, and the only candidate whose per-epitope profile degrades anywhere —
+YLQPRTFLL falls to 0.923 from D's 0.935. This bets that every small gain is
+real, which E106 priced at p 0.200.
+
+**S5 — tuned on the private split's twin.** Weights chosen to maximise
+TTDPSFLGRY alone rather than the macro, on E86's finding that CINGVCWTV and
+LLWNGPMAV are its structural near-twins at distance 1.40 and 1.47. It lands at
+lenfreq 0.05, twonn 0.10, polar 0.10 — a lower polar weight than the macro
+chooses. This bets the similarity map transfers.
+
+### The honest framing
+
+The E74 projections span **0.8086 to 0.8155**, a range of 0.007. Two results
+make that range uninterpretable as a ranking:
+
+- **E106**: the stacked gains carry permutation p 0.200 under an honest null
+  whose own max reaches +0.0203. The differences between S1–S5 are inside it.
+- **E85**: per-epitope sampling error on the private cohorts is 0.025–0.060, so
+  a 0.007 difference in the projection is an order of magnitude inside the
+  noise of the private evaluation itself.
+
+So these are **hedges across hypotheses, not a ranked list**, and the right use
+is to spread them over teams rather than to pick the top row. If one
+configuration must carry the main entry, **D is still the defensible choice**:
+it is the only one whose advantage over the frozen baseline was measured
+before this exploration began and survives every null applied since.
