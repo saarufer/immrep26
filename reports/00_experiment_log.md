@@ -8260,3 +8260,84 @@ E112's measurement stands — the pMHC-side polarities taken alone are near the
 floor and the mismatch is the best of that set — but its interpretation does
 not. What looked like an interface-level complementarity is the TCR side
 measured again with a small offset subtracted.
+
+---
+
+## E115 — An independent structural replicate: `polar_frac` holds, and its ceiling is close
+
+Two complete Boltz runs of all 2,636 complexes have been sitting on disk the
+whole time. Every structural result here — E36, E75, E83, E103, E104, E109 —
+used only `out5`, and E19's consistency work resampled the *diffusion head*
+within one run, which shares the trunk. The two runs are different predictions:
+on 25 sampled complexes the TCR C-alpha RMSD after superposing on MHC and
+peptide has median **1.19 Å**, reaches 5.76 Å, and **none are identical**.
+
+That makes `out` an out-of-sample structural replicate for the only structural
+feature that ever carried anything. `scripts/104_replicate_structures.py`.
+
+### 1. It replicates
+
+| | residual on D | nested in D |
+|---|---:|---:|
+| `out5` — the run E104 discovered it on | 0.5586 | +0.0016 |
+| **`out` — never used before** | **0.5490** | **+0.0021** |
+| mean of the two | 0.5551 | +0.0029 |
+| shrunk toward the cohort mean by disagreement, λ=2 | 0.5579 | **+0.0035** |
+
+`polar_frac` was defined, measured and argued for entirely on `out5`.
+Recomputing it from structures predicted in a separate run — different poses,
+median 1.19 Å apart — gives **0.5490 and +0.0021**, within noise of the
+original. This is the first out-of-sample confirmation any structural claim in
+this project has had, and unlike the stacked gains it involves **no selection**,
+so E106's permutation null does not apply to it.
+
+Pooled Spearman between runs **+0.856**, per epitope 0.747–0.895.
+
+### 2. How much of it is prediction noise
+
+Two independent measurements of one quantity give the decomposition directly:
+`sd(difference) = σ_noise·√2`, so `σ_true² = σ_observed² − σ_noise²`.
+
+| epitope | sd(observed) | sd(difference) | sd(noise) | sd(true) | reliability |
+|---|---:|---:|---:|---:|---:|
+| NLVPMVATV | 0.0165 | 0.0080 | 0.0057 | 0.0155 | **0.882** |
+| LLWNGPMAV | 0.0127 | 0.0069 | 0.0049 | 0.0117 | 0.852 |
+| GILGFVFTL | 0.0143 | 0.0082 | 0.0058 | 0.0131 | 0.836 |
+| GLCTLVAML | 0.0104 | 0.0063 | 0.0045 | 0.0094 | 0.817 |
+| LTDEMIAQY | 0.0138 | 0.0085 | 0.0060 | 0.0124 | 0.810 |
+| TTDPSFLGRY | 0.0125 | 0.0077 | 0.0054 | 0.0113 | 0.810 |
+| YLQPRTFLL | 0.0149 | 0.0093 | 0.0066 | 0.0134 | 0.805 |
+| CINGVCWTV | 0.0108 | 0.0086 | 0.0061 | 0.0089 | **0.683** |
+
+**Mean single-run reliability 0.812** — 81% of `polar_frac`'s variance is
+reproducible signal and 19% is prediction noise. Spearman–Brown for the
+two-run mean: **0.896**.
+
+### 3. The ceiling a better structure predictor could reach
+
+Disattenuating the residual-on-D by the single-run reliability:
+
+> (0.5586 − 0.5) / √0.812 + 0.5 = **0.5650**
+
+**A noise-free structure predictor would move this feature from 0.5586 to about
+0.5650.** The gap between what we measure and what is there is roughly 0.006 of
+AUC — about a tenth of the feature's whole margin over chance. Averaging the
+two runs already recovers part of it, and shrinking the least reproducible
+values toward the cohort mean recovers slightly more (+0.0016 → +0.0035 nested).
+
+**This closes a question that has hung over every structural result here**:
+whether the Boltz predictions are too noisy for the measurements built on them
+to mean anything. They are not. `polar_frac` is 81% reproducible, replicates on
+an independent run, and the headroom from a perfect predictor is small enough
+that better structures would not change any conclusion.
+
+CINGVCWTV's reliability of **0.683** is the one exception worth flagging — it
+is a private epitope, and its `polar_frac` is the least reproducible of the
+eight. The noise model says its values should be shrunk hardest, which is what
+the λ=2 variant does.
+
+### What this is not
+
++0.0035 nested is still deep inside E106's null (sd 0.0059, max +0.0203).
+Nothing here changes the entry. What changes is the standing of the underlying
+measurement: it is now replicated rather than merely reported.
