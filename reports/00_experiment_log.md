@@ -7557,3 +7557,100 @@ typicality well (+0.152) and from the Boltz-confidence well (+0.37), and scores
 0.7272 on its own — and it is worth **zero**. Individual decorrelation is not
 the same as spanning new predictive space; D's four terms already span almost
 all of the subspace these features live in. The entry does not change.
+
+---
+
+## E104 — Interface energetics, and the first feature the structure earns over sequence
+
+E83 and E103 read the interface as geometry. This reads it as physics: buried
+surface area, hydrogen bonds, salt bridges, charge complementarity, packing
+density — quantities that distinguish two interfaces touching the same residues
+but made differently. SASA by Shrake–Rupley restricted to atoms within 9 Å of
+the partner (no atom beyond twice the probe-inflated radius can change burial,
+so the differential stays exact on a few hundred atoms instead of several
+thousand). `scripts/94_interface_energetics.py`.
+
+**The procedure changed, per E103.** The residual-on-D gate runs *first*, and
+only a feature beating the 0.5570 that E83's fingerprint set is blended at all.
+
+### The gate inverts the ranking
+
+| feature | macro | inverted | ρ with D | **residual on D** |
+|---|---:|---:|---:|---:|
+| **polar_frac** (N/O share of TCR interface atoms) | 0.4612 | 0.5388 | **−0.044** | **0.5586** |
+| charge_product | 0.5663 | 0.4337 | **+0.006** | 0.5542 |
+| packing | 0.5512 | — | +0.030 | 0.5494 |
+| bsa | 0.5890 | — | +0.157 | 0.5278 |
+| n_if_tcr | 0.5897 | — | +0.209 | 0.5168 |
+| hbonds | 0.5841 | — | +0.186 | 0.5162 |
+
+**The strongest features have the smallest residuals and the weakest have the
+largest.** Buried surface area, interface size and hydrogen-bond count score
+0.58–0.59 alone and retain almost nothing; `polar_frac`, which is barely
+distinguishable from chance at 0.5388, is essentially orthogonal to D
+(ρ −0.044) and to typicality (ρ +0.002) and therefore retains nearly all of
+what little it has. One feature clears the bar, and it is the one that looked
+worst.
+
+### It is not CDR3 composition — the structure earns it
+
+A hydrophobic CDR3 gives a hydrophobic interface, so the obvious objection is
+that `polar_frac` is amino-acid composition wearing structural clothing. Three
+sequence-only analogues say no:
+
+| sequence analogue | ρ with polar_frac | its own macro | residual on D |
+|---|---:|---:|---:|
+| CDR3 polar residue fraction | +0.153 | 0.511 | 0.5092 |
+| CDR3 hydrophobic fraction | −0.305 | 0.513 | 0.5095 |
+| CDR3 implied N/O atom fraction | +0.451 | 0.510 | **0.5026** |
+| **structural `polar_frac`** | — | **0.5388** | **0.5586** |
+
+**All three sequence versions sit at chance.** Residualising `polar_frac` on
+the closest of them makes it *stronger* (0.5388 → 0.5507 standalone,
+0.5586 → 0.5659 residual). The information is in **which atoms the fold
+actually turns towards the pMHC**, not in what the CDR3 is made of. This is the
+first result in the project where the structure does something the sequence
+cannot — E36 and E103 both found the structural term reducible to a TCR
+property, and this one is not reducible to the sequence at all.
+
+### In the stack it roughly doubles the total
+
+Added to E100's four components, every parameter re-selected inside each fold:
+
+| configuration | nested | vs D | oracle | selection cost | distinct picks |
+|---|---:|---:|---:|---:|---:|
+| four components (E100) | 0.8628 | +0.0028 | 0.8628 | +0.0000 | 1 |
+| **+ `polar_frac`** | **0.8659** | **+0.0058** | 0.8675 | −0.0016 | 4 |
+| + `polar_frac` + charge_product | 0.8659 | +0.0058 | 0.8675 | −0.0016 | 4 |
+
+It enters at weight **0.10–0.15**, two to three times the 0.05 the other
+components take, which is what genuine orthogonality buys. `charge_product`
+is then refused by every fold. Per epitope, against D alone at weight 0.15:
+GLCTLVAML **+0.0138**, NLVPMVATV **+0.0085**, TTDPSFLGRY +0.0033,
+GILGFVFTL −0.0011, YLQPRTFLL −0.0029 — the help goes to the two hardest
+cohorts. Within-epitope sd is 0.0104–0.0165 in all eight including the three
+private ones, so it transfers.
+
+### A caveat on the diagnostic I proposed one experiment ago
+
+The sequence-residualised `polar_frac` has the *better* residual-on-D (0.5659
+against 0.5586) and is nevertheless **refused by all five folds**, collapsing
+the stack back to +0.0028. So residual-on-D is a good screen — it correctly
+picked the one feature of nine worth blending — but it is not an oracle, and
+the component that survives blending is the raw one. Recorded so the gate is
+not over-trusted.
+
+### Where this leaves it
+
+| configuration | fully nested | vs D | % of the +0.02 bar |
+|---|---:|---:|---:|
+| D | 0.8600 | — | — |
+| three components (E98) | 0.8610 | +0.0009 | 5% |
+| four, with TwoNN (E100) | 0.8628 | +0.0028 | 14% |
+| **five, with `polar_frac`** | **0.8659** | **+0.0058** | **29%** |
+
+The largest gain the project has produced, and still under a third of the bar.
+The selection cost is back at −0.0016 with four distinct picks across five
+folds, so +0.0058 carries real sampling uncertainty — the oracle is +0.0074
+and a different five epitopes could plausibly have given +0.004. The entry does
+not change.
