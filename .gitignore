@@ -24,7 +24,3 @@ submissions/
 data/external/prp/
 data/external/seeker/
 ref/
-
-# E115: exported TCR sequences incl. private-split rows -- never publish
-reports/60_unattributed_tcrs.tsv
-reports/61_cin_unattributed_164.tsv
