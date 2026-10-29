@@ -9804,3 +9804,121 @@ E138 measured empty with its prediction correct. **D is unchanged.**
 The useful by-product is a reusable negative for the field: **OTS cannot supply
 a healthy naive human repertoire**, so any published selection-factor work
 claiming one from OTS should be checked.
+
+---
+
+## E139 — Is the recorded αβ pair the pair that bound? Tested at table level: yes, and the correlate runs the wrong way
+
+A collaborator's proposal, and the best-posed premise yet: every experiment
+here has assumed the database's αβ pair is the receptor that actually bound.
+Their mechanism is concrete — a cell expressing α₁, α₂, β₁ where α₂β₁ did the
+recognising but α₁β₁ got stored, so TCRvdb re-synthesised the wrong receptor
+and it failed revalidation for a purely technical reason.
+
+Before committing to recovering single-cell contig files, two cheaper tests
+exist that the proposal did not notice, and both are available on **all 2,636
+rows including all 602 private ones**, so Q2 is satisfied by construction.
+
+### Test 1 — `test.csv` already records what was screened
+
+The unused column `clonotype_aa_screened` holds
+`TRAV_CDR3A_TRAJ|TRBV_CDR3B_TRBJ`: the clonotype TCRvdb actually screened.
+Parsed and compared against the stored pair:
+
+| | identical | mismatched |
+|---|---:|---:|
+| CDR3α | **2,635 / 2,636** | 1 |
+| CDR3β | **2,636 / 2,636** | **0** |
+
+The single α "mismatch" is my junction regex failing on `CAVFF` (5 residues,
+below its 6-residue minimum), not a real discrepancy. **TCRvdb screened exactly
+the pair the database records.** The substitution error class the proposal
+posits has **zero instances** at the level the competition data exposes.
+
+### Test 2 — chain-sharing multiplicity, and it has the wrong sign
+
+A cell with two α chains should surface in VDJdb as one β paired with several
+α. Counting that within each epitope:
+
+| epitope | split | n | β with >1 α | α with >1 β | either |
+|---|---|---:|---:|---:|---:|
+| GILGFVFTL | public | 670 | 315 | 293 | 63.9% |
+| GLCTLVAML | public | 192 | 63 | 87 | 64.1% |
+| NLVPMVATV | public | 366 | 66 | 89 | 32.8% |
+| LLWNGPMAV | **private** | 229 | 30 | 45 | 30.1% |
+| YLQPRTFLL | public | 419 | 57 | 67 | 26.3% |
+| LTDEMIAQY | **private** | 130 | 10 | 16 | 20.0% |
+| CINGVCWTV | **private** | 243 | 19 | 29 | 18.1% |
+| TTDPSFLGRY | public | 387 | 20 | 30 | 12.4% |
+
+Ambiguity is common. But its association with revalidation is **positive in all
+five public epitopes**:
+
+| epitope | P(valid \| ambiguous) | P(valid \| clean) | diff |
+|---|---:|---:|---:|
+| YLQPRTFLL | 0.755 | 0.289 | **+0.466** |
+| NLVPMVATV | 0.549 | 0.142 | **+0.407** |
+| TTDPSFLGRY | 0.829 | 0.452 | +0.377 |
+| GILGFVFTL | 0.760 | 0.511 | +0.249 |
+| GLCTLVAML | 0.679 | 0.633 | +0.046 |
+| **mean** | | | **+0.3089** |
+
+Ambiguous pairs validate **more**, not less — the hypothesis predicts the
+opposite sign. The reason is visible in the correlations: ρ with clonal family
+size +0.242 to +0.499 against ρ with D +0.231 to +0.485, nearly identical.
+Sharing a chain across partners inside one epitope is a **convergent-recurrence**
+signature, which E29 already established D exploits (masking families costs
+−0.0282).
+
+### The E112 check earns its keep a fourth time
+
+The residual-on-D gate returned 0.6715, 0.5900, 0.5691 and 0.5591 for the four
+multiplicity variants — all above the project record of 0.5609 — with leaks of
+**0.853, 0.639, 0.529 and 0.545**. These are small-integer features, massively
+tied under percentile rank, so every one of those residuals is the E112
+artefact and **none may be read**. Without that check this entry would have
+claimed a new record.
+
+The correct instrument for a tied discrete feature is stratification, not
+residual regression. Within D-score quintiles per epitope:
+
+| | |
+|---|---:|
+| mean AUC of multiplicity across 25 (epitope, quintile) strata | **0.4733** |
+| sd | 0.1659 |
+| strata above 0.5 | **8 / 25** |
+
+Once D is held fixed, multiplicity is **slightly below chance**. The blend
+agrees: the weight grid selects **w = 0.00**, nested **+0.0000**.
+
+### What remains open, and its prior
+
+The table-level form is closed. The deep form — a cell whose second α chain
+never reached VDJdb at all — is invisible here by construction and would need
+the original contig/barcode files. Its Q2 gate can be checked, though:
+
+| private cohort | rows | attributed | source studies | sequencing |
+|---|---:|---:|---|---|
+| CINGVCWTV | 243 | **79** | PMID:26860370, PMID:27645996 | **sanger** |
+| LLWNGPMAV | 229 | 229 | PMID:28103239 (178), PMID:28934479 (50) | rna-seq |
+| LTDEMIAQY | 130 | 130 | PMID:35383307 (127), PMID:34793243 (3) | unclear / amplicon-seq |
+
+**The largest private cohort cannot supply pairing evidence at all**: CIN's two
+attributable studies are Sanger-sequenced, so no contigs or barcodes exist to
+audit, and 164 of its 243 rows carry no `reference.id` to trace in the first
+place. So the deep form is capped at two of three private cohorts with the
+biggest excluded, on top of a prior that just fell — the one substitution error
+class we could observe has zero instances, and the one correlate we could
+measure has the wrong sign and sits inside D.
+
+### E140 and E141
+
+**E140** (original capture-evidence strength) and **E141** (target-minus-
+background selectivity) both depend on recovering per-cell or per-clonotype
+quantitative records from the source publications. Their own stop conditions
+are correct and E141's feasibility concern is right. Both are also now subject
+to the same Q2 ceiling found above: CINGVCWTV is Sanger with 164 of 243 rows
+unattributed, so no original quantitative readout is recoverable for 40% of the
+private split regardless of what the other two cohorts hold.
+
+**D is unchanged.**
