@@ -9226,3 +9226,108 @@ receptors appear to bind more things.
 Settling it needs roughly 40–60 receptors on a single pMHC panel. That does not
 exist publicly today, and the proposer flagged the power problem themselves.
 No Kaggle consequence: **D is unchanged.**
+
+---
+
+## E131 — What the evaluation harness can actually see, and what the bar really demands
+
+`scripts/115_harness_power.py`, report `reports/93_harness_power.md`.
+
+Prompted by the right question — are hypotheses being rejected because the data
+cannot resolve them rather than because they are false? The premise needs one
+correction and then the question turns out to be sharper than asked.
+
+**The correction: the private split is never an evaluation set.** There are no
+labels there, so no rejection in this project was ever decided by private
+scarcity. Of sixteen closed candidates, **thirteen** were decided by nested
+LOEO or the residual gate on the five *public* epitopes, one by circularity
+(E121 Hi-TpH), two by an external panel's n (E128 n=20, E129 n=1), and exactly
+**one** — E122's LTDEMIAQY pool bet — was genuinely unmeasurable because the
+private cohort could not be checked.
+
+So the real question is: how small a true effect can nested LOEO over five
+epitopes see? Measured by injecting a feature of known strength,
+`f = y + N(0, σ)` ranked within epitope. Because it is built from the labels it
+transfers *perfectly* across cohorts, so every number below is a **lower
+bound** — a real feature, whose usefulness varies by cohort, is strictly harder.
+
+### Minimum detectable effect, 300 draws per σ
+
+| criterion | true effect needed for 80% power |
+|---|---:|
+| nested LOEO > 0 | **+0.0031** |
+| nested LOEO > 1 null sd (0.0045) | **+0.0101** |
+| **nested LOEO > the pre-registered +0.02 bar** | **+0.0309** |
+
+**The harness is not the problem; the bar is.** Detection bottoms out at
++0.0031, which is genuinely sensitive. But clearing a *measured* +0.02 requires
+a *true* effect of **+0.0309** — and the largest true effect any single channel
+in this project has shown is ≈+0.0016 (`polar_frac`). That is a factor of
+**~19**.
+
+And the fold count is not the binding constraint in this range:
+
+| epitopes in the mean | MDE at 80% power |
+|---:|---:|
+| 3 | +0.0034 |
+| 4 | +0.0030 |
+| 5 | +0.0033 |
+
+What binds is the **between-epitope sd of D's own AUC, 0.0587** — 0.7568 on
+GLCTLVAML against 0.9350 on YLQPRTFLL — which the five-fold mean must see
+through and which does not shrink with more rows.
+
+### Where the closed candidates sat
+
+| candidate | nested | P(nested>0) if the true effect were that size |
+|---|---:|---:|
+| E116 6-structure average | +0.0047 | 0.99 |
+| E100 TwoNN | +0.0019 | 0.78 |
+| E104 `polar_frac` (accepted) | +0.0016 | 0.78 |
+| E118 the whole stack | −0.0017 | 0.78 |
+| E97 bandwidth | +0.0007 | 0.47 |
+| E96 lenfreq | +0.0005 | 0.47 |
+| E126 Minervina margin | −0.0003 | 0.47 |
+
+**This is the part of the question that lands.** Candidates whose true effect
+sat near +0.0005–0.0007 were being judged by a procedure that would report a
+positive only **47%** of the time. Those readings are coin flips, and earlier
+write-ups treated "nested ≈ 0" as evidence of absence when it was closer to
+absence of evidence. The decisions were still correct *under the bar* — a true
++0.0007 is 29× below what the bar demands — but "we measured no effect" and
+"there is no effect" are different claims and I conflated them.
+
+### The representativeness gap, which is the real private-side problem
+
+| epitope | split | rows | pool rows | D's AUC |
+|---|---|---:|---:|---:|
+| NLVPMVATV | public | 317 | 9,881 | 0.8729 |
+| GILGFVFTL | public | 575 | 3,005 | 0.8862 |
+| GLCTLVAML | public | 166 | 459 | 0.7568 |
+| YLQPRTFLL | public | 382 | 54 | 0.9350 |
+| TTDPSFLGRY | public | 342 | 25 | 0.8493 |
+| LLWNGPMAV | **private** | 229 | 191 | ? |
+| CINGVCWTV | **private** | 243 | **11** | ? |
+| LTDEMIAQY | **private** | 130 | **5** | ? |
+
+The public mean is dominated by cohorts with 3,005 and 9,881 pool rows. **Two
+of the three private cohorts have 11 and 5.** And splitting the one accepted
+channel by pool richness:
+
+| candidate | macro | pool-rich (GIL/NLV/GLC) | pool-poor (TTD/YLQ) |
+|---|---:|---:|---:|
+| E104 `polar_frac` | +0.0043 | **+0.0070** | **+0.0002** |
+| E126 Minervina margin | +0.0004 | +0.0002 | +0.0007 |
+
+`polar_frac` earns its gain on the pool-*rich* cohorts, which are the least
+like two of the three private cohorts. That is a real caveat on D's private
+performance and it had not been stated.
+
+### What is deliberately not done with this
+
+Reweighting selection toward private-resembling cohorts was measured in E87 and
+is **negative** — it pays E15's selection cost twice. Attributing a margin by
+correlating pool share is a standing barred inference (E84; YLQ is pool-poor at
+54 and goes negative for the margin). So this is recorded as a limitation on
+what the public evaluation licenses, **not** as a new selection rule. **D is
+unchanged.**
