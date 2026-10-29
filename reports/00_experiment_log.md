@@ -9717,7 +9717,7 @@ and the residual before anything else. That is the next one worth running.
 
 ## E138 — Mature-repertoire selection adds nothing over generation probability
 
-`scripts/119_repertoile_selection.py` → `scripts/119_repertoire_selection.py`,
+`scripts/119_repertoire_selection.py`,
 report `reports/97_repertoire_selection.md`. The collaborator's E136,
 renumbered; the one of their four that passed all four admission questions.
 
