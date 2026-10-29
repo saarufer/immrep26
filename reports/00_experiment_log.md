@@ -8761,3 +8761,73 @@ on the original paper not already having checked abundance, which it did.
 The collaborator's closing judgement stands and is now tested rather than
 asserted: **D = 0.860 is a stable local optimum of the verifiable methods
 available here.**
+
+---
+
+## E123 — Read-only audit of the submitted D on the private rows
+
+Proposed by a collaborator with the right framing: not re-optimisation, but
+making sure a software or data-handling fault is not quietly costing private
+score — and with the right caveat, that an audit must not become cover for
+more tuning. E79 had already found a blind spot in `private_variance_gate`, so
+the automatic checks were not sufficient on their own.
+`scripts/109_private_audit.py`. Nothing is modified.
+
+### Fourteen checks, no defects
+
+| check | result |
+|---|---|
+| sha256 of the submitted file | `64b3dd4076a51fbd`, matches the log |
+| **reconstruction from source** | max \|rebuilt − submitted\| = **1.11e-16** |
+| columns, row count, ids, duplicates | 2 columns, 2,636 rows, exact id match, 0 duplicated |
+| finiteness | 0 NaN, range 0.0178–0.9920 |
+| component variance on private rows | all four terms vary in all three cohorts |
+| within-epitope scaling | each private cohort spans 0.87–0.97 of [0,1] |
+| structure-term coverage | every private row has a Boltz prediction |
+| family isolation | largest private family 2–7; 2 near-duplicate rows in total |
+| row order and dtype | test.csv order, float64 |
+
+**The reconstruction is the check that matters most.** D was built in E51, and
+the pipeline has been edited many times since. Rebuilding it from source today
+reproduces the submitted numbers to machine precision, so the file was not
+produced by a pipeline that has since drifted.
+
+### The one thing flagged, and why it is not a defect
+
+22 private rows fall into tied groups — 8 on CINGVCWTV, 10 on LLWNGPMAV, 4 on
+LTDEMIAQY. Inspected individually, **none of the tied groups shares a
+sequence**; they are distinct TCRs. The cause is quantisation: D is the mean of
+four within-epitope percentile ranks, each taking values k/n, and four discrete
+values can average to the same number.
+
+Worst case it costs **0.089% of AUC on CINGVCWTV, 0.100% on LLWNGPMAV and
+0.310% on LTDEMIAQY**, and only if every tied pair happens to straddle the
+label boundary. More to the point, **AUC credits a tie at 0.5, which is exactly
+the expected value of breaking it arbitrarily** — so there is nothing to
+recover unless a fifth signal breaks the ties *informatively*, and that is a
+model change, not a fix. Left alone.
+
+### One real finding, in the pool rather than the predictions
+
+SCEPTR emits "doesn't look like a standardised junction" warnings during the
+pool embedding. Traced:
+
+| | non-standard α | non-standard β |
+|---|---:|---:|
+| **competition rows (all 2,636)** | **0** | **0** |
+| — of which private (602) | **0** | **0** |
+| D's reference pool (86,221) | 393 (0.46%) | 26 (0.03%) |
+
+**Every scored row is clean.** The malformed junctions are all in the
+*reference* pool, where they can only perturb a neighbour vector rather than a
+prediction, and they are spread across epitopes (1 on CINGVCWTV, 2 on
+LTDEMIAQY, 119 on NLVPMVATV) rather than concentrated where it would matter.
+Not worth acting on, but worth having looked.
+
+### Verdict
+
+**No defect found that costs private score.** The submitted D is byte-identical
+to its log entry, reproduces from source to 1e-16, covers every row with finite
+values, keeps all four components live in all three private cohorts, and is
+correctly normalised within epitope. The collaborator's concern was legitimate
+and is now discharged with evidence rather than assurance.
