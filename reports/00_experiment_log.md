@@ -9331,3 +9331,96 @@ correlating pool share is a standing barred inference (E84; YLQ is pool-poor at
 54 and goes negative for the margin). So this is recorded as a limitation on
 what the public evaluation licenses, **not** as a new selection rule. **D is
 unchanged.**
+
+---
+
+## E132 — Re-evaluation at a +0.005 bar: nothing is readmitted
+
+`scripts/116_rebar_0005.py`, report `reports/94_rebar_0005.md`.
+
+Requested after E131 showed the +0.02 bar demands a *true* effect of +0.0309.
+A bar is only meaningful with its two error rates, so both were measured before
+being used, and the re-evaluation is two-layered — lowering an **effect-size**
+bar must not resurrect a candidate that failed a **validity** gate.
+
+### The +0.005 bar, characterised
+
+| σ | true effect | nested mean | P(>+0.005) | P(>+0.02) |
+|---|---:|---:|---:|---:|
+| **noise** | +0.0000 | −0.0002 | 0.00 | 0.00 |
+| 5.0 | +0.0015 | +0.0009 | 0.01 | 0.00 |
+| 3.5 | +0.0032 | +0.0026 | 0.10 | 0.00 |
+| 2.8 | +0.0051 | +0.0044 | 0.36 | 0.00 |
+| 2.2 | +0.0086 | +0.0076 | **0.84** | 0.00 |
+| 1.8 | +0.0121 | +0.0109 | 0.99 | 0.01 |
+
+**True effect needed to clear +0.005 at 80% power: +0.0086** — against +0.0309
+for the +0.02 bar. So the change is real and large: it cuts the required true
+effect by 3.6×.
+
+**But the null here is too narrow and must be said so.** This null is one
+pre-specified feature over the weight grid: sd 0.0005, max +0.0011, and it
+clears +0.005 0.0% of the time even as the best of 11. The experiments did not
+work that way — E106's honest null permutes labels and re-runs the *entire*
+procedure including sign selection over eight features, giving mean +0.0028,
+**sd 0.0076, max +0.0203**. Against that null:
+
+| bar | P(noise clears it) |
+|---:|---:|
+| +0.0040 | 0.437 |
+| **+0.0050** | **0.386** |
+| +0.0100 | 0.172 |
+| +0.0200 | 0.012 |
+
+**A +0.005 bar sits below the noise floor of the search as actually run** —
+realistic noise clears it about 39% of the time. That is the cost of the
+change, and it is steep.
+
+### The re-evaluation
+
+| candidate | nested | layer 1 | +0.02 | +0.005 |
+|---|---:|---|---|---|
+| E105 full stack (signed) | +0.0103 | **FAIL** sign leak | no | **blocked** |
+| E116 6-structure average | +0.0047 | pass | no | no |
+| E98 joint candidate (best of 3) | +0.0020 | pass | no | no |
+| E112 pMHC-side (best of 11) | +0.0019 | **FAIL** residual leak 0.806 | no | **blocked** |
+| E100 TwoNN LID | +0.0019 | pass | no | no |
+| E104 `polar_frac` | +0.0016 | pass (accepted) | no | no |
+| E113 V-gene prior | +0.0016 | **FAIL** Q3 circularity | no | **blocked** |
+| E99 hubness (best of 6) | +0.0009 | pass | no | no |
+| E101 cross-epitope LID | +0.0008 | pass | no | no |
+| E97 per-epitope bandwidth | +0.0007 | pass | no | no |
+| E96 lenfreq | +0.0005 | pass | no | no |
+| E103 germline docking | +0.0000 | pass | no | no |
+| E122 Atlas pool | +0.0000 | pass | no | no |
+| E126 Minervina margin | −0.0003 | pass | no | no |
+| E118 the stack, 16 folds | −0.0017 | pass | no | no |
+| E121 Hi-TpH | n/a | **FAIL** 100% training overlap | no | **blocked** |
+
+**Zero candidates clear +0.005.** The highest layer-1-passing value in the
+entire project is E116's +0.0047, which falls 0.0003 short.
+
+### Why that near-miss is the most useful thing here
+
+| bar | readmitted |
+|---:|---|
+| +0.0050 | none |
+| +0.0040 | E116 |
+| +0.0010 | E116, E98, E100, E104 |
+| +0.0000 | E116, E98, E100, E104, E99, E101, E97, E96 |
+
+**The first candidate any lower bar admits is E116 — the one proven to carry
+exactly zero new information.** Its reliability rose 19% and its residual on D
+moved −0.0005; the +0.0047 is noise reduction in a channel already fully
+extracted, worth 1.04 null sd. A bar of +0.004 would have let it in.
+
+And the candidate carrying the *most* new information in the project —
+E126's Minervina margin, residual **0.5609**, tying the record — is at
+**−0.0003** and no bar admits it.
+
+So the effect-size bar is not what has been protecting the model. The
+**residual-on-D diagnostic** is: it correctly separates E116 (no information,
+positive nested) from E126 (real information, negative nested), which no bar at
+any level can do. Lowering the bar from +0.02 to +0.005 is defensible on power
+grounds and changes **nothing** about which candidates are admitted. **D is
+unchanged.**
