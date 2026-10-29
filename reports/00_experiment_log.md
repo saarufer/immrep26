@@ -9922,3 +9922,98 @@ unattributed, so no original quantitative readout is recoverable for 40% of the
 private split regardless of what the other two cohorts hold.
 
 **D is unchanged.**
+
+---
+
+## E140 — Cell-level pairing pilot: the mechanism is real, and it can only be audited where the errors are not
+
+`scripts/120_pairing_pilot.py`, report `reports/98_pairing_pilot.md`. The small
+pre-experiment a collaborator proposed, executed on the one public source that
+exposes cell-level pairing — the 10x Genomics *A New Way of Exploring Immunity*
+application note, 4 donors. It tests their E139 (dual-α) and their E140
+(capture-evidence strength) in one pass, since the same files carry both.
+
+1,225,332 contigs over 609,037 barcodes; 382,757 productive high-confidence
+contigs in 192,765 cells; 162,361 cells with at least one productive TRA and
+TRB.
+
+### 1. The mechanism exists, at the rate the literature claims
+
+| | cells | share |
+|---|---:|---:|
+| 1 productive TRA | 147,666 | 90.95% |
+| **≥2 productive TRA (dual α)** | **14,695** | **9.05%** |
+| ≥2 productive TRB | 8,698 | 5.36% |
+
+So the premise is sound: about one cell in eleven offers more than one αβ
+combination, and whoever built the database had to choose.
+
+### 2. It does not predict revalidation failure
+
+Matching competition rows to dextramer-positive source cells gave 78 GILGFVFTL
+and 5 GLCTLVAML rows, **70 with a visible label**.
+
+| group | n | P(valid) |
+|---|---:|---:|
+| dual α (≥2 TRA) | 29 | 0.966 |
+| single α | 41 | 0.951 |
+
+**Difference +0.0143**, 95% CI **[−0.079, +0.098]**, Fisher exact **p = 1.000**,
+odds ratio 1.44. Dual β is also null (0.955 against 0.958). The pre-registered
+support bar was ≤ −0.10; my own pre-registered prediction was −0.05 to +0.05,
+which is **hit**.
+
+### 3. But the pilot is badly underpowered, and says so
+
+| a true drop of | detected at power |
+|---:|---:|
+| 0.05 | 0.13 |
+| 0.10 | 0.30 |
+| 0.20 | 0.69 |
+| 0.30 | 0.92 |
+
+This design rules out a *large* effect and nothing smaller. Their E140 quantity
+behaves the same way: supporting cell count reaches AUC 0.6667, but the null
+AUC range on 70 rows at this base rate is **[0.101, 0.898]**, so 0.6667 is
+inside it and unresolvable. The apparent survival under D-stratification (mean
+0.6618 over 3 strata) rests on three strata and carries no weight.
+
+### 4. The structural obstruction, which is the real result
+
+The matched rows validate at **0.957** against **0.511** for all scorable
+public rows. That is not bad luck — it is the design of the problem:
+
+| | |
+|---|---|
+| where cell-level pairing **can** be audited | modern 10x dextramer studies, which validate at 95.7% |
+| where revalidation failures **are** | older bulk and Sanger studies, which have no contigs at all |
+
+Rows whose pairing was single-cell-determined validate *more* (GILGFVFTL
++0.107, NLVPMVATV +0.016, mean +0.0615) — single-cell provenance is a quality
+marker, and provenance is already known to be dead on the private split.
+
+E90 measured source false-positive rates spanning 0.084 to 0.923; the failures
+concentrate in exactly the sources that cannot be audited this way. **So the
+hypothesised error class can only be detected where the errors are not.**
+
+That obstruction also settles the private side. VDJdb flags
+`method.singlecell = yes` for 100% of all three private cohorts, but that means
+the *pairing* was determined per cell — which Sanger cloning from sorted single
+cells also achieves — not that contig files exist. CINGVCWTV's two attributable
+studies (PMID:26860370, PMID:27645996) are **Sanger**, and 164 of its 243 rows
+carry no `reference.id` at all. There are no contigs to audit for the largest
+private cohort.
+
+### Verdict
+
+The premise was worth testing and is now tested: **dual-α pairing ambiguity is
+real at 9.05% of cells and shows no association with revalidation failure in
+the only rows where it is observable, with the caveat that those rows are the
+wrong rows.** Pursuing it further would mean auditing sources that do not have
+the data, to explain failures that the auditable sources do not make.
+
+Their E141 (target-minus-background selectivity) inherits the same ceiling, and
+more sharply: it needs a multi-antigen negative measurement matrix, which the
+10x panel does provide — but only for the same 70 high-validating rows.
+
+**D is unchanged.**
