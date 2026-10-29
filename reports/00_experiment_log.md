@@ -9530,3 +9530,77 @@ carries two gate-failing components at 0.20 weight.
 difference is not resolvable from five epitopes, and if two independent entries
 are available the uncertainty is better hedged by entering both than by
 choosing. That is a submission-arrangement question, not a modelling one.
+
+---
+
+## E134 — All candidates ranked by expected private score
+
+`scripts/117_candidate_ranking.py`, report `reports/95_candidate_ranking.md`.
+
+### First: the private LEVEL is not identifiable
+
+The class-composition projection behind the often-quoted 0.799 **fails its own
+leave-one-epitope-out test** — MAE 0.0833, worst error 0.2129 (GLCTLVAML
+predicted 0.954 against an actual 0.741) — and its sensitivity surface spans
+**0.829–0.857** across an unobservable parameter. There is no defensible
+per-candidate private level. Only *differences* are estimable, and since the
+level is shared by the whole family, differences alone set the ranking.
+
+Public macro is exact for every row below: E47 established harness ==
+leaderboard, and S4 reconfirmed it (+0.0116 harness vs +0.011 leaderboard).
+
+### The ranking depends on the estimator, which is the finding
+
+| candidate | public | public vs D | 5-fold OOF | **18-fold OOF** | loses on | main method |
+|---|---:|---:|---:|---:|---:|---|
+| `S4_D_stack9` | **0.8716** | +0.0116 | +0.0116 | **−0.0017** | 1/5 | D restructured + 7 mixed components; only ~50% D |
+| `S2_D_stack5` | 0.8675 | +0.0074 | +0.0048 | **−0.0045** | 1/5 | D restructured + lenfreq + TwoNN + polar_frac |
+| `S5_D_ttd_tuned` | 0.8664 | +0.0063 | **+0.0007** | — | 2/5 | same 3 components, weights fitted on TTDPSFLGRY alone |
+| `S1_D_plus_polar` | 0.8643 | +0.0043 | +0.0016 | **−0.0048** | 2/5 | D + polar_frac at w=0.15, one component |
+| `S3_F_stack5` | 0.8638 | +0.0038 | +0.0036 | **−0.0080** | 2/5 | stack5 on the pool-free base F |
+| `S7_D_atlas_pool` | 0.8601 | +0.0001 | +0.0000 | — | 2/5 | D with the TCR Motif Atlas added to the pool |
+| **`D`** (`d_density3_m30pool_m50_struct`) | **0.8600** | — | — | — | 0/5 | density3 + m30pool + m50 + structure; **E123-audited** |
+| `f_density3_m30_m50_struct_nopool` | 0.8557 | **−0.0044** | not fitted | — | 4/5 | D with the pool term removed |
+| `density4_struct03` | 0.8525 | **−0.0076** | not fitted | — | 5/5 | 4-space density + structure |
+| `density3_struct03` | 0.8498 | **−0.0102** | not fitted | — | 5/5 | 3-space density + structure (the frozen entry) |
+| `density_sceptr_default_sigma0.1` | 0.8396 | **−0.0205** | not fitted | — | 5/5 | single SCEPTR density, σ=0.1 |
+
+In-sample against out-of-fold for the fitted candidates, weights refit here:
+
+| candidate | in-sample best | 5-fold OOF | collapse |
+|---|---:|---:|---:|
+| `S1_D_plus_polar` | +0.0043 | +0.0016 | 63% |
+| `S2_D_stack5` | +0.0061 | +0.0048 | 21% |
+| `S3_F_stack5` | +0.0065 | +0.0036 | 45% |
+
+### What the two estimators do to the ranking
+
+Under five epitope folds every fitted candidate is positive (+0.0007 to
++0.0048). Under **eighteen pseudo-epitope folds — the estimator E118 established
+is better, null sd 0.0045 against 0.0059 — every one goes negative**
+(−0.0017 to −0.0080), and S4, the most heavily fitted, comes out *least*
+negative. (18 folds over 1,595 TCRs here against E118's 16 over 1,528; the
+fold-size threshold differs slightly, so this is E118's estimator but not
+literally its fold set.)
+
+Every one of those values is inside ±1 null sd of zero. **So the top seven
+candidates are a statistical tie with D, and the ordering among them is not
+determined by the data.** The sign of their expected private difference flips
+with the choice of estimator, which is the honest summary.
+
+The bottom four are different in kind: F, density4, density3 and the
+single-density baseline differ from D by **architecture**, not by fitted
+weights, so their −0.0044 to −0.0205 carry across without shrinkage. Those are
+real losses and those rankings are solid.
+
+### Consequence for the entry
+
+Expected private score, for every candidate, is the same unidentifiable level
+(somewhere around 0.80–0.86) plus a difference that is zero within noise for
+the top seven and genuinely negative for the bottom four.
+
+That makes the choice among the top seven a question of **what is known about
+the artefact rather than what is fitted about the score**. D is the only one
+that has been audited — E123's fourteen checks, reproduction from source to
+1.11e-16, all four components live in all three private cohorts — and the only
+one that loses on **none** of the five public epitopes. **D remains the entry.**
