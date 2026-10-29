@@ -9712,3 +9712,95 @@ private ones gets a value, and it is independent of the labelling process. The
 risk is named correctly — it is a typicality-shaped scalar, and four features
 have already been absorbed by that well — so it must clear `typicality_gate`
 and the residual before anything else. That is the next one worth running.
+
+---
+
+## E138 — Mature-repertoire selection adds nothing over generation probability
+
+`scripts/119_repertoile_selection.py` → `scripts/119_repertoire_selection.py`,
+report `reports/97_repertoire_selection.md`. The collaborator's E136,
+renumbered; the one of their four that passed all four admission questions.
+
+### The naive stratum does not exist in OTS
+
+Their proposal asks for `Q = log P_observed_naive − log P_gen` and warns,
+correctly, that not all OTS records are naive. Checking OTS's own metadata
+before building anything:
+
+| | units | sequences |
+|---|---:|---:|
+| human, all | 2,133 | 6,890,933 |
+| `TSubtype = includes_naive` | 384 | 1,391,828 — **all 384 are COVID patients** |
+| healthy + no cancer + untreated | 321 | 981,664 — **zero naive-labelled** |
+| …minus stimulated / functionally sorted | **215** | **425,409** |
+
+**There is no healthy naive stratum in OTS.** So the measured quantity is
+renamed rather than overclaimed:
+
+    Q(t) = log P_healthy_peripheral(t) − log P_gen(t)
+
+a **mature** repertoire selection factor. The `il12_il18_cd28_stimulated`,
+`antigen_stimulated`, `cd154+` and `tetramer_sorted` strata were dropped because
+they import antigen-driven expansion directly. 425,410 rows fetched,
+**210,439** after deduplicating on the paired junction.
+
+A residual risk worth naming: a mature repertoire is partly shaped by past
+exposure to common antigens, and four of the five public epitopes come from CMV,
+EBV, influenza and SARS-CoV-2. That is not circular with the VDJdb annotation
+process — so not a Q3 violation — but it is a route by which the feature could
+have carried signal for a reason other than thymic selection.
+
+Estimated SONIA-style as a product of feature marginals (V, J, CDR3 length, and
+(position, amino acid) indexed from both ends), with 400,000 OLGA CDR3s per
+chain for the background plus the OLGA model's own V/J usage distributions,
+since OLGA emits CDR3s without genes.
+
+**Pre-registered residual-on-D prediction: 0.51–0.55**, reasoning on record
+before the run — Q is built from compositional marginals and E135 had just
+shown a positional-composition null recovers 95.6% of the real density's
+above-chance signal, so composition is already almost entirely inside D.
+
+### Result
+
+| quantity | macro | typicality ρ | typ gate | residual on D | leak | valid |
+|---|---:|---:|---|---:|---:|---|
+| `Q_alpha` | 0.5005 | +0.192 | pass | 0.5193 | 0.064 | yes |
+| `Q_beta` | 0.5474 | +0.246 | pass | **0.5013** | 0.036 | yes |
+| **`Q_paired`** | 0.5199 | +0.295 | pass | **0.5126** | 0.032 | yes |
+| control `log10_pgen_beta` | **0.5792** | +0.138 | pass | 0.5011 | 0.045 | yes |
+| control `log10_pgen_paired` | 0.5835 | +0.215 | pass | 0.5168 | 0.063 | yes |
+
+**`Q_paired`'s residual on D is 0.5126 against a floor of 0.5098** — the
+pre-registered 0.51–0.55 is **hit, at its low end**. `Q_beta` lands at 0.5013,
+*below* the floor. Every leak is 0.032–0.064, so the residuals are valid.
+Nested LOEO: `Q_alpha` −0.0026, `Q_beta` +0.0000, `Q_paired` −0.0009.
+
+The typicality gate *passes* (ρ +0.192 to +0.295 against the 0.6378 threshold),
+so this is not simply typicality re-encoded — it is a distinct quantity that
+happens to carry nothing D lacks.
+
+**And it does not beat the control it was meant to improve on.** The specific
+claim under test was whether mature-repertoire selection explains revalidation
+residual *beyond generation probability*. It does not: `log10_pgen_beta` alone
+scores **0.5792** standalone against `Q_beta`'s 0.5474, and the Pgen controls'
+residuals (0.5011–0.5297) and nested values (−0.0013 to −0.0019) are
+indistinguishable from Q's. The selection layer is not merely uninformative
+here; on its own it is weaker than the generation layer it was supposed to
+correct.
+
+*(Two controls, `pgen_alpha_is_zero` and `pgen_beta_is_zero`, returned leak
+0.975 and 0.989 — the E112 tie-induced pattern on a near-binary feature — so
+their apparent residuals of 0.8422 and 0.6781 are artefacts and are not read.
+The check caught it a third time.)*
+
+### Standing
+
+Four of the collaborator's four proposals are now closed or capped: E135
+refuted (excess convergence below the floor, composition null recovers 96%),
+E136 blocked upstream of its data (D is not a trained model, so a richer label
+representation has no objective to act on), E137 fails Q1 by construction, and
+E138 measured empty with its prediction correct. **D is unchanged.**
+
+The useful by-product is a reusable negative for the field: **OTS cannot supply
+a healthy naive human repertoire**, so any published selection-factor work
+claiming one from OTS should be checked.
