@@ -9424,3 +9424,109 @@ positive nested) from E126 (real information, negative nested), which no bar at
 any level can do. Lowering the bar from +0.02 to +0.005 is defensible on power
 grounds and changes **nothing** about which candidates are admitted. **D is
 unchanged.**
+
+---
+
+## E133 — S4 against D: what the +0.011 is, and what it is not
+
+Asked because Kaggle currently defaults the final-scoring submission to S4.
+
+### S4 is not a tuned D. Half of it is not D at all.
+
+`S4_D_stack9` applies two internal restructures to D (density3 bandwidth
+0 → 0.5, replacing one of D's four slots; structure slot `pae` →
+0.7·pae + 0.3·fingerprint) and then mixes in **seven** ranked components
+sequentially:
+
+| component added | w | D weight remaining | gate status |
+|---|---:|---:|---|
+| `polar_frac` | 0.15 | 0.8500 | residual 0.5586, **cleared** E83's 0.5570 |
+| `charge_product` | 0.15 | 0.7225 | residual 0.5542, **FAILED** |
+| `pf_germline` | 0.10 | 0.6502 | E109 decomposition of polar_frac — same channel |
+| `lenfreq` | 0.05 | 0.6177 | nested +0.0005; length already in SCEPTR |
+| `packing` | 0.05 | 0.5869 | residual 0.5494, **FAILED** |
+| TwoNN | 0.05 | 0.5575 | nested +0.0019; same distance matrix as D |
+| mutual-kNN | 0.10 | **0.5018** | carries the unswept `RECIPROCITY_WEIGHT = 0.01` |
+
+**Only ~50% of S4's rank is D**, and 0.20 of the 0.65 added weight sits in
+components that failed the residual-on-D gate.
+
+### The public gain, per epitope
+
+| epitope | pool rows | D | S4 | diff |
+|---|---:|---:|---:|---:|
+| GLCTLVAML | 459 | 0.7568 | 0.7929 | **+0.0360** |
+| TTDPSFLGRY | 25 | 0.8493 | 0.8695 | **+0.0201** |
+| NLVPMVATV | 9,881 | 0.8729 | 0.8824 | +0.0094 |
+| GILGFVFTL | 3,005 | 0.8862 | 0.8906 | +0.0044 |
+| YLQPRTFLL | 54 | 0.9350 | 0.9229 | **−0.0121** |
+| **MACRO** | | **0.8600** | **0.8716** | **+0.0116** |
+
+Harness +0.0116 against the leaderboard's +0.011 — E47's equality holds.
+Spearman between the two submissions is 0.933–0.960 per cohort, with 24–36% of
+rows moving more than 10 percentile points, including **23.6–29.2% of the
+private rows**.
+
+### The two uncertainties, and which one the private split is
+
+| resampling unit | estimate | answers |
+|---|---|---|
+| rows within these 5 epitopes (E117 families) | +0.0118 [+0.0006, +0.0267], P=0.980 | "is S4 better **on these** epitopes?" **yes** |
+| epitopes | +0.0116 [−0.0041, +0.0273] | "is S4 better on a **new** epitope?" **unresolved** |
+
+The private split is three never-seen epitopes, so the epitope-level interval
+governs, and it includes zero. The across-epitope sd of the gain is **0.0179 —
+1.5× its own mean**, and one of five cohorts is negative.
+
+### The argument for S4, and the test that settles it
+
+`ρ(D's own per-epitope AUC, S4's gain) = −1.000`, perfectly monotone: S4 helps
+in exact inverse proportion to how well D already does. Since two of the three
+private cohorts hold 11 and 5 pool rows against GILGFVFTL's 3,005 and
+NLVPMVATV's 9,881, D is probably at its weakest precisely there — which would
+make S4 the better private entry. That is a real argument and it deserved a
+test rather than a dismissal.
+
+**The test:** build a stack of seven *pure-noise* components by the same greedy
+fit on the same five epitopes, 60 trials.
+
+| | noise stacks | S4 |
+|---|---|---|
+| ρ(D AUC, gain) | mean **−0.638**, sd 0.260; ρ = −1.000 in **5%** of trials | −1.000 |
+| fitted public gain | mean +0.0001, **max +0.0033** | **+0.0116** |
+| across-epitope sd of gain | 0.0069 | **0.0179** |
+
+Two things follow, and they point in opposite directions.
+
+**The ρ = −1 pattern is mechanical.** Greedy fitting on five points produces a
+strong inverse relationship from features with no signal at all (mean −0.638),
+and reproduces −1.000 outright 5% of the time. So the monotone pattern is the
+signature of the fitting procedure, not evidence of complementarity with D's
+weakness. The argument for S4 does not survive its own test.
+
+**But S4's public gain is real.** +0.0116 is 3.5× the maximum any of sixty
+noise trials reached (+0.0033). There is genuine signal in S4 beyond D on the
+public rows — which is unsurprising, since `polar_frac` is in it and carries
+residual 0.5586.
+
+The reconciliation: **S4's gain is real but its allocation across epitopes is
+fitted.** Its across-epitope variability (0.0179) is 2.6× the noise stacks'
+(0.0069) — the opposite of what a transferable gain looks like. And when this
+stack's weights were refit out-of-fold, E118's sixteen pseudo-epitope folds
+scored it **−0.0017, p 0.683**.
+
+### Where that leaves the entry
+
+Best estimate of S4 − D on the private split: **≈ 0**, interval
+[−0.0041, +0.0273], with E118's out-of-fold measurement of the same
+construction at −0.0017.
+
+D is additionally the audited artefact: E123 ran fourteen checks, reproduced it
+from source to 1.11e-16, and confirmed all four components live in all three
+private cohorts. S4 has had no such audit, is half a different model, and
+carries two gate-failing components at 0.20 weight.
+
+**On the evidence, D is the entry.** The honest caveat, now stated: the
+difference is not resolvable from five epitopes, and if two independent entries
+are available the uncertainty is better hedged by entering both than by
+choosing. That is a submission-arrangement question, not a modelling one.
