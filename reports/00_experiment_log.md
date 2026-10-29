@@ -8693,3 +8693,71 @@ showing why" is a useful thing for the field, given how many such models exist.
 
 **Not downloaded.** The weights are 18 files per level and the audit above
 settles whether a score could be interpreted before any of them is fetched.
+
+### E122 result — the Atlas adds records where they are needed, and they do not help
+
+Running it. New rows after de-duplication against the competition set and D's
+existing 86,221-row pool:
+
+| epitope | split | pool before | pool after | new |
+|---|---|---:|---:|---:|
+| **LTDEMIAQY** | **private** | **5** | **133** | **+128** |
+| GILGFVFTL | public | 3005 | 3106 | +101 |
+| YLQPRTFLL | public | 54 | 121 | +67 |
+| NLVPMVATV | public | 9881 | 9919 | +38 |
+| GLCTLVAML | public | 459 | 477 | +18 |
+| LLWNGPMAV | private | 191 | 203 | +12 |
+| CINGVCWTV | private | 11 | 11 | 0 |
+| TTDPSFLGRY | public | 25 | 25 | 0 |
+
+Provenance audited per E92: all 128 LTDEMIAQY additions come from
+PMID:40628266 (Drost et al., *Cell Genomics* 2025), which **predates** the
+IMMREP26 revalidation (PMID:42822443, 2026). Reference receptors from a
+benchmarking aggregation, not validated private rows. Formats match and exact
+de-duplication agrees with normalised de-duplication, so the 128 are real.
+
+**On the public epitopes the effect is exactly zero:**
+
+| epitope | new rows | D | D + Atlas | diff |
+|---|---:|---:|---:|---:|
+| NLVPMVATV | 38 | 0.8730 | 0.8738 | +0.0009 |
+| GLCTLVAML | 18 | 0.7568 | 0.7571 | +0.0002 |
+| TTDPSFLGRY | 0 | 0.8493 | 0.8493 | +0.0000 |
+| GILGFVFTL | 101 | 0.8862 | 0.8861 | −0.0001 |
+| **YLQPRTFLL** | **67** | 0.9350 | 0.9341 | **−0.0008** |
+| **MACRO** | | 0.8601 | 0.8601 | **+0.0000** |
+
+### The one direct test of the bet is negative
+
+The case for S7 rests entirely on E84's dose-response — the pool term is dead
+below ~60 same-epitope rows and live above it — and LTDEMIAQY crossing 5 → 133.
+That extrapolation has exactly one checkable analogue in the public set:
+**YLQPRTFLL also crossed the threshold**, 54 → 121, the same kind of move. It
+scored **−0.0008**.
+
+The honest caveat is that YLQPRTFLL is the easiest cohort at 0.9350 and may
+have no headroom left, where LTDEMIAQY is projected at 0.730 and has plenty.
+But a one-sided caveat is not evidence. **The only available test of the
+mechanism at the relevant scale came back negative**, and 133 rows is still far
+below GLCTLVAML's 459, which is where E84 measured the pool term actually
+paying (+0.0115).
+
+**S7 is written to `submissions/S7_D_atlas_pool.csv`** so the option exists,
+but it is not recommended: zero measurable gain, a negative analogue, and
+E118's standing finding that pool-free F transfers as well as pool-carrying D
+on the private side. The collaborator's framing was right — "if there are
+almost no new sequences, close it" — and the sharpening needed was that the
+test is not record count but **whether the one epitope that gained them shows
+the mechanism working**. It does not.
+
+### What the two proposals leave
+
+Of the four routes proposed, **E121 is disqualified by construction** (100%
+training overlap, half the labels inverted) and **E122 is measured and empty**.
+E123 (expression/assembly QC) and E124 (conditional residual of an external
+model) both depended on something that did not survive: E124 on E121, and E123
+on the original paper not already having checked abundance, which it did.
+
+The collaborator's closing judgement stands and is now tested rather than
+asserted: **D = 0.860 is a stable local optimum of the verifiable methods
+available here.**
