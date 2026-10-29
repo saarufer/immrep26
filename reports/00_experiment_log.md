@@ -9006,3 +9006,86 @@ and Pgen; it cannot resolve anything and the collaborator says so. **E129** is
 real science on exactly the data just downloaded, and its anchor-holdout design
 is right, but its Kaggle route runs through the single-chain matching that
 E125 just showed inverts. **E130** phase B needs a wet lab.
+
+---
+
+## E129 — αβ pairing: the α chain carries transferable epitope information, weakly, and the interaction term is unidentifiable
+
+`scripts/112_chain_pairing.py`, report `reports/90_chain_pairing.md`.
+
+The collaborator's E129 on the Minervina exo-TCR panels, which asked for three
+baselines — single-chain distance, the sum of independent αβ distances, and a
+model with a genuine αβ interaction term — under full anchor holdout.
+
+### The interaction term cannot be built from this release
+
+The anchor chain is **not a column**: it is implicit, one fixed exo-TCR per
+panel, and its sequence is not distributed. Within a panel the anchor is
+therefore *constant*, so an anchor×partner interaction is unidentifiable —
+nothing varies to interact with. Identifying one needs several anchors **and**
+their sequences. The `.x`/`.y` columns are enrichment vs baseline with `FC`,
+not the two chains.
+
+What the data does give is 16 anchors, 10 with α partners:
+
+| anchor | epitope | clone-donor rows | permissive | % | donors |
+|---|---|---:|---:|---:|---:|
+| GILb | GILGFVFTL | 387,439 | 3,544 | 0.91% | 4 |
+| **GILb_J12** | **GILGFVFTL** | 280,044 | 677 | 0.24% | 3 |
+| LTDb | LTDEMIAQY | 540,983 | 3,270 | 0.60% | 4 |
+| LLWb | LLWNGPMAV | 309,793 | 716 | 0.23% | 2 |
+| TTDb | TTDPSFLGRY | 319,179 | 492 | 0.15% | 3 |
+| YLQb | YLQPRTFLL | 325,509 | 746 | 0.23% | 4 |
+| EIYb | EIYKRWII | 411,007 | 43,092 | 10.48% | 4 |
+| SFHb / FLCb / GTSb | — | 95,840–379,806 | 361–1,689 | 0.38–0.78% | 1–4 |
+
+**GILb and GILb_J12 are two different fixed-β anchors for the same epitope with
+the same partner chain type** (top partner V gene TRAV27 vs TRAV19, so the
+permissive sets genuinely differ). That is the only clean identifiability pair
+in the dataset, and it permits the paper's own title claim to be tested from
+labels alone, with no anchor sequence:
+
+  lift(X→Y) = P(permissive for Y | permissive for X) / P(permissive for Y)
+
+### Result
+
+| | |
+|---|---:|
+| `GILb ↔ GILb_J12` (same epitope, different anchor) | **5.64×**, identical both directions |
+| within donor Aph12 / Aph41 | 5.51× / 6.29× — **not a public-clonotype artefact** |
+| cross-epitope pairs | n=88, median 1.48×, mean 2.11×, sd 2.16 |
+| rank of the observed value | 6 of 88 exceed it → **p = 0.068**, 93rd percentile |
+
+Anchor-holdout prediction, target-permissive sequences excluded from every
+training set: same-epitope training **0.5954**, cross-epitope mean 0.5263
+(max 0.5555, sd 0.0216) — exceeds all six, z = 3.20, rank p = 0.143.
+
+### What this says
+
+**An α chain's permissiveness carries epitope-level information that transfers
+to a different β anchor for the same epitope** — 5.64× lift, surviving the
+donor control, and +0.0691 AUC over cross-epitope training. So pairing is not
+purely idiosyncratic: part of recognition rides on one chain independent of its
+partner, which is the positive version of "uneven chain pairing constraints".
+
+**And it is weak.** Under full anchor holdout the transferable component reaches
+only **0.5954**. Given permissiveness for `GILb`, just 1.799% of partners are
+permissive for `GILb_J12`.
+
+This is also the explanation for E126. The single-chain margin reached
+0.66–0.84 on the public epitopes *because* α-chain permissiveness is genuinely
+epitope-level — and it could not beat D because the anchor-independent
+component is this small.
+
+### Verdict, by the collaborator's own stop condition
+
+They set: the interaction model must *stably* beat independent distances under
+full anchor holdout, and "if it only works on seen anchors, close the
+cross-receptor generalisation hypothesis and do not move it to Kaggle."
+
+The interaction model is unbuildable from this release; the independent
+single-chain model under anchor holdout reaches 0.5954; and — the limit that
+governs everything above — **there is exactly one same-epitope anchor pair in
+the entire dataset, so both headline numbers rest on `GILb`/`GILb_J12` alone,
+n=1.** Kept as a scientific finding, with that n stated. **Not moved to Kaggle.
+D is unchanged.**
