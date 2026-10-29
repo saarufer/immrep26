@@ -8886,3 +8886,123 @@ available on the private rows, and is backed by textbook measurement theory
 that turned out to be *quantitatively correct*. It still fails, because
 reliability and information are different things and only one of them was ever
 the binding constraint. See `reports/87_candidate_admission.md`.
+
+---
+
+## E125/E126 — Real experimental negatives: the channel exists, ties the record, and still does not transfer
+
+`scripts/110_minervina_negatives.py`, `scripts/111_pos_neg_margin.py`;
+`reports/88_minervina_negatives.md`, `reports/89_pos_neg_margin.md`.
+
+The collaborator's E125/E126. Of the four proposed sources, three have no route
+to the private split and were closed before any modelling:
+
+| source | verdict |
+|---|---|
+| P-TEAM (NLV single-mutant panel) | NLVPMVATV is **public**, and the authors' own caveat holds: a TCR selected for NLV that fails on a mutant is not an NLV negative. No Kaggle value. |
+| Atlas Yellow Fever variants | the 44,431-row Atlas table fetched for E122 has **no binding-label column at all** — positives only, and 67% of it is `vdjdb_2025_12_29`. |
+| Gaevert | mouse H-2Dᵇ, not a competition MHC. |
+| **Minervina exo-TCR** (Zenodo 10.5281/zenodo.14885005) | **the one live route.** |
+
+**LLWNGPMAV is the yellow fever NS4B₂₁₄₋₂₂₂ epitope**, which is why Minervina's
+YF17D work covers it. `pos_neg.zip` (217 MB, sha256 `d75f051c…` for the
+near-neighbour subset) covers **two of the three private epitopes** and three
+public ones for validation:
+
+| panel | epitope | split | partner | pos | neg | pool rows in D |
+|---|---|---|---|---:|---:|---:|
+| LLWa | LLWNGPMAV | **private** | β | 24,595 | 336,356 | 191 |
+| LTDb | LTDEMIAQY | **private** | α | 3,549 | 649,373 | **5** |
+| GILb | GILGFVFTL | public | α | 4,019 | 448,477 | 3,005 |
+| TTDb | TTDPSFLGRY | public | α | 533 | 377,252 | 25 |
+| YLQb | YLQPRTFLL | public | α | 828 | 379,657 | 54 |
+| — | CINGVCWTV | private | — | **no panel** | — | 11 |
+
+### E125 — exact matching, and why the headline number is a trap
+
+Matching competition rows to the panels by one CDR3 gives 33% coverage on
+GILGFVFTL with **78.0% label agreement** against the competition's own
+revalidation. That looks like strong independent confirmation. It is not:
+the matched subset is **83.9% positive**, so *always answering positive scores
+83.9%* — the independent experiment is **5.9 points worse than the majority
+class**, and its AUC is 0.6624 where D scores **0.8205 on the very same rows**.
+
+It gets worse with more data, which is the diagnostic:
+
+| filter | n | AUC |
+|---|---:|---:|
+| all matched | 186 | 0.6624 |
+| ≥5 Minervina records | 47 | **0.4255** |
+| ≥10 Minervina records | 16 | **0.3125** |
+
+A CDR3 appearing in many exo-TCR measurements is one tested against many
+partners — so its positive fraction measures **pairing promiscuity**, not
+binding, and promiscuity runs *against* the label. Single-chain matching is the
+cause: the 87 shared GIL α-chains carry mean 2.53 distinct partner β chains,
+up to 25, and 10 of 82 have competition rows that **disagree with each other**
+on the label.
+
+### E126 — the distance margin, which is a different and better statistic
+
+M(t) = d(t, measured non-binders) − d(t, measured binders), tcrdist on CDR3,
+k=5, **size-matched** (negative sets are 80–1200× larger and NN distance falls
+with set size, so an unmatched margin would measure set size) over 3 seeds.
+
+| epitope | split | AUC margin | AUC exact | AUC D | residual on D | leak |
+|---|---|---:|---:|---:|---:|---:|
+| GILGFVFTL | public | 0.7808 | 0.6712 | 0.8862 | **0.5719** | 0.059 |
+| TTDPSFLGRY | public | 0.6592 | **0.4804** | 0.8493 | **0.5538** | 0.014 |
+| YLQPRTFLL | public | 0.8419 | 0.6492 | 0.9350 | **0.5568** | 0.012 |
+| LLWNGPMAV | private | — | — | — | — | 0.023 |
+| LTDEMIAQY | private | — | — | — | — | 0.030 |
+
+The margin beats exact matching everywhere, most sharply on TTDPSFLGRY where
+exact matching is **at chance (0.4804) and the margin reaches 0.6592**.
+
+**Mean residual on D = 0.5609, against a pre-registered prediction of
+0.56–0.62 and the previous project record of 0.5606 (polar_frac).** Every leak
+is 0.012–0.059, so the residual is valid — unlike the first pass, where
+constant-filling the three uncovered cohorts drove leak to 0.919 and produced a
+spurious 0.7733 that the E112 check correctly rejected. It beats typicality
+(0.7606 vs 0.6378). *(`typicality_gate` returns ρ = nan on a feature with NaNs;
+`beats_typicality` is the substantive field. Worth fixing.)*
+
+**This is the first candidate since `polar_frac` to pass all four admission
+questions** — a named channel D does not read (D reads only positive pools;
+"far from binders" and "close to measured non-binders" are different
+statements), variance on 2 of 3 private cohorts, an assay independent of the
+labelling process, and an information rather than a noise constraint.
+
+### And it does not transfer
+
+| | |
+|---|---:|
+| D on the 3 covered public epitopes | 0.8902 |
+| oracle blend, w=0.10 | 0.8909 (**+0.0007**, 0.16 σ of E118's null) |
+| **nested LOEO over the 3 covered** | **0.8899 (−0.0003)** |
+
+So: an independent wet-lab binding measurement, on the actual target pHLA,
+carries information D genuinely lacks — enough to tie the project record — and
+**cannot improve the ranking**. The information is real and it is *weaker* than
+what D already has about the same rows (0.66–0.84 against 0.85–0.94), and a
+rank blend cannot exploit weaker-but-orthogonal evidence at this margin.
+
+**The argument that was available and is refused.** LTDEMIAQY has 5 pool rows,
+TTDPSFLGRY has 25 and is where the margin gained most (+0.0030), so "the margin
+rescues pool-starved cohorts, and LTD is the most starved" writes itself. It
+does not hold: YLQPRTFLL is also starved (54) and goes **−0.0016**; n=3; and
+this project has a standing rule against exactly this inference — never
+attribute a margin by correlating pool share. **D is unchanged.**
+
+### Status of the remaining proposals
+
+**E127** is largely pre-answered: E89 already established both tasks are
+antigen-naive, with an OLGA-trained SCEPTR separating cohorts at 2.67× against
+the real model's 2.60× — i.e. condition A ≈ condition B *already measured*, and
+in the wrong direction for the hypothesis. The motif-destroying condition C is
+a genuine increment, but the headline is foreshadowed. **E128** has n=22 and
+n=20 receptors for a regression carrying controls for source, infection history
+and Pgen; it cannot resolve anything and the collaborator says so. **E129** is
+real science on exactly the data just downloaded, and its anchor-holdout design
+is right, but its Kaggle route runs through the single-chain matching that
+E125 just showed inverts. **E130** phase B needs a wet lab.
