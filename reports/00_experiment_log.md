@@ -9089,3 +9089,140 @@ governs everything above — **there is exactly one same-epitope anchor pair in
 the entire dataset, so both headline numbers rest on `GILb`/`GILb_J12` alone,
 n=1.** Kept as a scientific finding, with that n stated. **Not moved to Kaggle.
 D is unchanged.**
+
+---
+
+## E127 — Destroying higher-order motifs makes epitope attribution *better*
+
+`scripts/113_generation_counterfactual.py`, report
+`reports/91_generation_counterfactual.md`.
+
+E88's setup frozen exactly (σ 0.1, subsample 110, 30 repeats, seed 0, family
+radius 0.12, per-column standardisation over the query set). Only the
+**reference library** changes, and each is a 1:1 replacement for the real
+cohort, so the exclusion mask, the subsample sizes and the surviving reference
+counts are identical across conditions — the comparison is controlled by
+construction:
+
+| | library |
+|---|---|
+| **A** | the real epitope cohorts |
+| **B** | V and J kept from the real member; both CDR3s replaced by **OLGA-generated sequences of the same length**. V/J usage, CDR3 length and recombination background match; epitope-specific CDR3 content destroyed. |
+| **C** | V and J kept; each CDR3 **position-wise shuffled** across cohort members of equal length and chain. The cohort's positional amino-acid composition is preserved *exactly* (asserted in code) and residue co-occurrence — motifs — destroyed. |
+
+Construction checks: OLGA supplied every required length (0 of 5,272 missing);
+0 of 2,636 condition-B CDR3s coincided with the real sequence; 17 α and 15 β
+were unchanged by the shuffle (short or homogeneous); positional composition
+preservation in C verified by sorted-multiset equality.
+
+### Result, five independent library draws
+
+| condition | accuracy | share of A's signal above null |
+|---|---|---|
+| **A** real cohorts | **0.5284 ± 0.0018** | 100% |
+| **B** OLGA background, matched V/J + length | **0.4917 ± 0.0008** | **91.0%** |
+| **C** positional shuffle, motifs destroyed | **0.5459 ± 0.0038** | **104.3%** |
+| null (A, permuted labels) | 0.1223 ± 0.0043 | — |
+
+Chance is 1/8 = 0.125 and the null lands on it, so the harness is calibrated.
+
+**A − C = −0.0175 ± 0.0038, negative in all five seeds (4.6σ).**
+
+### What this says
+
+The attribution signal is **fully** accounted for by V/J usage, CDR3 length and
+recombination background (91.0%) plus positional amino-acid composition
+(104.3%). Higher-order motif structure contributes **nothing, and is a net
+negative**: destroying residue co-occurrence while holding positional
+composition fixed *improves* argmax attribution by 1.75 points.
+
+So the density mechanism, asked to pick the right peptide, is behaving as a
+**cohort-composition classifier**. The real sequences' motifs add
+confusable near-duplicate structure to it rather than peptide information.
+NLVPMVATV is the clearest case, A 0.307 → C 0.444: the largest and most-studied
+cohort, hence the most clonally redundant, gains most from having its motifs
+destroyed.
+
+This is the third independent arrival at the same place. E36 folded 300 TCRs
+against anchor-matched decoy peptides and every target-minus-decoy margin
+collapsed to chance. E89 found an OLGA-trained SCEPTR separates the cohorts at
+2.67× against the real model's 2.60×. E127 adds the composition-matched rung
+that E89 lacked and shows the real motifs are not merely redundant but
+actively unhelpful for attribution.
+
+**It does not follow that motifs are biologically meaningless** — E56 measured
+real motif families enriched 3,745× over an OLGA background, and the
+within-cohort motif signal is what task A exploits. The claim is narrower and
+stronger: *for assigning a TCR to one of eight peptides by neighbourhood
+density*, motif structure carries no information beyond positional composition.
+
+---
+
+## E128 — Density vs cross-reactivity breadth: direction consistent, nothing resolved
+
+`scripts/114_breadth_vs_density.py`, report `reports/92_breadth_vs_density.md`.
+
+Two readings of the density mechanism have coexisted here without ever being
+separated: high density = typical = a receptor the repertoire makes often,
+therefore plausibly **promiscuous**; or high density = sits inside a validated
+cluster, therefore **focused**. Only one-receptor-against-many-peptides panels
+can tell them apart.
+
+**Power, computed before interpreting anything.** Breadth is one number per
+receptor, so 3,440 measurements are not 3,440 observations. At 80% power and
+α = 0.05 the smallest detectable |ρ| is **0.651 at n=16, 0.591 at n=20**. This
+design can only resolve a very large effect, and said so in advance.
+
+| panel | MHC | peptides | n | effective n |
+|---|---|---:|---:|---:|
+| P-TEAM human, NLVPMVATV + 171 mutants | HLA-A\*02:01 | 172 | 20 | **16** |
+| P-TEAM mouse naive, SIINFEKL APLs | H-2Kb | 153 | 19 | 19 |
+| P-TEAM mouse educated, SIINFEKL APLs | H-2Kb | 153 | 15 | 15 |
+
+Effective n for the human panel is 16, not 20: TCRs 4-4/82-14 share CDR3β
+`CASSLAPGATNEKLFF` with near-identical α, 52-10/73-14 share `CAERLQTGANNLFF`,
+77-14/84-3 share `CARNTGNQFYF`, 10-4/11-4 share `CAVYYGQNFVF`. Clonal
+duplicates are collapsed and every ρ is reported both ways.
+
+NLVPMVATV is a competition epitope with 366 cohort rows and 25,554 paired VDJdb
+complexes, so the human panel carries the **paired** density — the measure D
+actually uses. SIINFEKL has only **12 paired complexes** in VDJdb, so the mouse
+panels get a β-only analogue against 302 reference CDR3βs; it is not the same
+measure, and H-2Kb is never pooled with HLA-A\*02:01.
+
+Every predictor is computed from sequence and from the competition/VDJdb
+cohorts alone. The 172 variant activation values form the breadth outcome and
+nothing else.
+
+### Result
+
+| panel | ρ(density, breadth) at ≥50% | range over thresholds | CI excludes 0 |
+|---|---:|---|---|
+| human, paired density (VDJdb ref) | **+0.411** | +0.344 … +0.486 | only at ≥30%: [+0.021, +0.771] |
+| human, paired density (competition ref) | +0.214 | +0.135 … +0.297 | no |
+| mouse naive, β-only | +0.130 | +0.056 … +0.130 | no |
+| mouse educated, β-only | +0.095 | +0.088 … +0.277 | no |
+
+**All nine density estimates (3 panels × 3 thresholds) are positive**, and the
+sign survives clone-collapsing in the human panel (+0.382 at ≥50%). Treating
+the panel as the independent unit — the thresholds within a panel are the same
+data — a sign test over three panels gives **p ≈ 0.125**. One of nine
+confidence intervals excludes zero, which is what twenty-seven correlations on
+sixteen points produce by chance.
+
+Nothing else moved: CDR3 lengths −0.28 … +0.13, Pgen α/β/paired −0.12 … +0.27,
+publicness +0.04 … +0.21, every CI spanning zero.
+
+### Verdict
+
+**The direction favours promiscuity — high density goes with broader
+cross-reactivity — consistently across three panels and two species, and no
+estimate is resolved.** The honest statement is a hint, not a finding, and the
+hint points the same way as E89's result that both competition tasks are
+antigen-naive and the typicality gravity well that has absorbed four features
+here: what the density reads is how ordinary a receptor is, and ordinary
+receptors appear to bind more things.
+
+Settling it needs roughly 40–60 receptors on a single pMHC panel. That does not
+exist publicly today, and the proposer flagged the power problem themselves.
+No Kaggle consequence: **D is unchanged.**
