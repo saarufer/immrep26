@@ -8625,3 +8625,71 @@ its highest level validates at 0.147 against an expected 0.402.
 5. **More folds, not more features.** The resolution limit of a five-fold
    design is ~0.010; sixteen folds cut the null sd from 0.0059 to 0.0045 and
    turned +0.0058 into −0.0017.
+
+---
+
+## E121 — Hi-TPH: 100% training overlap, and what that does and does not rule out
+
+A collaborator proposed the strongest new idea in a while: stop building
+unsupervised distances and bring in an **externally supervised** TCR–pHLA
+model. Hi-TPH (Nature Computational Science, 26 Oct 2026) fits — four input
+levels, nine architectures each, weights public on HuggingFace, and Level III
+takes exactly what we have (peptide + HLA + CDR3αβ). They also named the right
+risk and said to audit it first.
+
+**The audit kills the straightforward version.** Hi-TPH's Level III training
+table is 28,262 rows, **94% from VDJdb**. Matching on
+(epitope, CDR3α, CDR3β) with the leading C and trailing F/W normalised away:
+
+| epitope | split | rows | in Hi-TPH training | share |
+|---|---|---:|---:|---:|
+| GILGFVFTL | public | 670 | 670 | **100%** |
+| YLQPRTFLL | public | 419 | 419 | **100%** |
+| TTDPSFLGRY | public | 387 | 387 | **100%** |
+| NLVPMVATV | public | 366 | 366 | **100%** |
+| CINGVCWTV | **private** | 243 | 243 | **100%** |
+| LLWNGPMAV | **private** | 229 | 229 | **100%** |
+| GLCTLVAML | public | 192 | 192 | **100%** |
+| LTDEMIAQY | **private** | 130 | 130 | **100%** |
+| **total** | | **2,636** | **2,636** | **100%** |
+
+Every competition receptor, public and private, is in the training set. And
+the labels are inverted for half of them: **872 of the 1,782 scorable rows are
+IMMREP26 negatives**, each of which Hi-TPH was trained to call a binder,
+because they entered VDJdb as positives and that is exactly what IMMREP26
+re-tested and rejected.
+
+So a Hi-TPH score on our rows is not a prediction. It is a readout of a model
+that saw every one of these pairs with the label this competition exists to
+correct. If it scores them uniformly high, that is memorisation; if it varies,
+the variation cannot be attributed to recognition rather than to how firmly
+each pair was memorised.
+
+**This generalises beyond Hi-TPH.** Any TCR–pMHC binding model trained on
+VDJdb has the same problem with this competition, and that includes UpTCR and
+TCRBinder, the collaborator's two alternates. The competition's task — *which
+public-database annotations are wrong* — makes every public-database-trained
+model a compromised instrument, not an independent one. That is worth stating
+once, clearly, because it rules out a whole class of approaches rather than
+one model.
+
+### The one version that survives
+
+Memorisation and recognition differ in a testable way. A memorising model
+scores a pair by **how often and how consistently it appeared in training**; a
+recognising model scores it by the sequences. So:
+
+- **If Hi-TPH's score tracks VDJdb record multiplicity** — how many references
+  and rows back each pair — it is reading the database, and E90 already
+  measured that signal directly (replication predicts validation at odds ratio
+  17.1) without needing a 350M-parameter model.
+- **If it varies independently of multiplicity**, there is something else in
+  it, and the usual gauntlet applies.
+
+That test is cheap and it is the only form in which the experiment can be
+interpreted. It is worth running for the negative alone: "every binding model
+trained on VDJdb is disqualified for this task, and here is the measurement
+showing why" is a useful thing for the field, given how many such models exist.
+
+**Not downloaded.** The weights are 18 files per level and the audit above
+settles whether a score could be interpreted before any of them is fetched.
