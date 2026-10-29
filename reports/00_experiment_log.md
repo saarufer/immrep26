@@ -8831,3 +8831,58 @@ to its log entry, reproduces from source to 1e-16, covers every row with finite
 values, keeps all four components live in all three private cohorts, and is
 correctly normalised within epitope. The collaborator's concern was legitimate
 and is now discharged with evidence rather than assurance.
+
+---
+
+## E116 — Averaging all five Boltz models: reliability rises 19%, information moves −0.0005
+
+Launched under "先做A和B" and finishing after E123, so logged out of order.
+`scripts/105_five_model_average.py`, report `reports/82_five_model_average.md`.
+
+E115 measured `polar_frac`'s single-structure reliability at **0.812** by
+re-running Boltz-2 independently and correlating the two reads (ρ +0.856), and
+put the disattenuated residual-on-D ceiling at **0.5650**. If the gap between
+the observed residual (0.5586) and that ceiling is prediction noise, averaging
+m independent structures should close it, and Spearman–Brown says exactly how
+fast: `m·r / (1 + (m−1)·r)`.
+
+| m | measured reliability | S–B predicts | residual on D | nested in D | gain / E118 null sd |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 0.812 | 0.812 | 0.5586 | +0.0016 | 0.36 |
+| 2 | 0.927 | 0.896 | 0.5585 | +0.0027 | 0.60 |
+| 3 | 0.945 | 0.928 | **0.5606** | +0.0036 | 0.80 |
+| 5 | 0.962 | 0.956 | 0.5582 | +0.0045 | 1.00 |
+| 6 | 0.968 | 0.963 | 0.5581 | +0.0047 | 1.04 |
+
+**The measurement model is confirmed and the information claim is refuted, in
+the same table.** Reliability tracks Spearman–Brown to within 0.031 at every m
+and rises +0.156 (+19%) from one structure to six — the noise model is right,
+and `polar_frac` is a quantity with a true value that more sampling estimates
+better. But the residual on D, which is what measures information D does not
+already have, moves **−0.0005** over that same range (ρ with reliability
+**−0.700**, i.e. not even positive). Of the 0.0552 span between the
+already-inside-D floor (0.5098) and E115's ceiling (0.5650), going from one
+structure to six crosses **3.6%**; the best value ever reached is 0.5606 at
+m=3, leaving 8% of the span unclaimed and no trend toward it.
+
+Meanwhile the nested blend gain rises monotonically (ρ +1.000) and **triples**,
++0.0016 → +0.0047. Those two facts cannot both be information. A feature whose
+residual is flat has not learned anything; what improved is how cheaply the
+blend can use what it already had. And the endpoint is **1.04 × the null sd
+E118 measured for this estimator** (0.0045) — one standard deviation of noise.
+
+So the E115 ceiling is not a noise ceiling. `polar_frac` carries ≈0.56 worth of
+epitope-independent AUC that D lacks, that quantity was fully readable from a
+**single** structure, and the remaining gap to 0.5650 is not recoverable by
+sampling. **Do not average more structures.** Six is 6× the compute for one
+null sd of fitted gain.
+
+### Why this experiment is the worked example of the new standard
+
+E116 is the cleanest case in the project of a proposal that passes every
+plausibility test and still holds no new information. "Average the five models
+Boltz already gave us" costs nothing conceptually, is free of leakage, is
+available on the private rows, and is backed by textbook measurement theory
+that turned out to be *quantitatively correct*. It still fails, because
+reliability and information are different things and only one of them was ever
+the binding constraint. See `reports/87_candidate_admission.md`.
