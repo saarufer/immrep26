@@ -9604,3 +9604,111 @@ the artefact rather than what is fitted about the score**. D is the only one
 that has been audited — E123's fourteen checks, reproduction from source to
 1.11e-16, all four components live in all three private cohorts — and the only
 one that loses on **none** of the five public epitopes. **D remains the entry.**
+
+---
+
+## E135 — Excess convergence: the null recovers 96% of the density, and the excess is below the floor
+
+`scripts/118_excess_convergence.py`, report `reports/96_excess_convergence.md`.
+
+A collaborator's proposal, and the best-posed one so far because it changes the
+measured object rather than adding a descriptor. Their numbering (E133–E136)
+collides with E133/E134 already used, so their four become **E135–E138**.
+
+Their hypothesis, stated so it could be falsified: low-order composition
+determines *which epitope cohort* a receptor resembles, while high-order
+convergence determines *whether it is reliable evidence* for that cohort.
+Tested with E127's validated epitope-conditioned null:
+
+    U(t,e) = log( (D_real(t,e) + eps) / (E[D_shuffle(t,e)] + eps) )
+
+5 shuffle draws, σ=0.1, leave-self-and-family-out at radius 0.12, families
+taken from the real space and applied identically to both conditions.
+
+**Q2 checked before running, since they flagged it.** The shuffle permutes each
+position among cohort members of equal length, so a singleton length stratum
+cannot be shuffled. Coverage is 99.1–100% in every cohort, including
+CINGVCWTV 99.6%, LLWNGPMAV 99.1% and LTDEMIAQY 99.2% — the null *is*
+constructible on the private split at essentially full precision, so their
+special gate is satisfied rather than assumed.
+
+**Pre-registered residual-on-D prediction: 0.55–0.60.**
+
+### Real sequences do converge more than their composition predicts
+
+| epitope | split | D_real | D_shuffle | mean U | sd U |
+|---|---|---:|---:|---:|---:|
+| YLQPRTFLL | public | 0.00245 | 0.00154 | +0.064 | 0.726 |
+| GILGFVFTL | public | 0.00617 | 0.00486 | −0.023 | 0.591 |
+| NLVPMVATV | public | 0.00055 | 0.00035 | +0.098 | 0.532 |
+| LTDEMIAQY | **private** | 0.00045 | 0.00030 | +0.031 | 0.619 |
+| CINGVCWTV | **private** | 0.00079 | 0.00069 | +0.032 | 0.431 |
+| LLWNGPMAV | **private** | 0.00154 | 0.00134 | −0.011 | 0.510 |
+
+D_real exceeds D_shuffle in every cohort, so the convergence is real and the
+quantity is not vacuous.
+
+### And it carries nothing
+
+| quantity | macro | typicality ρ | private var | residual on D | leak | valid |
+|---|---:|---:|---|---:|---:|---|
+| `D_real` | 0.8098 | +0.209 | pass | 0.5179 | 0.170 | **no** |
+| `D_shuffle` | **0.7962** | +0.180 | pass | 0.5354 | 0.066 | yes |
+| **`U` excess convergence** | 0.6849 | +0.154 | pass | **0.5070** | 0.092 | yes |
+
+**`U`'s residual on D is 0.5070, against a floor of 0.5098** — below what a term
+already inside D reaches. Leak is 0.092, so the residual is valid and the
+reading stands. The pre-registered 0.55–0.60 is **missed outright**. Blending
+gives nested +0.0000 (sign +1) and −0.0014 (sign −1).
+
+### The decisive number, and what it does to the hypothesis
+
+| | above chance |
+|---|---:|
+| `D_real` | 0.3098 |
+| `D_shuffle` | 0.2962 |
+
+**The positional-composition null recovers 95.6% of the real density's
+above-chance signal on the revalidation task.** Destroying every residue
+co-occurrence in the reference library, while holding V, J, length and
+per-position composition fixed, costs the density 4.4% of its power.
+
+So the two-layer hypothesis is **confirmed in layer 1 and refuted in layer 2**:
+
+- E127, attribution: shuffle **beats** real, A − C = −0.0175 ± 0.0038, 5/5 seeds
+- E135, revalidation: shuffle recovers **96%** of real, and the excess is
+  below the floor
+
+High-order convergence does not determine functional reliability either. In
+*both* tasks the density's power is low-order positional composition. That is a
+sharper and more useful statement than the proposal hoped for, and it is the
+fourth independent arrival at the same place after E36, E89 and E127.
+
+It also strengthens exactly what the proposal said it would if it failed:
+low-order composition and real motif structure do not supply transferable
+incremental discrimination in this model. **D is unchanged.**
+
+### Standing of the other three proposals
+
+**E136 (latent functional strength, the GuanRank analogue)** has a structural
+obstacle the proposal does not name: **D is not a trained model.** It is
+density3 + m30pool + m50 + structure with about four free parameters, and it
+learns from labels only through weight selection. A richer label representation
+needs a *training objective* to act on, and there is none. Using it means first
+training a model, which must then beat D — and E50's pairwise formulation
+failed, with all three pairwise variants closed and 60% of the loss sitting in
+relative-less pairs. The data-availability check is still cheap and worth doing,
+but the expected Kaggle value is low for reasons upstream of the data.
+
+**E137 (neighbourhood stability)** fails Q1 as written: `S(t) = P[D(t+δ) > q_e]`
+is another functional of D's own distance field, which is the exact pattern that
+closed E99, E100 and E101. Their own prescription — one pilot inside D-score
+strata, close if null — is the right ceiling for it.
+
+**E138 (generation → mature selection, `Q = log P_naive − log P_gen`)** is the
+one that passes all four questions: OTS's 1.63M paired αβ receptors are a
+channel D does not read, the quantity is per-TCR so every row including all 602
+private ones gets a value, and it is independent of the labelling process. The
+risk is named correctly — it is a typicality-shaped scalar, and four features
+have already been absorbed by that well — so it must clear `typicality_gate`
+and the residual before anything else. That is the next one worth running.
