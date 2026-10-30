@@ -10329,3 +10329,111 @@ The one action still worth more than the rounding granularity is **manually
 selecting D as a final submission**, since D is 7th of 11 by public score and
 Kaggle's default will not pick it. That difference is E134's unresolvable
 [−0.0041, +0.0273]. **D is unchanged.**
+
+---
+
+## E145 — Literature sweep, and the two channels it produced
+
+A search of 2026 papers, datasets and repositories, filtered through the
+admission standard. Four things came back and two were testable immediately.
+
+### What the search actually found
+
+| finding | status |
+|---|---|
+| **Hi-TPH** (*Nat Comput Sci*, 26 Oct 2026) — the headline "new benchmark with on-the-fly negatives" | **already disqualified by E121**: 100% of our 2,636 receptors are in its Level-III training set, 872 of 1,782 scorable rows are IMMREP26 negatives it was trained to call binders |
+| *Limited Generalization Power of TCR Antigenic Epitope Prediction Models* (arXiv 2606.04994) | independent agreement with E118's −0.0017 transfer result; no new channel |
+| **VDJdb 2026** (NAR `gkag904`) — paratope embeddings, noise filtering, predicted structures | tested below |
+| **Structural quality-tier assessment** (PMC13447355) — RF on 1,325 AF3 models, validated *on TCRvdb* with GLCTLVAML and YLQPRTFLL | tested below |
+| EMBER (arXiv 2610.27334), enFoldX, t2pmhc — 2026 structure-based binding predictors | **not pursued**: all are binding predictors whose training corpora could not be verified from the abstracts, and E121 established that any VDJdb-derived training set is circular for a task that audits VDJdb. Checking them costs more than the +0.0005 rounding step is worth |
+
+### Part 1 — VDJdb 2026's own clustering fails Q2
+
+Our `vdjdb-2026-06-03` snapshot is the latest release and ships two files this
+project had never opened: `cluster_members.txt` (55,636 rows, 1,928 clusters,
+with VDJdb's own paratope-embedding UMAP coordinates `x`,`y`, cluster id and
+size) and `motif_pwms.txt` (per-cluster motif information content against a
+repertoire background). This is the substrate of the new noise filtering.
+
+Coverage decides it, and clusters require ≥5 members:
+
+| private cohort | rows | matched | clusters |
+|---|---:|---:|---:|
+| **CINGVCWTV** | 243 | **0** | **0** |
+| LTDEMIAQY | 130 | 6 | 1 |
+| LLWNGPMAV | 229 | 129 (56%) | 27 |
+
+All four derived quantities **fail the private variance gate** — CINGVCWTV,
+40% of the private split, is constant at zero coverage. Median-filling the 54%
+missing values drove every residual leak to **0.845–0.929**, so the apparent
+residuals (0.6345, 0.5822, 0.5364) are the E112 tie artefact for the **fifth**
+time and are not read. The leak-free stratified test settles it:
+
+| quantity | 16 strata, mean AUC | above 0.5 |
+|---|---:|---:|
+| `cluster_size` | **0.4434** | 5/16 |
+| `umap_density` | 0.5015 | 10/16 |
+| `cluster_Inorm` | 0.5000 | 6/16 |
+
+At chance or below once D is held fixed.
+
+### Part 2 — pDockQ and ipSAE: the strongest leak-free survivor in the project, and still no gain
+
+The quality-tier paper's features are pLDDT, ipTM, iPAE, iPDE, **ipSAE** and
+**pDockQ v1/v2**. Our 35 Boltz columns hold none of the last three, and we hold
+PAE matrices, per-residue pLDDT and PDB files for all 2,636 rows (15,816 files
+= 2,636 × 6 models), so they were computed directly. `scripts/123_pdockq_ipsae.py`,
+cached at `data/interim/pdockq_ipsae.csv`.
+
+**Coverage 2,636/2,636, every private cohort at 100%** — the first channel in a
+long while to pass Q2 outright. Q3 passes too: the tier model is trained on
+*structural* quality against reference structures, not on binding labels.
+
+Pre-registered residual-on-D: **0.51–0.55**.
+
+| quantity | macro | residual on D | leak | valid | strata mean AUC | above 0.5 |
+|---|---:|---:|---:|---|---:|---:|
+| **`pdockq1`** | 0.6759 | **0.5406** | 0.045 | **yes** | **0.5717** | **15/20** |
+| `ipsae` | 0.7337 | 0.5011 | 0.058 | yes | 0.5053 | 11/20 |
+| `iface_pae_mean` | 0.7415 | 0.5033 | 0.057 | yes | 0.5009 | 11/20 |
+| `n_contacts` | 0.5460 | 0.5185 | 0.039 | yes | 0.5382 | 12/20 |
+| `pdockq2` | 0.7604 | — | 0.112 | **no** | 0.5294 | 11/20 |
+| `iface_plddt` | 0.7454 | — | 0.104 | **no** | 0.5694 | 11/20 |
+
+`pdockq1`'s residual **0.5406 hits the pre-registered range**, and its
+stratified survival — mean AUC 0.5717 with **15 of 20 strata above 0.5,
+binomial p = 0.021** — is the strongest leak-free signal past D this project
+has measured.
+
+**And it does not convert.** Blended: nested **+0.0001**. Then the paper's own
+mechanism, which is exclusion rather than ranking, was implemented as the
+nearest rankable form — trust the structure term in proportion to model
+quality, `w_st(t) = α·q(t)` with the mean weight held at 0.25:
+
+| α | public vs D | 18-fold vs D |
+|---:|---:|---:|
+| 0.25 | −0.0009 | −0.0017 |
+| 0.50 | −0.0023 | −0.0021 |
+| 1.00 | −0.0061 | −0.0050 |
+| 1.50 | −0.0121 | −0.0078 |
+
+**Monotonically worse**, and nested with α chosen out-of-fold: −0.0010 over 5
+epitopes, −0.0021 over 18 folds. So `pdockq1` carries ≈0.54 of genuinely
+orthogonal information that is *not* a reliability signal for D's structure
+term and cannot be converted into ranking gain.
+
+### Verdict
+
+The search produced one channel with full private coverage, clean Q3, a
+pre-registration hit and the project's best leak-free survival — and it still
+gives nested +0.0001. That is now the fourth independent arrival at the same
+shape, after `polar_frac` (residual 0.5586, nested +0.0016), E126's Minervina
+margin (0.5609, nested −0.0003) and E135's excess convergence (0.5070).
+
+**Real orthogonal information near 0.54–0.56 exists and does not improve the
+ranking, because D is at 0.86 while every such channel is at 0.52–0.76 about
+the same rows.** That is the governing fact of this problem, and it is now
+established from four independent directions: structure, wet-lab negatives,
+composition nulls, and docking quality.
+
+**D is unchanged.**
