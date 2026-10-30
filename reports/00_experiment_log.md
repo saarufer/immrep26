@@ -10097,3 +10097,80 @@ between entering D and not entering it is the unresolvable
 [−0.0041, +0.0273] from E134, which is **50× larger than the entire portfolio
 optimisation above**. Selecting D manually is the only remaining action whose
 expected value exceeds the rounding granularity.
+
+---
+
+## E142 — Averaging the hyperparameter instead of selecting it: the surface is flat
+
+`scripts/121_average_not_select.py`, report `reports/99_average_not_select.md`.
+
+Every candidate since E96 tried to add information, and E131 bounded that
+route: clearing a measured +0.005 needs a *true* effect of +0.0086 while the
+largest channel ever found here is +0.0016. This experiment takes the one route
+that bound does not cover — **removing an estimation error rather than adding
+information.**
+
+D's four components already carry **uniform** weights,
+`(density3 + m30 + vdomain + structure)/4`, so the combination layer averages
+already. But the bandwidths *inside* density3 were selected from a nine-point
+grid per space, and E15 measured the cost of selecting on five epitopes at
+**−0.0048** — three times the largest feature gain in the project. In a regime
+where the candidates are statistically indistinguishable (E134: all seven top
+submissions inside ±1 null sd), the argmax of K noisy estimates regresses on
+new data while the mean of the K does not, so averaging should win.
+
+**Pre-registered: +0.001 to +0.004.**
+
+### Result
+
+Symmetric out-of-fold on E118's 18 pseudo-epitope folds — SELECT picks the
+bandwidth on the other 17, AVERAGE takes the grid mean with no selection, both
+scored on the held-out fold:
+
+| | |
+|---|---:|
+| SELECT | 0.8398 |
+| AVERAGE | 0.8399 |
+| difference | **+0.0001 ± 0.0013** |
+| 95% CI | [−0.0024, +0.0026] |
+| folds where averaging wins | 9 / 18 |
+
+**Prediction missed.** Public macro agrees at −0.0002, and that comparison is
+biased *against* averaging since the selected σ is in-sample there.
+
+### Why, and it is the useful part
+
+| | |
+|---|---:|
+| best config on the folds, `('small', 0.03)` | 0.8425 |
+| worst config, `('tcrdist', 200.0)` | 0.8362 |
+| **spread across the entire grid** | **0.0063** |
+| D's own fixed point | **0.8407** |
+| the grid average | 0.8399 |
+
+**The response surface is flat in the bandwidth**, so there was no selection
+cost at that layer to recover. E15's −0.0048 was measured over a much larger
+space — whole configurations and feature sets — not over bandwidth alone.
+
+And a second finding worth keeping: **D's fixed point (0.8407) beats both
+fold-based selection (0.8398) and the grid average (0.8399).** Re-selecting the
+bandwidth on the folds does *worse* than the configuration D already has. That
+is the winner's curse appearing in the SELECT arm, and it is an incidental
+vindication of D's existing configuration rather than a criticism of it.
+
+### Where this leaves the search
+
+The averaging idea is sound and remains sound; it simply has nothing to act on
+here. Averaging over the *component* choice instead of the bandwidth would mean
+mixing in terms that measured negative on their own — E138 put `iptm` at
+−0.0193 as a residual feature — so that version imports a known loss rather
+than removing an unknown one.
+
+Taken with E131, the two routes are now both bounded:
+
+| route | bound |
+|---|---|
+| add information | needs a true effect of +0.0086; max channel found +0.0016 |
+| remove estimation error | bandwidth surface is flat (spread 0.0063, D near its top) |
+
+**D is unchanged.**
