@@ -10017,3 +10017,83 @@ more sharply: it needs a multi-antigen negative measurement matrix, which the
 10x panel does provide — but only for the same 70 high-validating rows.
 
 **D is unchanged.**
+
+---
+
+## E141 — Submission integrity audit and the portfolio arithmetic
+
+Two decisions remain before the deadline (2026-11-02 15:00 UTC): which
+submissions to enter, and whether any of them is defective. The second is worth
+far more than the first, and only D had ever been audited.
+
+### Integrity: all three candidate entries pass
+
+E123's checks applied to every submission the team would enter:
+
+| | D | S4 | S2 |
+|---|---|---|---|
+| sha256 (16) | `64b3dd4076a51fbd` | `d6b588c4c69f57d7` | `04afccd0b0584fe5` |
+| columns exactly `[tcr_id, prediction]` | pass | pass | pass |
+| 2,636 rows, no duplicate ids | pass | pass | pass |
+| id set identical to `test.csv` | pass | pass | pass |
+| numeric, no NaN, no inf | pass | pass | pass |
+| no epitope constant | pass | pass | pass |
+| **private ties** | **22** (CIN 8, LLW 10, LTD 4) | **0** | **0** |
+
+**All checks pass.** A malformed entry forfeits the whole slot, so this was the
+highest-expected-value action remaining and it is now discharged.
+
+### The one non-fitted argument in the whole comparison, and its size
+
+S4 and S2 carry **zero** ties in every cohort because their added components
+break D's quantisation collisions. Unlike every other S4-vs-D argument, this
+one is not contaminated by weight fitting. Its size:
+
+| | |
+|---|---:|
+| tied pairs as a share of comparable pairs (mean over the 3 private cohorts) | 0.0750% |
+| absolute ceiling if every private tie were broken **correctly** | **+0.000375** |
+| `polar_frac` resolves 11.7% of the pairs D cannot order (residual 0.5586) | |
+| realistic gain | **+0.000044** |
+| Kaggle's truncation granularity | 0.0005 |
+
+The effect is **11× smaller than one rounding step**. Real, non-fitted, and
+irrelevant. Worth recording because it is the only clean argument available,
+and it is still too small to act on.
+
+### Portfolio arithmetic, with ties treated as ties
+
+A first pass optimised E[max] using E134's point estimates and promptly
+selected S5 — because S5's +0.0007 was fed in as a known mean when its actual
+measurement is **+0.0007 ± 0.0088** over 20 pairs, a standard error of ~0.0020.
+That is the trap E134 itself warned about, re-derived from noise. Corrected by
+setting all seven tied candidates' expected differences to **zero**, which is
+what E134 established, and keeping the architecture ablations at their real
+negative values:
+
+| portfolio | E[max] vs D alone |
+|---|---:|
+| D alone | +0.00000 |
+| **D + S4** | **+0.00054** |
+| **D + S4 + S2** | **+0.00063** |
+| D + S4 + S2 + S5 | +0.00069 |
+| D + S4 + S2 + S3 | +0.00066 |
+| D + S4 + S2 + d1 | +0.00063 |
+
+**Every option is under +0.001, i.e. below Kaggle's 0.0005 truncation
+granularity and a fifth of E118's 0.0045 null sd. The portfolio choice is worth
+less than one rounding step.**
+
+Recommended: **D, S4, S2** and stop. The fourth slot's marginal value is
++0.00003 to +0.00006. **S2 and S5 must not be split across two entrants** —
+their private-row ρ is 0.996 and **0.0%** of private rows move more than 10
+percentile points, so that is one submission entered twice.
+
+### What actually matters
+
+D is **7th of 11 by public score**, so Kaggle's default selection — best public
+— will not pick it at any allowed number of final submissions. The difference
+between entering D and not entering it is the unresolvable
+[−0.0041, +0.0273] from E134, which is **50× larger than the entire portfolio
+optimisation above**. Selecting D manually is the only remaining action whose
+expected value exceeds the rounding granularity.
