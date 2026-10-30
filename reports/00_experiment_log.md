@@ -10174,3 +10174,82 @@ Taken with E131, the two routes are now both bounded:
 | remove estimation error | bandwidth surface is flat (spread 0.0063, D near its top) |
 
 **D is unchanged.**
+
+---
+
+## E143 — Robust aggregation as insurance: break-even, and below the rounding step
+
+Continuation of E142's route — remove estimation error rather than add
+information. D is the **mean** of four within-epitope ranks. If any one of
+those four is wrong on an unseen private cohort, the mean carries a quarter of
+that error while a **median** rejects it outright. That is insurance against a
+risk we cannot check, since sign correctness needs labels.
+
+### The premium
+
+| rule | public macro | 18-fold | worst fold |
+|---|---:|---:|---:|
+| **mean (= D)** | **0.8601** | **0.8450** | 0.5309 |
+| median | 0.8591 | 0.8440 | 0.5432 |
+| trimmed (drop min and max) | 0.8592 | 0.8440 | 0.5432 |
+
+median − mean on the folds: **−0.0011 ± 0.0030**, 95% CI [−0.0069, +0.0048],
+9/18 folds, 0.24 null sd. Certain public cost **−0.0009**.
+
+*(An earlier pass reported +0.0022 for the median. That was wrong: it
+re-percentiled components that were already ranked, so its "mean" scored 0.8583
+rather than D's 0.8601. Corrected here against D's exact four terms.)*
+
+### The payout, measured at the right unit
+
+The first attempt inverted a component across **all five** public epitopes,
+which overstates it — a real flip would hit **one** cohort. Inverting one
+component in one cohort at a time:
+
+| component | mean advantage of the median |
+|---|---:|
+| `structure` (`pae_tcr_pep_min`) | **+0.0063** (up to +0.0108 on GLCTLVAML) |
+| `m30` | +0.0020 |
+| `vdomain` | +0.0019 |
+| `density3` | +0.0007 |
+| **all 20 cells** | **+0.0027** (range −0.0012 to +0.0108) |
+
+### The rate, at the right unit
+
+The private split is three **epitopes**, so the epitope-level rate governs:
+
+| unit | flips observed |
+|---|---|
+| (component, epitope) | **0 of 20** — 95% upper bound on the rate **0.133** |
+| (component, fold) | 3 of 72 = 0.042, and all three were mild (min AUC 0.494, 0.432, 0.420) on smaller sub-cohorts |
+
+### Expected value
+
+**Break-even per-cell flip rate: 0.036.**
+
+| assumed rate | P(any flip in 12 private cells) | EV of entering the median |
+|---:|---:|---:|
+| 0.000 (what 0/20 suggests) | 0.000 | **−0.00095** |
+| 0.020 | 0.215 | −0.00037 |
+| 0.042 (fold-level) | 0.401 | +0.00013 |
+| 0.133 (95% upper bound) | 0.819 | +0.00127 |
+
+**The median is EV-neutral**, flipping sign around a rate we can only bound
+between 0 and 0.133, and every value in the table is at or below Kaggle's
+0.0005 truncation granularity. Not a recommendation.
+
+One sub-finding is worth keeping regardless: **`structure` is by far the
+component most worth protecting against**, with a flip payout 3× any other and
+the lowest standalone AUC of the four (0.6294 on TTDPSFLGRY, 0.7270 mean across
+folds). If D ever loses on the private side for a structural reason, that term
+is the first place to look.
+
+### Both routes are now bounded
+
+| route | bound |
+|---|---|
+| add information (E96–E140) | needs a true effect of +0.0086 to clear +0.005; largest channel found **+0.0016** |
+| remove estimation error — bandwidth (E142) | response surface is flat; spread 0.0063 across the whole grid, D near its top; **+0.0001 ± 0.0013** |
+| remove estimation error — aggregation (E143) | **EV-neutral**, break-even at an unobservable 0.036 rate, all values ≤ the 0.0005 rounding step |
+
+**D is unchanged, and is entered as the mean.**
