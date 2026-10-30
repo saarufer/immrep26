@@ -10253,3 +10253,79 @@ is the first place to look.
 | remove estimation error — aggregation (E143) | **EV-neutral**, break-even at an unobservable 0.036 rate, all values ≤ the 0.0005 rounding step |
 
 **D is unchanged, and is entered as the mean.**
+
+---
+
+## E144 — Transductive self-distillation: D's ranking is not a smooth function of sequence space
+
+`scripts/122_self_distillation.py`, report `reports/100_self_distillation.md`.
+
+The last untried route, and the third member of the remove-estimation-error
+family after E142 (bandwidth) and E143 (aggregation). A student trained on D's
+own output cannot acquire information D lacks; its single route to beating D is
+**self-distillation** — D's density terms are k-NN estimates over small cohorts
+(CINGVCWTV 243 rows against a pool of 11, LTDEMIAQY 130 against 5), so they
+carry estimation noise, and a smoother hypothesis class fitted to D's ranking
+could average it out.
+
+Transductive and legitimately so: D's ranks exist for all 2,636 rows including
+all 602 private ones, and **the student never sees a true label**. All student
+predictions are cross-fitted over 5 folds, so no row is scored by a model
+trained on it. Features are 64 SCEPTR dimensions + 2 CDR3 lengths + 8 epitope
+indicators.
+
+**Pre-registered: student alone −0.05 to −0.01, blend −0.002 to +0.002.**
+
+### Result
+
+| | public vs D | 18-fold vs D |
+|---|---:|---:|
+| ridge, alone | **−0.1228** | −0.1399 |
+| gbm, alone | −0.0568 | −0.0636 |
+| ridge, w=0.05 | −0.0008 | −0.0037 |
+| **gbm, w=0.05** | **+0.0001** | **−0.0011** |
+| gbm, w=0.10 | −0.0004 | −0.0027 |
+
+The blend prediction is **hit**. The student prediction is **missed, badly** —
+and that miss is the informative part.
+
+### Why, and it explains E142 too
+
+Cross-fitted within-epitope ρ between student and teacher: **ridge +0.514,
+gbm +0.713**. A gradient-boosted model on 74 features cannot reproduce D's own
+ranking beyond ρ 0.71.
+
+**D's ranking is therefore not a smooth function of sequence space.** Its
+signal is irreducibly *local* — the k-NN neighbourhood structure **is** the
+signal, not a noisy realisation of some smooth field. Self-distillation has
+nothing to average over, which is why it cannot help.
+
+The predicted mechanism fails its own specific test. Smoothing should pay most
+where D's pool is smallest, and it does the opposite:
+
+| epitope | pool rows | D | best blend | diff |
+|---|---:|---:|---:|---:|
+| TTDPSFLGRY | 25 | 0.8493 | 0.8487 | **−0.0006** |
+| YLQPRTFLL | 54 | 0.9350 | 0.9347 | **−0.0002** |
+| GLCTLVAML | 459 | 0.7568 | 0.7588 | +0.0020 |
+| GILGFVFTL | 3,005 | 0.8862 | 0.8861 | −0.0000 |
+| NLVPMVATV | 9,881 | 0.8729 | 0.8721 | −0.0008 |
+
+This also retro-explains **E142**: the bandwidth response surface is flat
+(spread 0.0063 across the entire grid) because local structure dominates and
+the smoothing scale was never the binding parameter.
+
+### The search is now bounded in every direction tried
+
+| route | experiments | bound |
+|---|---|---|
+| add information | E96–E140 | needs a true effect of **+0.0086** to clear a measured +0.005; largest channel ever found **+0.0016** |
+| remove estimation error — bandwidth | E142 | surface flat, **+0.0001 ± 0.0013**; D's fixed point already beats fold-based reselection |
+| remove estimation error — aggregation | E143 | **EV-neutral**, break-even at an unobservable 0.036 flip rate, all values ≤ the 0.0005 rounding step |
+| remove estimation error — distillation | E144 | D is not smooth in sequence space (student ρ 0.71 ceiling), so there is nothing to smooth |
+| portfolio / entry selection | E141 | best 3-entry portfolio worth **+0.00063**, below the 0.0005 rounding step |
+
+The one action still worth more than the rounding granularity is **manually
+selecting D as a final submission**, since D is 7th of 11 by public score and
+Kaggle's default will not pick it. That difference is E134's unresolvable
+[−0.0041, +0.0273]. **D is unchanged.**
