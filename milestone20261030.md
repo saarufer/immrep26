@@ -73,10 +73,19 @@ so their −0.0044 to −0.0205 carry across unshrunk and those rankings are sol
 
 ### Why D is the entry
 
-1. **18-fold out-of-fold**: D is the reference and every fitted candidate is
-   below it (−0.0017 to −0.0080).
-2. **Only submission that loses on none of the five public epitopes** (0/5;
-   S4 loses 1, the rest lose 2).
+1. **Out-of-fold refit**: when the *construction* of each stack has its
+   weights refit outside the fold, the advantage over D collapses (−0.0017 to
+   −0.0080). **Caveat added on review:** this measures the *procedure*, not the
+   fixed artefact, and E118's two isolation levels are −0.0017 (epitope's other
+   folds stay in training) against **+0.0010** (whole epitope held out). The
+   whole-epitope figure is the one that matches the private situation and it is
+   mildly *positive*; earlier drafts quoted only −0.0017, which was selective.
+   Scoring the already-built S4 on the folds gives +0.0169, but that is
+   in-sample for its weights.
+2. ~~Only submission that loses on none of the five public epitopes.~~
+   **Retracted — circular.** That column is `(candidate − D < 0).sum()`, so it
+   is identically 0 for D by construction. D cannot lose to itself, and this
+   was never evidence of anything.
 3. **Only audited artefact**: E123 ran 14 checks, reproduced D from source to
    **1.11e-16**, and confirmed all four components carry variance in all three
    private cohorts.
@@ -98,8 +107,19 @@ so their −0.0044 to −0.0205 carry across unshrunk and those rankings are sol
 | **D + S4 + S2** | **+0.00063** |
 | D + S4 + S2 + S5 | +0.00069 |
 
-**Everything is below Kaggle's 0.0005 truncation step.** Recommended: **D, S4,
-S2** and stop; the fourth slot is worth +0.00003.
+**Every option is tiny relative to the irreducible uncertainty** — the
+S4−D interval alone is [−0.0041, +0.0273], 40× the whole portfolio range.
+Recommended: **D, S4, S2** and stop; the fourth slot is worth +0.00003.
+
+> **Correction (2026-10-30, external review).** An earlier version of this
+> section said "everything is below Kaggle's 0.0005 truncation step". Two
+> errors: **+0.00063 and +0.00069 are above 0.0005, not below it**, and more
+> importantly **Kaggle ranks on the full-precision score and only *displays*
+> three decimals** — truncation is a display artefact, not a scoring one. Every
+> "below the rounding step, therefore irrelevant" argument in this document was
+> invalid reasoning. The effects really are small, but the correct comparison is
+> against the ±0.0045 null sd and the [−0.0041, +0.0273] private interval, not
+> against display precision.
 
 **S2 and S5 must not be split across two entrants** — private-row ρ **0.996**
 and **0.0%** of private rows move more than 10 percentile points. That is one
@@ -120,9 +140,15 @@ which is **50× the entire portfolio effect**.
 
 ### The governing fact
 
-> **Real orthogonal information at AUC 0.54–0.56 exists and does not improve
-> the ranking, because D is at 0.86 while every such channel is at 0.52–0.76
-> about the same rows.**
+> **Real orthogonal information at AUC 0.54–0.56 exists, and no *global rank
+> blend* of it improves the ranking.**
+
+**Scope, narrowed on review.** The stronger claim — that a 0.54 channel
+*cannot* help a 0.86 model — does not follow and is withdrawn. Whether a weak
+channel helps depends on how many of D's errors it corrects against how many
+correct orderings it breaks. What is established is that uniform blending at
+every weight tried gives nested ≈ 0; **conditional or targeted use is not
+excluded by these experiments.**
 
 Established from four independent directions:
 
@@ -161,7 +187,13 @@ The floor is **0.5098** (a term already inside D) and the record is 0.5609.
   *entire* procedure including sign selection. Honest null sd 0.0076, max
   +0.0203. Nesting the sign step moved p from 0.082 to **0.200**.
 - **18 pseudo-epitope folds** (E118): split each cohort by source study. Null
-  sd 0.0045 against the 5-fold 0.0059. Turned the stack's fitted +0.0103 into
+  sd 0.0045 against the 5-fold 0.0059. **Two caveats added on review:** a plain
+  mean over folds weights epitopes by study count (GILGFVFTL 33.3%, GLCTLVAML
+  and TTDPSFLGRY 11.1% each, against 20% under equal weighting), and holding out
+  one fold leaves the same epitope's other folds in training, so it measures
+  *source* transfer more than *epitope* transfer. E118 ran both isolation levels
+  and they agree at zero; the later uses in E142–E145 used the plain mean and
+  should be read with the weighting bias in mind. Turned the stack's fitted +0.0103 into
   **−0.0017, p 0.683**.
 - **harness power** (E131): MDE +0.0031 for nested > 0; the binding constraint
   is the **between-epitope sd of D's own AUC, 0.0587**, which does not shrink

@@ -10437,3 +10437,139 @@ established from four independent directions: structure, wet-lab negatives,
 composition nulls, and docking quality.
 
 **D is unchanged.**
+
+---
+
+## E146/E147 — An external review's three criticisms, two of which were right
+
+The review found **two real errors** in `milestone20261030.md` and named one
+methodological hole this project's own audit had missed. All are corrected or
+tested below.
+
+### Errors conceded
+
+**1. Arithmetic, and a worse fallacy behind it.** The milestone said "everything
+is below Kaggle's 0.0005 truncation step" of a table containing **+0.00063 and
++0.00069**, which are *above* 0.0005. The deeper mistake: **Kaggle ranks on the
+full-precision score and only displays three decimals**, so truncation is a
+display artefact, not a scoring one. Every "below the rounding step, therefore
+irrelevant" argument in E141, E143 and the milestone was invalid reasoning. The
+effects are still small, but the correct yardstick is the ±0.0045 null sd and
+the [−0.0041, +0.0273] private interval.
+
+**2. A circular claim used to justify the entry.** "D is the only submission
+that loses on none of the five public epitopes (0/5)" — that column is
+`(candidate − D < 0).sum()`, identically zero for D by construction. **Retracted.**
+
+**3. Selective quoting, found while checking the review's first point.** E118
+ran *both* isolation levels and the log records both: holding out a fold whose
+epitope keeps its other folds gives **−0.0017**, holding out the whole epitope
+gives **+0.0010**. The whole-epitope figure is the one matching the private
+situation, and it is mildly *positive*. Every later citation quoted only
+−0.0017. Further, the fold mean used in E142–E145 weights epitopes by study
+count — GILGFVFTL 33.3%, GLCTLVAML and TTDPSFLGRY 11.1% each, against 20% under
+equal weighting. Recomputed with epitope-equal weighting, scoring the *fixed*
+submissions on the folds gives S4 +0.0215 over D — but that is in-sample for
+S4's seven weights, so it is not evidence either way. **The −0.0017 … −0.0080
+figures measure the *procedure* with weights refit out-of-fold, not the fixed
+artefact, and using them to choose between artefacts was a category error.**
+
+Net effect on the entry: two of the three reasons given for D are damaged. What
+survives is **parsimony** (D has zero fitted parameters against S4's seven
+weights plus two restructures, all chosen on five epitopes), **gate compliance**
+(0.20 of S4's added weight is `charge_product` 0.5542 and `packing` 0.5494,
+both of which failed the 0.5570 residual benchmark), and **the audit** (E123).
+D remains defensible; the case for it was overstated.
+
+### E146 — the sparse-reference stress test. The review's point is right in
+### principle and does not bind in practice.
+
+The hole, correctly identified: **percentile ranking stretches a weak component
+into a full 0–1 distribution**, so E123's finding that all four of D's terms
+carry *variance* on the private cohorts rules out a constant but does not show
+`m30pool` deserves its flat quarter when the private pools hold 11, 191 and 5
+receptors against 3,005 and 9,881 publicly.
+
+Public pools were subsampled to force the private regime, 8 draws per size, and
+a shrinkage `r* = 0.5 + λ(n)(r − 0.5)` applied with `λ(n) = min(1, n/60)` —
+E84's independently measured threshold, reused rather than fitted — and, per the
+review's warning, **not re-ranked afterwards**.
+
+| pool n | D (pool kept) | F (pool deleted) | D + shrinkage | shrink − D |
+|---:|---:|---:|---:|---:|
+| 5 | 0.8557 | 0.8557 | 0.8514 | **−0.0042** |
+| 11 | 0.8556 | 0.8557 | 0.8525 | **−0.0031** |
+| 25 | 0.8556 | 0.8557 | 0.8537 | −0.0019 |
+| all | 0.8599 | 0.8557 | 0.8582 | −0.0018 |
+
+**At n=5 and n=11 the pool term is inert, not harmful**: D with a tiny pool
+equals F with no pool at all (0.8557 against 0.8557). And **shrinkage is worse
+at every size**, monotonically. Pre-registered +0.002 to +0.010: **missed.**
+
+At the true pool sizes shrinkage costs −0.0019 macro, concentrated on
+TTDPSFLGRY (λ=0.42, **−0.0087**). The mechanism: shrinking toward 0.5 does not
+remove noise, it removes the signal that remains — an 11-row pool's top-8
+neighbour distance still carries something, λ=0.18 discards 82% of it, and the
+noise it would suppress is already harmless because the other three terms carry
+three quarters of the weight.
+
+So the pool term is **inert on the private cohorts, not a liability**, and
+deliberately down-weighting it costs 0.002–0.004. λ on the private side would
+have been CINGVCWTV 0.18, LLWNGPMAV 1.00, LTDEMIAQY 0.08.
+
+### E147 — conditional fusion. Directionally right, nested negative, and it
+### fails on the cohort most like the private ones.
+
+The review is correct that "a 0.54 channel cannot help a 0.86 model" does not
+follow, and that claim is withdrawn from the milestone. Tested as proposed, with
+one candidate only (E126's margin, the highest residual at 0.5609) and a
+label-free, input-defined region: `U` = sd of D's four within-epitope component
+ranks.
+
+**`U` does mark where D errs — on three of five cohorts:**
+
+| epitope | D, low-U half | D, high-U half | diff |
+|---|---:|---:|---:|
+| NLVPMVATV | 0.9320 | 0.7258 | **−0.206** |
+| GLCTLVAML | 0.8273 | 0.6491 | **−0.178** |
+| GILGFVFTL | 0.9189 | 0.7945 | **−0.124** |
+| TTDPSFLGRY | 0.8554 | 0.8663 | **+0.011** |
+| YLQPRTFLL | 0.9299 | 0.9327 | **+0.003** |
+
+Conditional beats global, as predicted: top-25% region at w=0.20 gives **+0.0008**
+against global blending's +0.0003. But nesting `(q, w)` leave-one-epitope-out:
+
+| held out | picked | gain |
+|---|---|---:|
+| GLCTLVAML | q=0.25 w=0.20 | +0.0016 |
+| GILGFVFTL | q=0.50 w=0.10 | +0.0002 |
+| NLVPMVATV | q=0.25 w=0.10 | +0.0001 |
+| YLQPRTFLL | q=1.00 w=0.10 | −0.0015 |
+| **TTDPSFLGRY** | q=0.25 w=0.30 | **−0.0070** |
+| **nested mean** | | **−0.0013** |
+
+**And the risk the review did not name: `U`'s sign does not transfer.** D is
+worse in the high-U half on GIL/GLC/NLV but *better* on TTD/YLQ. Conditioning on
+disagreement is therefore a bet on cohort type — and **TTDPSFLGRY, the public
+cohort closest to the private ones by pool size (25 rows), is one of the two
+where the sign reverses**, and is the fold that turns the nested estimate
+negative. At the single best fixed setting the per-epitope gains are +0.0022,
++0.0016, +0.0005, +0.0033 and −0.0035, mean +0.0008, 95% CI [−0.0015, +0.0031].
+
+**Both proposals close. D is unchanged, and the milestone is corrected.**
+
+### Not run: the HERMES compatibility score
+
+The review's third proposal — a structure-conditioned log-likelihood of the
+peptide in the full TCR–pMHC environment minus the same with the TCR removed —
+passes all four admission questions in principle: HERMES is trained on general
+protein structures (Q3 clean), the score needs only structures we already hold
+(Q2 clean), and it is a knowledge source distinct from density, PAE and polarity
+(Q1 clean). It is the one genuinely unexplored channel left.
+
+Its prior is low for a measured reason. **Four independent channels have now
+landed at residual 0.5406–0.5609 and converted to nothing**, and the closest
+analogue — E145's `pdockq1`, also structure-derived, also at 100% private
+coverage, with the project's best leak-free survival (stratified 0.5717,
+binomial p = 0.021) — gave nested **+0.0001**. Cost is a model download plus
+inference over 2,636 complexes in two conditions.
