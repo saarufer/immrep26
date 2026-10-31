@@ -10573,3 +10573,101 @@ analogue — E145's `pdockq1`, also structure-derived, also at 100% private
 coverage, with the project's best leak-free survival (stratified 0.5717,
 binomial p = 0.021) — gave nested **+0.0001**. Cost is a model download plus
 inference over 2,636 complexes in two conditions.
+
+---
+
+## E148 — HERMES interface compatibility: the cleanest channel yet, and nested +0.0000
+
+`scripts/125_hermes_compatibility.py`, `scripts/126_hermes_gate.py`,
+report `reports/103_hermes_compatibility.md`.
+
+The external review's third proposal, and the only route that had passed all
+four admission questions without being executed. HERMES (Visani et al.,
+`StatPhysBio/hermes`, PMC12557503) predicts amino-acid propensity at a masked
+focal residue from its local atomic neighbourhood, pre-trained on ~10k CASP12
+ProteinNet chains — the general protein universe, never a binding label.
+
+    dLL(t) = Σ_peptide sites [ log P(aa_i | full TCR–pMHC environment)
+                             − log P(aa_i | same coordinates, TCR removed) ]
+
+Within an epitope the peptide sequence is constant, so everything that varies
+is the TCR and the local environment it creates.
+
+**Fidelity.** HERMES's open-source `bp` models take hydrogens as a *trained
+input channel* (`channels = C,N,O,S,H,SASA,charge`,
+`get_physicochemical_info_for_hydrogens = True`), placed by `reduce` in the
+released preprocessing. `reduce` 4.17 was built from source so this run matches
+the training distribution; a pdbfixer-only substitute was used to measure
+throughput and produced **no recorded score**. Hydrogen placement seeded at 0.
+`hermes_bp_000`, 10-member ensemble, ensembled at logits level.
+
+2,636 complexes × 2 conditions, 4.10 s each, **zero failures**.
+`dLL` mean −0.863, sd 3.570, range −17.65 to +17.07 — adding the TCR *lowers*
+the peptide's likelihood on average, with ample spread.
+
+**Pre-registered before the run: residual-on-D 0.52–0.57, nested −0.002 to
++0.002.**
+
+### Coverage and the review's own control
+
+**2,636 / 2,636 rows, every private cohort at 100%.** Q2 clean, Q3 clean.
+
+The review asked whether `dLL` is really chemistry or just geometry. It is
+chemistry — within-epitope Spearman against every geometric confound:
+
+| control | ρ with dLL |
+|---|---:|
+| `n_contacts` | **+0.002** |
+| `bsa` (burial) | **+0.004** |
+| `polar_frac` | +0.025 |
+| `pdockq1` | +0.066 |
+| `iface_plddt` | +0.128 |
+
+Near-zero against contact count and buried area. **The proposal's design was
+right: this is a genuinely distinct quantity, not a repackaged interface size.**
+
+### Gates
+
+| quantity | macro | typicality ρ | residual on D | leak | valid |
+|---|---:|---:|---:|---:|---|
+| **`dLL`** | 0.6035 | +0.069 | **0.5313** | 0.045 | **yes** |
+| `ll_full` (no subtraction) | 0.6052 | +0.091 | 0.5137 | 0.039 | yes |
+| `ll_pmhc` (baseline only) | 0.5208 | +0.033 | 0.5102 | 0.018 | yes |
+
+**Residual 0.5313 — pre-registration HIT.** And the subtraction earns its
+place: `dLL`'s residual (0.5313) clearly exceeds the raw full-complex
+likelihood's (0.5137), while the pMHC-only baseline sits at the 0.5098 floor as
+it should. The review's specific construction was better than its parts.
+
+Leak-free stratified test: mean AUC **0.5078**, 13 of 20 strata above 0.5,
+binomial **p = 0.132** — weaker than E145's `pdockq1` (0.5717, 15/20, p = 0.021).
+
+### And it converts to nothing
+
+| | |
+|---|---:|
+| oracle blend weight selected | **0.00** |
+| nested LOEO | **+0.0000** |
+
+**Pre-registration HIT.** The weight grid picks zero at every sign.
+
+### Five independent channels, one shape
+
+| channel | source | residual on D | nested |
+|---|---|---:|---:|
+| Minervina exo-TCR margin (E126) | wet-lab negatives | **0.5609** | −0.0003 |
+| `polar_frac` (E104) | structure, atom chemistry | 0.5586 | +0.0016 |
+| `pdockq1` (E145) | docking quality | 0.5406 | +0.0001 |
+| **`dLL` (E148)** | **general protein-universe statistics** | **0.5313** | **+0.0000** |
+| excess convergence (E135) | composition null | 0.5070 | — |
+
+Floor 0.5098. Five channels, five different knowledge sources — experimental
+negatives, atomic chemistry, docking geometry, general protein statistics, and
+a composition null — all landing between the floor and 0.5609, and **none
+converting to ranking gain**.
+
+HERMES is the cleanest of the five on provenance: it has never seen a TCR, a
+pMHC, or a binding label. That it also gives +0.0000 is the strongest form the
+result can take.
+
+**The search is closed in every direction that has been tried. D is unchanged.**
