@@ -10671,3 +10671,143 @@ pMHC, or a binding label. That it also gives +0.0000 is the strongest form the
 result can take.
 
 **The search is closed in every direction that has been tried. D is unchanged.**
+
+---
+
+## E149 — TCR surface-expression framework residues: orthogonal to everything, and still nothing
+
+`scripts/127_expression_lry.py`, report `reports/104_expression_lry.md`.
+
+An external review's highest-priority proposal, and a genuinely new mechanism:
+same annotation, but some TCRs may be harder to **express and assemble** in the
+revalidation system, so they fail for a reason unrelated to recognition.
+Thomas et al. (Nat Commun, PMC6773850) found three variable-framework
+substitutions — the "LRY" modification — that raise surface expression 2–6×,
+and the effect persists in Jurkat cells **lacking endogenous TCR**, so it is
+not competition with an endogenous receptor:
+
+| position | weak → dominant |
+|---|---|
+| α IMGT 96 | Pro → **Leu** |
+| β IMGT 9 | Ser → **Arg** |
+| β IMGT 10 | Asn → **Tyr** |
+
+The review also spotted a real connection: `polar_frac` localises to the
+germline V region rather than CDR3, so it asked whether that is partly a
+receptor-intrinsic property.
+
+### Two facts established before scoring, both of which reshape the proposal
+
+**1. The competition data does not contain the expressed construct.**
+`full_seq_alpha_aa` / `full_seq_beta_aa` are **103–121 residues** ending at the
+J region (`...GGGTRLMVKP`, `...GPGTRLTVL`) — V domains with **no constant
+region at all**. So the review's step 1, checking constant-region replacement
+and framework optimisation in the actual screening construct, **cannot be done
+from competition data**.
+
+**2. Holding the V gene fixed, framework variation is 0 of 2,636 rows (0.0%).**
+One V gene maps to exactly one framework, 100% of the time. So any
+framework-based expression score is **exactly** a V-gene statistic, not
+approximately one.
+
+That lands in ground measured twice — E111 (`polar_frac` is a V-gene property
+but not one D carries) and E113 (a **label-supervised** V-gene prior transfers
+below chance on every fold). What this proposal adds is a **literature-fixed**
+score: the positions come from Thomas et al., not from searching competition
+labels, which avoids E113's Q3 failure.
+
+Mapping sanity-checked before use: β IMGT 9/10 at raw N-terminal offsets 9/10,
+α IMGT 96 located 8 residues before the conserved Cys at the CDR3 start, which
+resolved for 2,636/2,636 rows. The residue distributions match the paper's
+dichotomy — α96 is **P:1033 / L:664**, β9 is K:1031 / **R:982** / **S:490**,
+β10 is **Y:1182** / H:832.
+
+**Pre-registered: residual-on-D 0.51–0.54, nested −0.002 to +0.002.**
+
+### Q2 passes outright
+
+All four `lry_count` levels present in **every** cohort, including all three
+private ones: CINGVCWTV sd 0.93, LLWNGPMAV 0.91, LTDEMIAQY 0.94.
+
+### And the review's own question gets a striking answer
+
+| | |
+|---|---:|
+| ρ(`lry_count`, `polar_frac`) | **−0.028** |
+| ρ(`lry_count`, D) | **+0.000** |
+
+**It is not `polar_frac` again, and it is not inside D.** Two V-gene statistics,
+essentially perfectly orthogonal. That is a real finding in its own right: V-gene
+identity carries **at least two independent pieces of information** — the
+MHC-facing polarity `polar_frac` reads structurally, and the expression-framework
+residues — and both are weak.
+
+### The instrument that decides
+
+Residual-on-D is unusable here: these are 4-level and binary features, and the
+leak check fires at **0.185–0.700** on every one, so the apparent residuals
+(including `dom_a96`'s 0.7028 and `dom_b10`'s 0.6411) are the E112 tie artefact
+for the **sixth** time and are not read. `lry_count`'s own residual is 0.5065,
+below the 0.5098 floor — **pre-registration MISSED**, narrowly low.
+
+Stratified inside D-quintiles, which is the correct instrument:
+
+| quantity | strata | mean AUC | above 0.5 | binom p |
+|---|---:|---:|---:|---:|
+| `lry_minus_weak` | 20 | 0.5352 | 14/20 | 0.058 |
+| **`dom_b10`** (β IMGT 10 alone) | 16 | **0.5381** | 12/16 | **0.038** |
+| `lry_count` (**the pre-registered composite**) | 20 | 0.5282 | 12/20 | **0.252** |
+| `dom_b9` | 16 | 0.5252 | 7/16 | 0.773 |
+| `dom_a96` | 20 | 0.4961 | 9/20 | 0.748 |
+
+**Multiple testing settles it.** Five variants were tested; under the global
+null, P(min p < 0.038 over 5 tests) = **0.176**. And the *pre-registered*
+hypothesis was the LRY composite, which gives **p = 0.252**. The nominally
+significant `dom_b10` is a single sub-position found only after looking at five.
+
+### Blended
+
+| quantity | oracle | nested |
+|---|---:|---:|
+| `dom_b10` | +0.0011 | **+0.0005** |
+| `lry_count` | +0.0008 | **−0.0032** |
+| `lry_minus_weak` | +0.0009 | **−0.0044** |
+
+Best nested **+0.0005** — pre-registration HIT. The composites, which are the
+hypothesis as stated, are **negative**.
+
+### Verdict
+
+The mechanism is real in the literature, the score is literature-fixed rather
+than label-fitted, Q2 passes on all three private cohorts, and it is
+**orthogonal to both `polar_frac` and D**. It still carries nothing: the
+pre-registered composite is at p = 0.252 and nested −0.0032, and the one
+nominally significant sub-position does not survive having looked at five.
+
+**Sixth independent channel, same shape.** With E126 (wet-lab negatives, 0.5609),
+E104 (`polar_frac`, 0.5586), E145 (`pdockq1`, 0.5406), E148 (HERMES, 0.5313) and
+E135 (composition null, 0.5070), this adds *receptor-intrinsic expression
+capacity* to the list of genuinely independent knowledge sources that reach the
+0.51–0.56 band and convert to zero.
+
+### The review's other two proposals
+
+**Structural ensemble consistency — already done, and closed mechanistically by
+E19.** All 2,636 complexes were re-folded with 5 diffusion samples, superposed
+on MHC+peptide Cα, and TCR Cα RMSD taken — which *is* "CDR3 position change
+after MHC alignment". `data/interim/boltz_consistency.csv` also holds the
+cross-sample standard deviations (`ms_iptm_sd`, `ms_complex_plddt_sd`), i.e.
+enFoldX's mean-and-sd construction. RMSD spans 0.32–42.7 Å so the dynamic range
+is real, but E19 found **why** it fails: Boltz runs its trunk **once** and
+samples only the diffusion head, so the five samples share the computed trunk
+representation. A confident trunk yields a narrow conditional and therefore
+consistent samples — **consistency is downstream of trunk confidence by
+construction**, and that argument applies to any cross-sample consistency
+measure, not just RMSD. The review's own caveat ("this measures the structure
+generator's behaviour") is exactly right; E19 found the generator's behaviour is
+downstream of its own confidence. Its warning against enFoldX's default
+checkpoints (VDJdb-trained) is also correct and consistent with E121.
+
+**PAIR-Scan functional screening — agreed, post-competition.** It requires
+changing the training data and the learning objective, and the data inventory
+has to come first. Noted for after the deadline.
