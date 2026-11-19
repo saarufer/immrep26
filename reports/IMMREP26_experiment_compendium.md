@@ -1137,7 +1137,7 @@ that: it is informative everywhere, merely worse than density in most places.
 
 ## E24 — Is probabilistic label modelling available? No
 
-**Goal.** A reviewer's GuanRank analogy suggests modelling
+**Goal.** A reviewer suggested modelling
 `P(Y_true=1 | Y_observed, assay evidence)` rather than a hard binary.
 
 **Checked.** The released TCRvdb file has 24 columns and the only label

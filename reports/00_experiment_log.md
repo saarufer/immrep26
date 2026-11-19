@@ -771,7 +771,7 @@ it is informative everywhere, merely worse than density in most places.
 
 ## E24 — Is probabilistic label modelling available? No
 
-The reviewer's GuanRank analogy suggests treating functional labels as evidence
+A reviewer suggested treating functional labels as evidence
 of varying strength, modelling `P(Y_true = 1 | Y_observed, assay evidence)`
 rather than a hard binary, and correctly flags that this depends on TCRvdb
 exposing per-TCR detail.
@@ -9690,7 +9690,7 @@ incremental discrimination in this model. **D is unchanged.**
 
 ### Standing of the other three proposals
 
-**E136 (latent functional strength, the GuanRank analogue)** has a structural
+**E136 (latent functional strength)** has a structural
 obstacle the proposal does not name: **D is not a trained model.** It is
 density3 + m30pool + m50 + structure with about four free parameters, and it
 learns from labels only through weight selection. A richer label representation

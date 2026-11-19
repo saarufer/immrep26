@@ -273,7 +273,7 @@ CINGVCWTV rows.
 - **Epitope-conditioned anything**: dead by construction — the private cohorts
   are singletons with no families, and TTDPSFLGRY is the public analogue, not
   GILGFVFTL or GLCTLVAML.
-- **Label-representation change** (GuanRank-style): blocked upstream of its
+- **Label-representation change** (probabilistic labels): blocked upstream of its
   data — **D is not a trained model**, so a richer label representation has no
   objective to act on.
 - **Generation-to-mature-repertoire selection** (E138): `Q_paired` residual

@@ -495,7 +495,6 @@ recognition_function/
 3. Zhu X. et al. (2026). *Machine learning dataset and benchmark for accurate T cell receptor–pHLA binding prediction*. **Nature Computational Science**. <https://doi.org/10.1038/s43588-026-01073-y>. <https://github.com/Jiadong001/Hi-TpH>.
 4. Morita S., Groves J. T. (2025). *Parallel reactions on a single T cell receptor offer a robust kinetic proofreading mechanism*. **PNAS**. <https://doi.org/10.1073/pnas.2514057122>.
 5. *Antigen perception in T cells by long-term Erk and NFAT signaling dynamics* (2023/2024). <https://pubmed.ncbi.nlm.nih.gov/38113261/>. 有助于区分短时数字化和长期连续信号。
-6. Guan Y. (2026, preprint). *Computationally mapping olfactory receptors to odor percepts using docking energy scores*. <https://doi.org/10.64898/2026.06.30.735315>. **借鉴方法论，不暗示嗅觉模型可直接预测 TCR 功能**。
 
 ---
 

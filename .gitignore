@@ -24,3 +24,7 @@ submissions/
 data/external/prp/
 data/external/seeker/
 ref/
+
+# Collaborator material shared privately (HeidAI branch docs, organizer package).
+# Not ours to redistribute.
+teammates/

@@ -979,7 +979,7 @@
     <div class="exp-title"><h3>概率化标签建模可行吗？不可行</h3></div>
     <span class="tag reject">否决</span>
   </div>
-  <p class="field"><span class="lbl">目标</span>评审提出的 GuanRank 类比，建议建模 <span class="mono">P(Y_true=1 | Y_observed, 实验证据)</span> 而不是硬二元标签。</p>
+  <p class="field"><span class="lbl">目标</span>评审建议建模 <span class="mono">P(Y_true=1 | Y_observed, 实验证据)</span> 而不是硬二元标签。</p>
   <p class="field"><span class="lbl">核查</span>发布的 TCRvdb 文件有 24 列，而唯一的标签信息是 <span class="mono">pos</span>/<span class="mono">neg</span>/<span class="mono">ambiguous</span>，严格的 one-hot 整数。没有富集值、读数或 UMI 计数、重复实验、p 值、CD69 读出，也没有任何其他连续量；唯一的数值字段是 <span class="mono">vdjdb_score</span>（0–3），而那是<em>先验注释</em>置信度，并且已知与验证结果反相关。</p>
   <div class="field concl"><span class="lbl">定论</span>在现有数据下这条路是<strong>封死的</strong>，而不只是不被看好。它需要作者方发布更丰富的数据。</div>
 </article>
