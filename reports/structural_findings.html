@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Structural findings — IMMREP26</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#f4f5f2; --surface:#fcfcfa; --surface-2:#eceee8;
+    --ink:#1a2238; --ink-2:#3a4556; --muted:#6b7280;
+    --rule:#dcdcd2; --rule-2:#c9c9be;
+    --accent:#2a6f7f; --accent-soft:#e3eef0;
+    --warm:#c4652a; --warm-soft:#f7ebe1;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --paper:#12161f; --surface:#1a1f2b; --surface-2:#232838;
+      --ink:#e8ecf2; --ink-2:#b4bdca; --muted:#8792a3;
+      --rule:#2e3443; --rule-2:#3c4356;
+      --accent:#7fb2bf; --accent-soft:#1d2d33;
+      --warm:#e8a86b; --warm-soft:#2e2219;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:56px 24px 96px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:22px;margin-bottom:34px}
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:2.4px;text-transform:uppercase;
+           color:var(--accent);margin:0 0 10px}
+  h1{font-family:var(--serif);font-size:38px;line-height:1.12;font-weight:600;margin:0 0 12px}
+  .standfirst{font-size:17px;line-height:1.6;color:var(--ink-2);margin:0;max-width:66ch}
+  h2{font-family:var(--serif);font-size:24px;line-height:1.25;font-weight:600;
+     margin:46px 0 4px;padding-top:26px;border-top:1px solid var(--rule)}
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:10px}
+  h3{font-size:14px;font-weight:600;letter-spacing:.4px;color:var(--muted);
+     text-transform:uppercase;margin:26px 0 8px}
+  p{margin:0 0 14px;max-width:70ch}
+  ul{margin:0 0 14px;padding-left:22px;max-width:70ch}
+  li{margin:0 0 9px}
+  strong{font-weight:600}
+  .lede{font-size:17px;color:var(--ink-2)}
+  table{border-collapse:collapse;width:100%;margin:18px 0 22px;font-size:14.5px}
+  th,td{padding:8px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+  thead th{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);
+           border-bottom:1.5px solid var(--rule-2);font-weight:600}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:1px solid var(--rule-2)}
+  .key{background:var(--accent-soft);border-left:3px solid var(--accent);
+       padding:14px 18px;margin:20px 0;border-radius:0 6px 6px 0}
+  .key p{margin:0;max-width:64ch}
+  .warnbox{background:var(--warm-soft);border-left:3px solid var(--warm);
+       padding:14px 18px;margin:20px 0;border-radius:0 6px 6px 0}
+  .warnbox p{margin:0;max-width:64ch}
+  .setup{background:var(--surface);border:1px solid var(--rule);border-radius:8px;
+         padding:18px 22px;margin:0 0 10px}
+  .setup p{margin:0;font-size:15px;color:var(--ink-2)}
+  code{font-family:var(--mono);font-size:.9em;background:var(--surface-2);
+       padding:1px 5px;border-radius:3px}
+  .stats{display:flex;flex-wrap:wrap;gap:26px;margin:24px 0 0}
+  .stat{min-width:120px}
+  .stat .v{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;
+           color:var(--accent);font-variant-numeric:tabular-nums}
+  .stat .v.warm{color:var(--warm)}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.35}
+  footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--rule);
+         font-size:13px;color:var(--muted)}
+  footer p{max-width:72ch}
+  @media (max-width:560px){ .wrap{padding:36px 18px 64px} h1{font-size:29px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">IMMREP26 · Validation of public TCR–pMHC data</p>
+  <h1>What structure did and did not contribute</h1>
+  <p class="standfirst">All 2,636 complexes were folded twice, plus five diffusion samples per
+  complex and 900 extra folds against decoy peptides — about 30 GPU-hours. Structure is the
+  weakest of our four model terms. This records why, and what that does and does not mean.</p>
+  <div class="stats">
+    <div class="stat"><div class="v">0.757</div><div class="l">best standalone<br>structural scalar</div></div>
+    <div class="stat"><div class="v">+0.0102</div><div class="l">what structure adds<br>to a single density</div></div>
+    <div class="stat"><div class="v warm">0.0061</div><div class="l">peptide-specific margin,<br>against 0.036 noise</div></div>
+    <div class="stat"><div class="v">0.812</div><div class="l">reproducibility across<br>two independent runs</div></div>
+    <div class="stat"><div class="v">0.0065</div><div class="l">AUC headroom from a<br>noise-free predictor</div></div>
+  </div>
+</header>
+
+<div class="setup">
+  <p><strong>Setup.</strong> Boltz-2; inputs are the TCR α/β variable domains, the peptide and a
+  reduced class-I α1/α2 platform, with empty MSAs. Two complete independent runs of all 2,636
+  complexes, five diffusion samples per complex in one run, and 900 additional folds of 300 TCRs
+  against anchor-matched decoy peptides. All figures are mean per-peptide ROC-AUC on the five
+  public peptides unless stated otherwise.</p>
+</div>
+
+<h2><span class="num">1</span>Structural confidence does not encode peptide specificity</h2>
+
+<p class="lede">The best standalone structural scalar reaches <strong>0.757</strong>, against 0.851
+for pooled k-NN sequence density. The organisers' own AlphaFold3 min-PAE baseline reached 0.787 —
+below their tcrdist3 baseline at 0.825. Two results explain why.</p>
+
+<ul>
+  <li><strong>An interface containing no TCR at all scores 0.647.</strong> <code>iptm_mhc_pep</code>,
+  peptide against MHC only, predicts whether a <em>TCR</em> record validates. Whatever the
+  confidence measures, it is not the TCR–peptide contact.</li>
+  <li><strong>Differencing against matched decoys collapses the signal to chance.</strong> We
+  re-folded 300 TCRs (30 positive and 30 negative per public peptide) against three anchor-matched
+  decoy peptides each — HLA-A*02:01 constrains an aliphatic P2 and C-terminus, A*01:01 an acidic P3
+  and aromatic C-terminus. Target-only confidence predicts validation at 0.63–0.74. Subtracting the
+  decoy, which cancels everything that is a property of the TCR alone, leaves a margin of
+  <strong>+0.0061 against a decoy-choice noise of 0.036</strong>. Every margin is null.</li>
+</ul>
+
+<div class="key"><p>Structural confidence is a property of the receptor and its fold, not of the
+pairing it was folded in.</p></div>
+
+<h2><span class="num">2</span>The mechanism: the same interface is built for every peptide</h2>
+
+<p>Six of the eight peptides are HLA-A*02:01 nonamers, so HLA and peptide length are held fixed and
+anything remaining is peptide-specific. Across six geometric spread measures, the hardest cohort —
+GLCTLVAML, where sequence density alone reaches only 0.677 — ranks <strong>4.3 of 6</strong>, which
+is unexceptional, and its crossing-angle spread of 15.13° is the second <em>highest</em>. The median
+per-position contact footprint is nearly identical across all six. The folding model cannot resolve
+peptide specificity in these data.</p>
+
+<h2><span class="num">3</span>Structure still contributes — as a receptor-quality prior</h2>
+
+<p>Added to a single sequence-density term, structure is worth <strong>+0.0102</strong>
+(0.8396 → 0.8498), and in the submitted four-term ensemble it is the weakest member. The
+contribution is real and partly independent, but it answers <em>“is this a canonical, well-formed
+receptor?”</em> rather than <em>“does it bind this peptide?”</em>. A database record created by chain
+mispairing or barcode swapping folds badly for reasons that have nothing to do with antigen.</p>
+
+<h2><span class="num">4</span>The one genuinely new axis: a coordinate system, not a score</h2>
+
+<p>Every feature above is a scalar summarising one interface. The 60-dimensional contact fingerprint
+is instead indexed <strong>by peptide position</strong>, and within a cohort the peptide is constant,
+so two TCRs can be compared by <em>where they touch the antigen</em>. Not “how confident is this
+interface” but “<strong>do TCRs that engage the peptide the same way validate the same
+way</strong>”.</p>
+
+<p>This is the only structural object that is genuinely decorrelated from the rest of the model:</p>
+
+<table>
+  <thead><tr><th>within-peptide ρ of the contact fingerprint with…</th><th class="n">ρ</th></tr></thead>
+  <tbody>
+    <tr><td>minimum TCR–peptide PAE</td><td class="n">+0.444</td></tr>
+    <tr><td>the full four-term ensemble</td><td class="n">+0.535</td></tr>
+    <tr><td><em>for comparison</em> — a BLOSUM sequence density</td><td class="n">+0.905</td></tr>
+    <tr><td><em>for comparison</em> — matched-background enrichment</td><td class="n">+0.826</td></tr>
+  </tbody>
+</table>
+
+<p>It was the first candidate in thirty-odd experiments with a positive nested leave-one-peptide-out
+gain — <strong>+0.0015</strong>, which is what that axis is worth.</p>
+
+<h2><span class="num">5</span>Standalone AUC does not predict incremental value — the ranking inverts</h2>
+
+<p>Residualising interface-energetics features on the full model reverses their order completely.</p>
+
+<table>
+  <thead><tr><th>feature</th><th class="n">standalone AUC</th><th class="n">ρ with ensemble</th><th>retained after residualising</th></tr></thead>
+  <tbody>
+    <tr><td>buried surface area, interface size, H-bond count</td><td class="n">0.58–0.59</td><td class="n">high</td><td>almost nothing</td></tr>
+    <tr><td><strong>interface polar fraction</strong></td><td class="n">0.5388</td><td class="n">−0.044</td><td><strong>nearly all of it</strong></td></tr>
+  </tbody>
+</table>
+
+<p>The features that look strongest are re-encoding sequence density in structural clothing. The one
+that looks like noise is orthogonal — ρ +0.002 with receptor typicality — and survives.</p>
+
+<div class="key"><p>Screen structural features on <strong>residual-after-model</strong>, never on
+standalone AUC. This is the most transferable thing we learned.</p></div>
+
+<h2><span class="num">6</span>Prediction noise is not the limiting factor</h2>
+
+<p>Two complete independent Boltz runs make the noise decomposition direct. On 25 sampled complexes
+the TCR Cα RMSD after superposing on MHC and peptide has median <strong>1.19 Å</strong> and reaches
+5.76 Å; none are identical.</p>
+
+<p>Interface polar fraction, defined and argued for entirely on one run, recomputes from the other at
+<strong>0.5490 / +0.0021</strong> — within noise of the original. This is the project's only
+out-of-sample structural confirmation, and it involves no selection. Pooled between-run Spearman is
+<strong>+0.856</strong> (0.747–0.895 per peptide), giving a single-run reliability of
+<strong>0.812</strong>: 81% of the feature's variance is reproducible signal, 19% prediction noise.</p>
+
+<p>Disattenuating the residual by that reliability gives the headroom:</p>
+
+<div class="key"><p>A <strong>noise-free</strong> structure predictor would move this feature from
+0.5586 to about <strong>0.5650</strong> — roughly 0.006 of AUC, a tenth of its whole margin over
+chance. Better structures would not change any conclusion here. The ceiling is informational, not
+technical.</p></div>
+
+<p>One exception worth flagging: CINGVCWTV's reliability is <strong>0.683</strong>, the lowest of the
+eight and the only private peptide among them.</p>
+
+<h2><span class="num">7</span>More compute buys nothing</h2>
+
+<table>
+  <thead><tr><th>what was tried</th><th>cost</th><th class="n">gain</th></tr></thead>
+  <tbody>
+    <tr><td>5 diffusion samples per complex (docking RMSD spans 0.32–42.7 Å)</td><td>13.2 GPU-hours</td><td class="n">+0.001</td></tr>
+    <tr><td>averaging all five Boltz models</td><td>—</td><td class="n">reliability +19%,<br>information −0.0005</td></tr>
+    <tr><td>pDockQ / ipSAE</td><td>—</td><td class="n">+0.0001</td></tr>
+    <tr><td>HERMES interface compatibility</td><td>—</td><td class="n">+0.0000</td></tr>
+    <tr><td>molecular dynamics of the interface (contact rises a median 7.1%)</td><td>—</td><td class="n">null at every<br>mutated-site test</td></tr>
+  </tbody>
+</table>
+
+<p>Averaging five models makes the measurement more reliable and the prediction slightly worse. That
+is the signature of an information ceiling, not a noise ceiling.</p>
+
+<h2><span class="num">8</span>Germline docking polarity is real but does not transfer</h2>
+
+<p>Computed from the predicted structures directly — 5 Å heavy-atom contacts, MHC α1 = residues
+57–84, α2 = 138–176 — the canonical diagonal, α chain over α2 and β over α1, holds for most
+complexes. But <strong>7–36% dock non-canonically</strong>, and NLVPMVATV is a marked outlier at only
+<strong>64% canonical</strong> against 81–93% elsewhere. The fingerprint machinery itself was
+validated against solved complexes and is faithful. The polarity varies within every cohort, and that
+variation carried nothing after residualising on the model.</p>
+
+<h2><span class="num">9</span>Scope, and the strongest objection</h2>
+
+<div class="warnbox"><p>Everything above is measured on <strong>one setup</strong>: Boltz-2, empty
+MSAs, a reduced class-I platform. We did not run an AlphaFold3 control, so we cannot separate
+“structure carries little here” from “this modelling setup carries little here”.</p></div>
+
+<p>IMMREP25 — a genuinely different task, unseen-peptide specificity prediction, where no same-cohort
+neighbours exist — found that structural modelling <em>was</em> what distinguished the top methods.
+We do not read our results as contradicting that. The reconciliation we favour is that structure did
+not get weaker: <strong>neighbourhood density on a populated cohort is simply much stronger here, and
+it leaves structure only the residual.</strong></p>
+
+<footer>
+  <p>IMMREP26, Kaggle <code>immrep26</code>, closed 2026-11-02. Experiments E5, E14, E19, E28, E34,
+  E36–E39, E75, E83, E103, E104, E112, E115, E116, E145 and E148; full records in
+  <code>reports/00_experiment_log.md</code>. Functional labels from Messemaker et al., <em>Immunity</em>
+  2026, doi:10.1016/j.immuni.2026.09.007. Structures predicted with Boltz-2; no structural
+  coordinates, database records or functional labels are redistributed here.</p>
+</footer>
+
+</div>
+</body>
+</html>
