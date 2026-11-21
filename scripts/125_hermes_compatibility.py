@@ -58,7 +58,6 @@ from __future__ import annotations
 
 import glob
 import os
-import sys
 import tempfile
 import time
 import warnings
@@ -70,31 +69,59 @@ import pandas as pd
 warnings.filterwarnings("ignore")
 
 ROOT = Path(__file__).resolve().parents[1]
-PRED = ROOT / "data/interim/boltz/out/boltz_results_inputs/predictions"
-MODELS = Path("/tmp/claude-1000/-home-chen-project-Immrep26/"
-              "1d950e23-986a-43fb-ac61-0ce9ce8f1804/scratchpad/hermes/"
-              "trained_models/hermes_bp_000")
+PRED = Path(os.environ.get(
+    "BOLTZ_PRED", ROOT / "data/interim/boltz/out/boltz_results_inputs/predictions"))
+
+# E152: this was hardcoded to a session-scoped scratchpad, which made the script
+# unrunnable once that directory was collected. Point HERMES_MODELS at the
+# `hermes_bp_000` directory of a `StatPhysBio/hermes` checkout.
+MODELS = Path(os.environ.get(
+    "HERMES_MODELS", ROOT / "data/external/hermes/trained_models/hermes_bp_000"))
+
 OUT = ROOT / "data/interim/hermes_compat.csv"
-TCR_CHAINS = ("A", "B")
+# E152: the per-site 20-way logits, which the first run computed and discarded.
+# One pair of inferences per complex scores every single-residue peptide variant
+# by lookup, so this is the cache any substitution-scanning work needs.
+OUT_LOGITS = ROOT / "data/interim/hermes_logits.npz"
+PROVENANCE = ROOT / "data/interim/hermes_provenance.json"
+
 KEEP_PMHC = ("M", "P")
 SEED = 0
-AA = "ACDEFGHIKLMNPQRSTVWY"
+BATCH = 64            # predict_from_pdbfile's batch size; was an unnamed literal
 
 
 def strip_to_pmhc(src: Path, dst: Path) -> None:
-    keep = [l for l in src.read_text().splitlines()
-            if not l.startswith(("ATOM", "HETATM")) or l[21] in KEEP_PMHC]
+    """Delete the TCR chains, leaving every pMHC coordinate untouched.
+
+    CONECT records are dropped wholesale: after removing atoms they may point at
+    serial numbers that no longer exist, and nothing downstream reads them.
+    """
+    keep = []
+    for l in src.read_text().splitlines():
+        if l.startswith(("ATOM", "HETATM")):
+            if len(l) > 21 and l[21] in KEEP_PMHC:
+                keep.append(l)
+        elif not l.startswith("CONECT"):
+            keep.append(l)
     dst.write_text("\n".join(keep) + "\n")
 
 
 def logprob_of_target(res: dict) -> tuple:
-    """Ensemble at logits level, then log_softmax, then pick the observed aa."""
+    """Ensemble at logits level, then log_softmax, then pick the observed aa.
+
+    NOTE the ensembling convention: logits are averaged across the 10 seeds and
+    the softmax is taken once, which is not the same as averaging probabilities.
+    E152 checks this against the authors' released scoring.
+
+    Returns the summed and mean target log-probability, the site count, the
+    observed-residue indices, and the full (n_sites, 20) log-probability matrix.
+    """
     from scipy.special import log_softmax
     lg = np.asarray(res["logits"])            # (n_models, n_sites, 20)
     tg = np.asarray(res["targets"]).astype(int)
     lp = log_softmax(lg.mean(axis=0), axis=-1)   # (n_sites, 20)
     per_site = lp[np.arange(len(tg)), tg]
-    return float(per_site.sum()), float(per_site.mean()), len(tg), per_site
+    return float(per_site.sum()), float(per_site.mean()), len(tg), tg, lp
 
 
 def main() -> int:
@@ -103,19 +130,51 @@ def main() -> int:
     dirs = sorted(glob.glob(str(MODELS / "*seed=*")))
     assert dirs, f"no model seeds under {MODELS}"
     models, hp, _ = load_hermes_models(dirs)
-    print(f"=== hermes_bp_000, {len(dirs)}-member ensemble, reduce "
-          f"{os.popen('reduce -version 2>&1 | head -1').read().strip()} ===")
+    reduce_ver = os.popen("reduce -version 2>&1 | head -1").read().strip()
+    print(f"=== {MODELS.name}, {len(dirs)}-member ensemble, reduce "
+          f"{reduce_ver} ===")
+
+    # E152: the first run printed the reduce version and recorded nothing. A
+    # structural score is only interpretable with the weights and the hydrogen
+    # placer that produced it, so both are written next to the output.
+    import hashlib
+    import json
+    digests = {}
+    for d in dirs:
+        for f in sorted(glob.glob(os.path.join(d, "*.pt"))):
+            h = hashlib.sha256(Path(f).read_bytes()).hexdigest()
+            digests[os.path.relpath(f, MODELS)] = h
+    PROVENANCE.write_text(json.dumps({
+        "models_dir": str(MODELS), "n_seeds": len(dirs),
+        "reduce_version": reduce_ver, "hydrogen_seed": SEED,
+        "ensembling": "mean of logits across seeds, then one log_softmax",
+        "batch_size": BATCH, "boltz_predictions": str(PRED),
+        "checkpoint_sha256": digests,
+    }, indent=2))
+    print(f"  provenance -> {PROVENANCE.relative_to(ROOT)} "
+          f"({len(digests)} checkpoint file(s) hashed)")
 
     done = {}
     if OUT.exists():
         prev = pd.read_csv(OUT)
-        done = dict(zip(prev["tcr_id"], prev.to_dict("records")))
-        print(f"  resuming: {len(done)} rows already computed")
+        # E152: the first version keyed on tcr_id alone, so a row that failed
+        # once was skipped forever on every later resume. Only finite rows count
+        # as done.
+        ok = prev[prev["dll"].notna()]
+        done = dict(zip(ok["tcr_id"], ok.to_dict("records")))
+        n_retry = len(prev) - len(ok)
+        print(f"  resuming: {len(done)} rows done"
+              + (f", {n_retry} failed row(s) will be retried" if n_retry else ""))
 
     pdbs = sorted(glob.glob(str(PRED / "*" / "*_model_0.pdb")))
     print(f"  {len(pdbs)} complexes to score\n")
     tmp = Path(tempfile.mkdtemp())
     rec = list(done.values())
+    logits: dict[str, np.ndarray] = {}
+    if OUT_LOGITS.exists():
+        with np.load(OUT_LOGITS) as z:
+            logits = {k: z[k] for k in z.files}
+        print(f"  {len(logits)//3} complexes already have cached logits")
     t0 = time.time()
     for i, p in enumerate(pdbs):
         p = Path(p)
@@ -125,17 +184,26 @@ def main() -> int:
         try:
             pm = tmp / "pmhc.pdb"
             strip_to_pmhc(p, pm)
-            rf = predict_from_pdbfile(str(p), models, hp, 64,
+            rf = predict_from_pdbfile(str(p), models, hp, BATCH,
                                       regions={"whole_chains": ["P"]}, seed=SEED)
-            rp = predict_from_pdbfile(str(pm), models, hp, 64,
+            rp = predict_from_pdbfile(str(pm), models, hp, BATCH,
                                       regions={"whole_chains": ["P"]}, seed=SEED)
             kf, kp = list(rf.keys())[0], list(rp.keys())[0]
-            sf, mf, nf, _ = logprob_of_target(rf[kf])
-            sp, mp, np_, _ = logprob_of_target(rp[kp])
+            sf, mf, nf, tf, lpf = logprob_of_target(rf[kf])
+            sp, mp, np_, tp, lpp = logprob_of_target(rp[kp])
             if nf != np_:
                 raise ValueError(f"site count differs {nf} vs {np_}")
+            if not np.array_equal(tf, tp):
+                raise ValueError("observed peptide residues differ between "
+                                 "the full and stripped complex")
             rec.append(dict(tcr_id=tid, ll_full=sf, ll_pmhc=sp,
                             dll=sf - sp, dll_mean=mf - mp, n_sites=nf))
+            # (n_sites, 20) log-probabilities for both conditions, plus the
+            # observed residue indices. Every single-residue peptide variant is
+            # then a lookup rather than another fold.
+            logits[f"{tid}|full"] = lpf.astype(np.float32)
+            logits[f"{tid}|pmhc"] = lpp.astype(np.float32)
+            logits[f"{tid}|targets"] = tf.astype(np.int16)
         except Exception as e:
             rec.append(dict(tcr_id=tid, ll_full=np.nan, ll_pmhc=np.nan,
                             dll=np.nan, dll_mean=np.nan, n_sites=0))
@@ -143,14 +211,18 @@ def main() -> int:
         if (len(rec)) % 100 == 0:
             el = time.time() - t0
             pd.DataFrame(rec).to_csv(OUT, index=False)
+            np.savez_compressed(OUT_LOGITS, **logits)
             n_new = len(rec) - len(done)
             rate = el / max(n_new, 1)
             print(f"  {len(rec)}/{len(pdbs)}  {rate:.2f}s/complex  "
                   f"eta {(len(pdbs)-len(rec))*rate/3600:.1f}h", flush=True)
     pd.DataFrame(rec).to_csv(OUT, index=False)
+    np.savez_compressed(OUT_LOGITS, **logits)
     D = pd.DataFrame(rec)
     print(f"\nwrote {OUT.relative_to(ROOT)}  ({len(D)} rows, "
           f"{int(D.dll.notna().sum())} finite)")
+    print(f"wrote {OUT_LOGITS.relative_to(ROOT)}  "
+          f"({len(logits)//3} complexes x 2 conditions x (n_sites, 20))")
     print(D[["ll_full", "ll_pmhc", "dll", "dll_mean"]].describe().to_string())
     return 0
 
