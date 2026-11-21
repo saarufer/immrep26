@@ -53,6 +53,7 @@ REPO = Path(os.environ.get("TCR_DESIGN_REPO",
 MODELS = Path(os.environ.get("HERMES_MODELS",
                              ROOT / "data/external/hermes/trained_models/hermes_bp_000"))
 OUT = ROOT / "reports/109_hermes_acceptance.md"
+SCORES = ROOT / "data/interim/hermes_acceptance_scores.csv"
 SEED, BATCH = 0, 64
 # HERMES orders the 20 logits by residue SIZE, not alphabetically. Reading the
 # axis with an alphabetical index silently scores the wrong residues; it is the
@@ -78,6 +79,25 @@ def strip_chains(src: Path, dst: Path, drop: tuple[str, ...]) -> None:
         elif not l.startswith("CONECT"):
             keep.append(l)
     dst.write_text("\n".join(keep) + "\n")
+
+
+def site_ids(res: dict) -> list[tuple]:
+    """Ordered (resname, chain, resnum, insertion code) of the scored residues.
+
+    HERMES's `res_ids` rows are (resname, pdb, chain, resnum, icode, ...). The
+    pdb field is dropped because the stripped copy is written under a different
+    filename by construction; everything else must match between the two
+    conditions. Channels that legitimately change when the TCR is deleted --
+    SASA above all -- are not compared here.
+    """
+    ids = res.get("res_ids")
+    if ids is None:
+        return []
+    out = []
+    for r in np.asarray(ids):
+        f = [x.decode() if isinstance(x, (bytes, np.bytes_)) else str(x) for x in r]
+        out.append((f[0], f[2], f[3], f[4]))
+    return out
 
 
 def logprobs(res: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -113,7 +133,7 @@ def main() -> int:
           f"reduce {os.popen('reduce -version 2>&1 | head -1').read().strip()} ===\n")
 
     tmp = Path(tempfile.mkdtemp())
-    table = []
+    table, scores = [], []
     for name, (csv, pdbdir, published) in SYSTEMS.items():
         df = pd.read_csv(REPO / csv)
         target = "-log10(Kd)"
@@ -129,14 +149,34 @@ def main() -> int:
                                       regions={"whole_chains": [chain]}, seed=SEED)
             rp = predict_from_pdbfile(str(stripped), models, hp, BATCH,
                                       regions={"whole_chains": [chain]}, seed=SEED)
-            fa, fb, tf = logprobs(rf[list(rf)[0]])
-            pa, pb, tp = logprobs(rp[list(rp)[0]])
-            assert np.array_equal(tf, tp), f"{pdb}: peptide differs between conditions"
+            kf, kp = list(rf)[0], list(rp)[0]
+            fa, fb, tf = logprobs(rf[kf])
+            pa, pb, tp = logprobs(rp[kp])
+
+            # Site correspondence, not just site count: the two conditions must
+            # score the same ordered (chain, resnum, icode) residues. SASA and
+            # other environment channels are expected to differ; identity is not.
+            idf, idp = site_ids(rf[kf]), site_ids(rp[kp])
+            assert idf == idp, (f"{pdb}: site identity differs between the full and "
+                                f"stripped complex\n  full {idf}\n  pmhc {idp}")
+            assert np.array_equal(tf, tp), f"{pdb}: residue identities differ"
+
             native = "".join(ind_to_ol_size[int(i)] for i in tf)
             wt = df.loc[df.pdb == pdb, "wt_seq"].iloc[0]
             flag = "OK" if native == wt else f"MISMATCH (csv says {wt})"
-            print(f"  {pdb} chain {chain}: structure peptide {native}  {flag}")
-            cache[pdb] = dict(full_a=fa, full_b=fb, pmhc_a=pa, pmhc_b=pb, wt=wt)
+            # The WT looked up through our own indexing must equal the model's own
+            # target scoring, which is the assertion that would have caught the
+            # alphabetical-order bug on line one.
+            wt_lookup = float(fa[np.arange(len(tf)),
+                                 [ol_to_ind_size[a] for a in native]].sum())
+            wt_targets = float(fa[np.arange(len(tf)), tf].sum())
+            assert abs(wt_lookup - wt_targets) < 1e-9, (
+                f"{pdb}: lookup {wt_lookup} != targets {wt_targets}; "
+                "the amino-acid axis is being read in the wrong order")
+            print(f"  {pdb} chain {chain}: {len(idf)} sites, peptide {native}  {flag}"
+                  f"  [site-id and aa-axis checks pass]")
+            cache[pdb] = dict(full_a=fa, full_b=fb, pmhc_a=pa, pmhc_b=pb,
+                              wt=wt, sites=idf, native=native)
 
         def score(row, cond, conv):
             c = cache[row.pdb]
@@ -157,6 +197,8 @@ def main() -> int:
             df[c] = [f(r) for r in df.itertuples()]
 
         print(f"\n  {'scoring':<30}{'rho':>8}{'p':>9}{'published':>12}{'delta':>8}")
+        df["system"] = name
+        scores.append(df[["system", "name", "sequence", "pdb", target] + list(cols)])
         for c in cols:
             rho = spearmanr(df[c], df[target])
             ref = published.get("HERMES-fixed 0.00" if c.startswith("HERMES-fixed")
@@ -170,7 +212,10 @@ def main() -> int:
     # ---- the decisive cross-check -------------------------------------------
     # The repo ships the authors' own per-site log-probabilities for TAX, from
     # hermes_py_000. Scoring the same 16 peptides from THEIR numbers with OUR
-    # lookup separates "is our scoring right" from "is the model variant right".
+    # lookup separates "is our scoring right" from "is the model configuration
+    # right". NOTE bp and py differ in preprocessing *and* in trained weights,
+    # so a difference between them is a difference between two model pipelines,
+    # not an isolated parser effect.
     AU = REPO / "mutation_effects/tax/hermes_py_000_output.csv"
     cross = []
     if AU.exists():
@@ -220,11 +265,13 @@ def main() -> int:
                      f"{('%+.2f' % (r - ref)) if ref is not None else '—'} |")
     if cross:
         lines += ["", "## Cross-check: the authors' own log-probabilities", "",
-                  f"Feeding the published `hermes_py_000` per-site log-probabilities",
+                  "Feeding the published `hermes_py_000` per-site log-probabilities",
                   f"through the same lookup reproduces **ρ = {r_py:+.3f}** against a",
-                  f"published 0.63, so the scoring convention and the data handling are",
+                  "published 0.63, so the scoring convention and the data handling are",
                   f"correct. Our `hermes_bp_000` run scores **ρ = {r_bp:+.3f}** on the same",
-                  "peptides. The whole gap is the parser, not the implementation.", "",
+                  "peptides. The gap is the model configuration -- `bp` and `py` differ in",
+                  "both preprocessing and trained weights, so it cannot be attributed",
+                  "to the parser alone -- and not the implementation.", "",
                   "| structure | Pearson | Spearman | mean abs. difference |",
                   "|---|---:|---:|---:|"]
         for pdb, pe, sp, md in cross:
@@ -232,6 +279,9 @@ def main() -> int:
         lines += ["", "The per-cell log-probability landscapes agree at Pearson ~0.95, yet",
                   "the ranking of 16 single- and double-substitution peptides does not",
                   "survive the residual ~1.2 log units of disagreement."]
+    pd.concat(scores).to_csv(SCORES, index=False)
+    print(f"wrote {SCORES.relative_to(ROOT)}  (per-peptide scores; "
+          f"scripts/131 does the paired statistics from this, no GPU needed)")
     lines.append("")
     OUT.write_text("\n".join(lines) + "\n")
     print(f"wrote {OUT.relative_to(ROOT)}")

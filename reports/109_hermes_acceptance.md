@@ -13,7 +13,7 @@ whose HERMES rows use `hermes_py_000` (pyrosetta parser).
 | NY-ESO | dLL = full - TCR-removed | **+0.62** | 0.019 | — | — |
 | NY-ESO | BLOSUM62 | **+0.83** | 0.000 | 0.83 | +0.00 |
 | TAX | HERMES-fixed (mean logits) | **+0.19** | 0.485 | 0.63 | -0.44 |
-| TAX | HERMES-fixed (mean probs) | **+0.22** | 0.418 | 0.63 | -0.41 |
+| TAX | HERMES-fixed (mean probs) | **+0.26** | 0.327 | 0.63 | -0.37 |
 | TAX | dLL = full - TCR-removed | **+0.52** | 0.037 | — | — |
 | TAX | BLOSUM62 | **+0.56** | 0.023 | 0.56 | +0.00 |
 
@@ -23,7 +23,9 @@ Feeding the published `hermes_py_000` per-site log-probabilities
 through the same lookup reproduces **ρ = +0.626** against a
 published 0.63, so the scoring convention and the data handling are
 correct. Our `hermes_bp_000` run scores **ρ = +0.188** on the same
-peptides. The whole gap is the parser, not the implementation.
+peptides. The gap is the model configuration -- `bp` and `py` differ in
+both preprocessing and trained weights, so it cannot be attributed
+to the parser alone -- and not the implementation.
 
 | structure | Pearson | Spearman | mean abs. difference |
 |---|---:|---:|---:|

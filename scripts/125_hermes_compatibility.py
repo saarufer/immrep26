@@ -79,9 +79,13 @@ MODELS = Path(os.environ.get(
     "HERMES_MODELS", ROOT / "data/external/hermes/trained_models/hermes_bp_000"))
 
 OUT = ROOT / "data/interim/hermes_compat.csv"
-# E152: the per-site 20-way logits, which the first run computed and discarded.
-# One pair of inferences per complex scores every single-residue peptide variant
-# by lookup, so this is the cache any substitution-scanning work needs.
+# E152: the per-site 20-way distributions, which the first run computed and
+# discarded. One pair of inferences per complex scores every single-residue
+# peptide variant by lookup, so this is the cache any substitution-scanning work
+# needs. The arrays hold LOG-PROBABILITIES, not raw logits: each row is
+# log_softmax applied once to the seed-averaged logits. Keys are
+# `<tcr_id>|logprob_full`, `<tcr_id>|logprob_pmhc`, `<tcr_id>|target_idx`,
+# `<tcr_id>|site_ids`, `<tcr_id>|native_seq`, plus a single `aa_order`.
 OUT_LOGITS = ROOT / "data/interim/hermes_logits.npz"
 PROVENANCE = ROOT / "data/interim/hermes_provenance.json"
 
@@ -106,6 +110,23 @@ def strip_to_pmhc(src: Path, dst: Path) -> None:
     dst.write_text("\n".join(keep) + "\n")
 
 
+def site_ids(res: dict) -> list[tuple]:
+    """Ordered (resname, chain, resnum, insertion code) of the scored residues.
+
+    The pdb-name field is dropped: the stripped copy is written under a different
+    filename by construction. Channels that legitimately change when the TCR is
+    removed -- SASA above all -- are not compared.
+    """
+    ids = res.get("res_ids")
+    if ids is None:
+        return []
+    out = []
+    for r in np.asarray(ids):
+        f = [x.decode() if isinstance(x, (bytes, np.bytes_)) else str(x) for x in r]
+        out.append((f[0], f[2], f[3], f[4]))
+    return out
+
+
 def logprob_of_target(res: dict) -> tuple:
     """Ensemble at logits level, then log_softmax, then pick the observed aa.
 
@@ -127,6 +148,7 @@ def logprob_of_target(res: dict) -> tuple:
 def main() -> int:
     from hermes.inference.inference_hermes import (load_hermes_models,
                                                    predict_from_pdbfile)
+    from hermes.utils.protein_naming import ind_to_ol_size
     dirs = sorted(glob.glob(str(MODELS / "*seed=*")))
     assert dirs, f"no model seeds under {MODELS}"
     models, hp, _ = load_hermes_models(dirs)
@@ -170,11 +192,15 @@ def main() -> int:
     print(f"  {len(pdbs)} complexes to score\n")
     tmp = Path(tempfile.mkdtemp())
     rec = list(done.values())
-    logits: dict[str, np.ndarray] = {}
+    # HERMES orders its 20 outputs by residue SIZE, not alphabetically. Any
+    # consumer of this cache must read the axis through `aa_order`.
+    logits: dict[str, np.ndarray] = {
+        "aa_order": np.array("".join(ind_to_ol_size[i] for i in range(20)))}
     if OUT_LOGITS.exists():
-        with np.load(OUT_LOGITS) as z:
-            logits = {k: z[k] for k in z.files}
-        print(f"  {len(logits)//3} complexes already have cached logits")
+        with np.load(OUT_LOGITS, allow_pickle=False) as z:
+            logits.update({k: z[k] for k in z.files})
+        n_cached = sum(1 for k in logits if k.endswith("|logprob_full"))
+        print(f"  {n_cached} complexes already have cached log-probabilities")
     t0 = time.time()
     for i, p in enumerate(pdbs):
         p = Path(p)
@@ -201,9 +227,16 @@ def main() -> int:
             # (n_sites, 20) log-probabilities for both conditions, plus the
             # observed residue indices. Every single-residue peptide variant is
             # then a lookup rather than another fold.
-            logits[f"{tid}|full"] = lpf.astype(np.float32)
-            logits[f"{tid}|pmhc"] = lpp.astype(np.float32)
-            logits[f"{tid}|targets"] = tf.astype(np.int16)
+            idf, idp = site_ids(rf[kf]), site_ids(rp[kp])
+            if idf != idp:
+                raise ValueError("site identity differs between the full and "
+                                 "stripped complex")
+            logits[f"{tid}|logprob_full"] = lpf.astype(np.float32)
+            logits[f"{tid}|logprob_pmhc"] = lpp.astype(np.float32)
+            logits[f"{tid}|target_idx"] = tf.astype(np.int16)
+            logits[f"{tid}|site_ids"] = np.array(idf, dtype="U8")
+            logits[f"{tid}|native_seq"] = np.array(
+                "".join(ind_to_ol_size[int(i)] for i in tf))
         except Exception as e:
             rec.append(dict(tcr_id=tid, ll_full=np.nan, ll_pmhc=np.nan,
                             dll=np.nan, dll_mean=np.nan, n_sites=0))
@@ -221,8 +254,10 @@ def main() -> int:
     D = pd.DataFrame(rec)
     print(f"\nwrote {OUT.relative_to(ROOT)}  ({len(D)} rows, "
           f"{int(D.dll.notna().sum())} finite)")
+    n_cached = sum(1 for k in logits if k.endswith("|logprob_full"))
     print(f"wrote {OUT_LOGITS.relative_to(ROOT)}  "
-          f"({len(logits)//3} complexes x 2 conditions x (n_sites, 20))")
+          f"({n_cached} complexes x 2 conditions x (n_sites, 20) log-probabilities, "
+          f"aa_order={logits['aa_order']})")
     print(D[["ll_full", "ll_pmhc", "dll", "dll_mean"]].describe().to_string())
     return 0
 
