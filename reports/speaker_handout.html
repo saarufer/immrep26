@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IMMREP26 — 五分钟报告讲义 / Speaker's Handout</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+ :root{color-scheme:light;
+  --paper:#f4f5f2;--surface:#fcfcfa;--surface-2:#eceee8;
+  --ink:#1a2238;--ink-2:#3a4556;--muted:#6b7280;
+  --rule:#dcdcd2;--rule-2:#c9c9be;
+  --en:#2a6f7f;--en-soft:#e3eef0;--zh:#c4652a;--zh-soft:#f7ebe1;
+  --serif:"Spectral",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;}
+ @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --paper:#12161f;--surface:#1a1f2b;--surface-2:#232838;
+  --ink:#e8ecf2;--ink-2:#b4bdca;--muted:#8792a3;
+  --rule:#2e3443;--rule-2:#3c4356;
+  --en:#7fb2bf;--en-soft:#1d2d33;--zh:#e8a86b;--zh-soft:#2e2219;}}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.7 var(--sans)}
+ .wrap{max-width:980px;margin:0 auto;padding:52px 24px 110px}
+ header{border-bottom:2px solid var(--ink);padding-bottom:22px;margin-bottom:10px}
+ .eyebrow{font-size:12px;font-weight:600;letter-spacing:2.4px;text-transform:uppercase;color:var(--en);margin:0 0 10px}
+ h1{font-family:var(--serif);font-size:36px;line-height:1.14;font-weight:600;margin:0 0 10px}
+ h1 .sub{display:block;font-size:22px;color:var(--ink-2);font-weight:500;margin-top:6px}
+ .standfirst{font-size:16.5px;color:var(--ink-2);margin:0;max-width:72ch}
+ h2{font-family:var(--serif);font-size:26px;font-weight:600;margin:52px 0 6px;padding-top:26px;border-top:2px solid var(--rule-2)}
+ h3{font-size:15px;font-weight:600;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;margin:26px 0 8px}
+ p{margin:0 0 13px;max-width:78ch}
+ ul,ol{margin:0 0 13px;padding-left:22px;max-width:78ch}li{margin:0 0 8px}
+ .slide{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:22px 26px;margin:0 0 26px}
+ .slide .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:1.4px;
+   text-transform:uppercase;padding:3px 9px;border-radius:4px;margin-left:10px;vertical-align:3px}
+ .core{background:var(--en);color:#fff}.opt{background:var(--surface-2);color:var(--muted)}
+ .bak{background:var(--zh-soft);color:var(--zh)}
+ .slide h2{margin:0 0 4px;padding:0;border:0;font-size:23px}
+ .slide .zhtitle{font-size:17px;color:var(--ink-2);margin:0 0 14px}
+ .onscreen{font-size:14px;color:var(--muted);background:var(--surface-2);
+   border-radius:6px;padding:10px 14px;margin:0 0 16px}
+ .en,.zh{border-left:3px solid;padding:2px 0 2px 16px;margin:0 0 16px}
+ .en{border-color:var(--en)}.zh{border-color:var(--zh)}
+ .en .lbl,.zh .lbl{font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;display:block;margin-bottom:6px}
+ .en .lbl{color:var(--en)}.zh .lbl{color:var(--zh)}
+ .en p,.zh p{margin:0 0 10px}
+ .howto{background:var(--en-soft);border-radius:6px;padding:12px 16px;font-size:14.5px;margin:0 0 14px}
+ .howto b{color:var(--en)}
+ table{border-collapse:collapse;width:100%;margin:14px 0 20px;font-size:14.5px}
+ th,td{padding:7px 11px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+ thead th{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);
+   border-bottom:1.5px solid var(--rule-2)}
+ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+ code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:3px}
+ .gl{border-bottom:1px solid var(--rule);padding:12px 0}
+ .gl .term{font-weight:600;font-size:16px}
+ .gl .full{color:var(--en);font-size:14.5px;margin:2px 0}
+ .gl .zhx{color:var(--ink-2);font-size:14.5px;margin:2px 0}
+ .gl .note{color:var(--muted);font-size:14px;margin:4px 0 0}
+ .timing{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+ .timing div{background:var(--surface);border:1px solid var(--rule);border-radius:6px;
+   padding:8px 13px;font-size:14px}
+ .timing b{color:var(--en)}
+ footer{margin-top:46px;padding-top:18px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+ @media print{body{background:#fff}.wrap{max-width:none;padding:0}.slide{break-inside:avoid}}
+ @media (max-width:620px){.wrap{padding:30px 16px 70px}h1{font-size:27px}}
+</style>
+</head>
+<body><div class="wrap">
+
+<header>
+  <p class="eyebrow">IMMREP26 · Debrief · 5 minutes</p>
+  <h1>Speaker's handout<span class="sub">五分钟报告讲义 · 中英对照 · 每个缩写都解释</span></h1>
+  <p class="standfirst">Slide-by-slide script in English and Chinese, how to read each figure, where every
+  number comes from, a full glossary of abbreviations, and prepared answers. The deck is
+  <code>IMMREP26_5min.pptx</code>, 13 slides; six are marked CORE and make the five minutes.</p>
+  <div class="timing">
+    <div><b>Slide 1</b> 30 s · opening</div>
+    <div><b>Slide 2</b> 45 s · the task</div>
+    <div><b>Slide 3</b> 70 s · the idea</div>
+    <div><b>Slide 7</b> 60 s · the method</div>
+    <div><b>Slide 8</b> 45 s · where the signal is</div>
+    <div><b>Slide 9</b> 50 s · the result</div>
+  </div>
+</header>
+<h2>Slide-by-slide / 逐页讲稿</h2>
+
+<div class="slide">
+<h2>1 · A pair with close relatives is a pair that holds up<span class="tag core">core · 30 s</span></h2>
+<p class="zhtitle">有「近亲」的配对,才是站得住的配对</p>
+<div class="onscreen"><b>On screen:</b> dark cover, four figures — 0.819 / 0.768 / 94.3% / 0.</div>
+<div class="en"><span class="lbl">English</span>
+<p>Our best entry scored <b>0.819</b> on the private leaderboard, against the organisers' tcrdist3 baseline at 0.768. It is a fully unsupervised method: four distance measures, averaged with equal weights, and <b>zero fitted parameters in the aggregation</b>.</p>
+<p>The number I find more interesting is the last one. Our <em>highest public</em> submission was one of our <em>worst</em> private ones. I will come back to that.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>我们最好的一份提交在私榜上是 <b>0.819</b>,主办方的 tcrdist3 基线是 0.768。它是一个完全无监督的方法:四个距离度量等权平均,<b>聚合层零个拟合参数</b>。</p>
+<p>我觉得更有意思的是最后那个数字。我们<em>公榜最高</em>的那份提交,在私榜上反而是最差的之一。这一点我最后会回来讲。</p></div>
+</div>
+
+<div class="slide">
+<h2>2 · Not binding prediction — annotation reliability<span class="tag core">core · 45 s</span></h2>
+<p class="zhtitle">不是结合预测,是标注可信度</p>
+<div class="onscreen"><b>On screen:</b> three white cards, then a teal band with the metric.</div>
+<div class="en"><span class="lbl">English</span>
+<p>It is worth being precise about the task, because it is easy to hear it as specificity prediction. Every one of the 2,636 paired alpha-beta TCRs in <code>test.csv</code> is <em>already</em> reported in VDJdb as recognising its annotated peptide-HLA. We are not asked whether it binds.</p>
+<p>We are asked whether that published claim reproduces. Re-tested under one standardised functional screen, roughly 44% of previously reported pairs showed no reactivity. So this is a <b>database-auditing</b> problem.</p>
+<p>And the public half carries published labels, so the public leaderboard is a lookup — nineteen teams reached 0.984 or above. Only the 602 private rows, over three peptides never released, decide anything.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>任务要说准,因为它很容易被听成特异性预测。<code>test.csv</code> 里 2,636 条配对 αβ TCR,<em>每一条</em>都已经被 VDJdb 标注为识别某个肽-HLA。我们不是在判断它结不结合。</p>
+<p>我们是在问:这条已发表的声称,重做一遍还成立吗。在统一条件的功能筛选下重测,大约 44% 的既往报告没有反应。所以这是一个<b>数据库审计</b>问题。</p>
+<p>而且公开那一半的标签已经发表,所以公榜只是一次查表——十九支队伍达到 0.984 以上。真正算分的只有 602 行私榜数据,落在三个从未发布的肽上。</p></div>
+<div class="howto"><b>If asked about the metric:</b> mean per-epitope ROC-AUC with ambiguous rows dropped. Only the ranking <em>inside</em> an epitope is read, and each epitope carries equal weight, so a 130-row cohort counts as much as a 243-row one. <br><b>指标:</b> 表位内 ROC-AUC 再按表位等权平均,ambiguous 行剔除。只读表位<em>内部</em>的排序,130 行的队列和 243 行的队列权重相同。</div>
+</div>
+
+<div class="slide">
+<h2>3 · Real binders converge; artefacts are random draws<span class="tag core">core · 70 s</span></h2>
+<p class="zhtitle">真结合者趋同,假配对是随机抽取</p>
+<div class="onscreen"><b>On screen:</b> five histograms, one per public peptide, sorted by AUC. GLCTLVAML has an orange background.</div>
+<div class="en"><span class="lbl">English</span>
+<p>Our premise is one line of textbook immunology: T cells that recognise the same peptide-MHC converge on similar receptors — similar V-gene usage, similar CDR3 motifs.</p>
+<p>Turn that around. A TCR that entered the database through a technical artefact — tetramer background, barcode crosstalk, a mispaired alpha and beta chain from a single-cell experiment — is effectively a random draw from the repertoire. It has <em>no reason</em> to resemble anything else in its own cohort.</p>
+<p>So: <b>the real ones have company, the false ones sit alone.</b> This figure is that sentence. The x-axis is the distance from each TCR to its three nearest neighbours of the same peptide. Teal is validated, orange is not. Four of the five separate cleanly — validated pairs pile up on the left in crowded neighbourhoods, unvalidated pairs on the right, isolated.</p>
+<p>Look at the right-hand panel. GLCTLVAML, AUC <b>0.677</b>: the two distributions sit on top of each other. The same measure reaches 0.927 on YLQPRTFLL. I will come back to that too.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>我们的前提是免疫学里一句老话:识别同一个肽-MHC 的 T 细胞,受体会趋同——V 基因用得像,CDR3 带相似基序。</p>
+<p>反过来看。一条因技术假象进入数据库的 TCR——四聚体背景、条码串扰、单细胞实验里配错的 α/β 链——本质上是从整个受体库里随机掉出来的一条。它<em>没有理由</em>长得像自己队列里的任何人。</p>
+<p>所以:<b>真的有同行,假的落单。</b>这张图就是这句话。横轴是每条 TCR 到同肽最近三个邻居的距离,蓝绿是验证通过的,橙色是没通过的。五个里有四个分得很干净——验证过的堆在左边、邻域拥挤,没验证的堆在右边、孤零零。</p>
+<p>看最右边那格。GLCTLVAML,AUC <b>0.677</b>:两条分布几乎完全叠在一起。同一个量在 YLQPRTFLL 上能到 0.927。这一点我待会儿也会回来。</p></div>
+<div class="howto"><b>How to read it / 怎么读:</b> each panel is one public peptide. Bars are densities, so the two colours each integrate to 1 — the <em>overlap area</em> is the error the measure would make. Panels are sorted left to right by AUC, so the story reads itself. The small grey text gives the positive/negative counts.<br>
+每格是一个公开肽。条形是密度,两种颜色各自积分为 1——<em>重叠面积</em>就是这个量会犯的错。各格按 AUC 从高到低排,所以故事自己读得出来。灰色小字是正/负样本数。</div>
+</div>
+
+<div class="slide">
+<h2>4 · Every labelled TCR as a single point<span class="tag opt">optional · alternative to 3</span></h2>
+<p class="zhtitle">每条有标签的 TCR 一个点</p>
+<div class="onscreen"><b>On screen:</b> five strip plots; positives above each line, negatives below.</div>
+<div class="en"><span class="lbl">English</span>
+<p>The same quantity, unbinned. Positives above each line, negatives below. The two groups do separate — but <b>continuously</b>, not at a threshold. The dashed line at 0.12 is a radius the project used for analysis only; nothing in the submitted model uses it.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>同一个量,不分箱。正样本在每条线上方,负样本在下方。两群确实分开——但是<b>连续地</b>分开,不是被某条线分开。0.12 那条虚线是项目里只用于分析的半径;提交的模型里没有用到它。</p></div>
+<div class="howto">Use <em>either</em> slide 3 or slide 4 or slide 13, not two of them. Slide 3 is the most readable from the back of a room.<br>第 3、4、13 页三选一,不要放两张。第 3 页在后排最容易看清。</div>
+</div>
+
+<div class="slide">
+<h2>5 · The relation is smooth — there is no threshold to find<span class="tag opt">optional · 40 s</span></h2>
+<p class="zhtitle">关系是平滑的,找不到阈值</p>
+<div class="onscreen"><b>On screen:</b> validation rate against distance, one line per peptide, plus a thick black pooled line.</div>
+<div class="en"><span class="lbl">English</span>
+<p>This is the slide for anyone who asks why there is no clustering step. The black line pools all five public peptides. It slides from 0.9 down to 0.1 with <b>no step anywhere</b>: the largest single drop is &minus;0.216 against a mean step of 0.107, a ratio of only 2.0. A real threshold would show one step far larger than the rest.</p>
+<p>So "clustered versus singleton" is a <b>lossy binary summary</b> of a continuous quantity. That is why the submitted model uses k-nearest-neighbour distance and kernel density, and no clustering at all. Clustering appears only in the analysis layer, as single-linkage connected components at cosine distance 0.12.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>这页是留给"为什么不做聚类"这个问题的。黑色粗线是五个公开肽合并。它从 0.9 一路滑到 0.1,<b>任何一处都没有台阶</b>:最大单步 &minus;0.216,平均步长 0.107,比值只有 2.0。真有阈值的话,会有一步远远甩开其他。</p>
+<p>所以"成簇 vs 孤立"是一个连续量的<b>有损二值摘要</b>。这就是提交的模型用 k 近邻距离和核密度、完全不用聚类的原因。聚类只出现在分析层,是余弦距离 0.12 上的单连接连通分量。</p></div>
+</div>
+
+<div class="slide">
+<h2>6 · Sparseness is not a private-only problem<span class="tag opt">optional · 35 s</span></h2>
+<p class="zhtitle">稀疏不是私榜独有的问题</p>
+<div class="onscreen"><b>On screen:</b> cumulative distributions, one per peptide; the three private ones dashed and bold.</div>
+<div class="en"><span class="lbl">English</span>
+<p>This figure needs <b>no labels</b>, so the three hidden peptides can be drawn too — they are the dashed bold lines. The point: TTDPSFLGRY and NLVPMVATV are <em>public</em> and sparser than two of the three private cohorts. Median nearest-three distance runs GIL 0.190, GLC 0.214, LLW 0.414, CIN 0.447, YLQ 0.452, TTD 0.532, NLV 0.535, LTD 0.595.</p>
+<p>This is how we judged transfer before any private label existed: only LTDEMIAQY is sparser than every public cohort, so sparseness on its own was not a sufficient reason to expect a collapse.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>这张图<b>完全不需要标签</b>,所以三个隐藏的肽也画得出来——就是加粗的虚线。要点是:TTDPSFLGRY 和 NLVPMVATV 是<em>公开</em>的,却比三个私榜队列里的两个还稀疏。最近三邻距离的中位数依次是 GIL 0.190、GLC 0.214、LLW 0.414、CIN 0.447、YLQ 0.452、TTD 0.532、NLV 0.535、LTD 0.595。</p>
+<p>这就是私榜标签出现之前我们判断迁移的方式:只有 LTDEMIAQY 比所有公开队列都稀疏,所以光凭稀疏不足以预期崩盘。</p></div>
+</div>
+<div class="slide">
+<h2>7 · One question asked four ways, then averaged<span class="tag core">core · 60 s</span></h2>
+<p class="zhtitle">同一个问题问四遍,然后取平均</p>
+<div class="onscreen"><b>On screen:</b> four numbered cards with arrows between them, then a teal band.</div>
+<div class="en"><span class="lbl">English</span>
+<p>Four components, all computed <b>strictly within the peptide cohort</b>.</p>
+<p><b>One</b>, multi-space density: an exponential kernel density in three distance spaces — two SCEPTR embeddings at bandwidth 0.1, and paired alpha-plus-beta tcrdist3 at 20. Self-distances excluded.</p>
+<p><b>Two</b>, pooled reference support: the mean distance to the eight nearest same-peptide receptors after adding paired human VDJdb records, so that a small cohort still has somewhere to look.</p>
+<p><b>Three</b>, whole V-domain similarity: a top-eight alignment over the complete variable domain rather than CDR3 alone, so CDR1, CDR2 and the framework count.</p>
+<p><b>Four</b>, structural confidence: the minimum TCR-peptide predicted aligned error from a Boltz-2 model of the complex. It is the only term that does not look at neighbours.</p>
+<p>Each becomes a within-epitope percentile rank, and the four ranks are averaged with <b>equal weights</b>. Why not fit the weights? Because only five peptides are available to fit on and the score comes from three that are not. Any weighting that helps on the visible ones is a bet that they resemble the hidden ones. Equal weights make no bet — and leave nothing to overfit.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>四个分项,全部<b>严格在表位队列内部</b>计算。</p>
+<p><b>一</b>,多空间密度:三个距离空间上的指数核密度——两个 SCEPTR 嵌入,带宽 0.1;双链 α+β tcrdist3,带宽 20。排除自身距离。</p>
+<p><b>二</b>,参考池支持:加入配对人源 VDJdb 记录之后,到最近八条同肽受体的平均距离,好让小队列也有地方找近亲。</p>
+<p><b>三</b>,全 V 结构域相似性:在完整可变域而不是只在 CDR3 上做 top-8 比对,这样 CDR1、CDR2 和框架区也算数。</p>
+<p><b>四</b>,结构置信度:Boltz-2 建出的复合物里 TCR–肽最小预测对齐误差。它是唯一不看邻居的一项。</p>
+<p>每一项转成表位内百分位名次,四个名次<b>等权</b>平均。为什么不去拟合权重?因为能用来拟合的只有五个肽,而计分的是另外三个。任何"在可见的那五个上更好"的权重,本质上是在赌它们像那三个。等权不下这个赌注——也因此没有东西可以过拟合。</p></div>
+</div>
+
+<div class="slide">
+<h2>8 · A density model with three corrections<span class="tag core">core · 45 s</span></h2>
+<p class="zhtitle">一个密度模型加三项修正</p>
+<div class="onscreen"><b>On screen:</b> left, four horizontal bars with dots; right, a four-step ladder with an orange bracket.</div>
+<div class="en"><span class="lbl">English</span>
+<p>Left panel: each of the four terms scored on its own. Bars are the macro average, dots are the five public peptides. The three distance measures land at 0.851, 0.843 and 0.832; the structural term is the weakest at 0.757 — and on TTDPSFLGRY it falls to 0.629.</p>
+<p>Right panel: the ladder. A single SCEPTR density alone is 0.8396. Adding structure takes it to 0.8498, the V-domain to 0.8557, the pooled reference to 0.8600. So the first term alone is <b>0.3396 of the 0.3600 above chance — 94.3%</b>, and the other three together buy +0.0204.</p>
+<p>I want to be explicit about what that means: this is <b>not</b> a structure model with some density help. It is a density model, and structure is the weakest of its four terms.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>左图:四个分项各自单独评分。条形是宏平均,圆点是五个公开肽。三个距离度量落在 0.851、0.843、0.832;结构项最弱,0.757——在 TTDPSFLGRY 上更是只有 0.629。</p>
+<p>右图:阶梯。单一 SCEPTR 密度自己是 0.8396。加上结构到 0.8498,加 V 结构域到 0.8557,加参考池到 0.8600。所以第一项自己就占了<b>高于随机的 0.3600 里的 0.3396,即 94.3%</b>,其余三项加起来只买到 +0.0204。</p>
+<p>我想把这句话说明白:这<b>不是</b>一个带点密度辅助的结构模型。它是一个密度模型,而结构是四项里最弱的一项。</p></div>
+<div class="howto"><b>"Above chance" / 「高于随机」:</b> an AUC of 0.5 is chance, so the usable range is 0.5 to 1.0. D reaches 0.8600, i.e. 0.3600 above chance; a single density reaches 0.8396, i.e. 0.3396. The ratio is 94.3%.<br>
+AUC 0.5 是随机,所以可用区间是 0.5 到 1.0。D 到 0.8600,即高于随机 0.3600;单一密度到 0.8396,即 0.3396。比值 94.3%。</div>
+</div>
+
+<div class="slide">
+<h2>9 · The simplest entry won<span class="tag core">core · 50 s</span></h2>
+<p class="zhtitle">最朴素的那一份赢了</p>
+<div class="onscreen"><b>On screen:</b> left, a slope chart of our five entries; right, all 165 scored entries by rank.</div>
+<div class="en"><span class="lbl">English</span>
+<p>Left: our five entries, public on the left of each line, private on the right. The ordering is close to <b>reversed</b>. Our consensus entry went 0.882 public to 0.811 private; the nine-refinement entry 0.871 to 0.810; and the plainest four-term average, 0.860 public, scored <b>0.819</b> — the best of all of them.</p>
+<p>We quantified that. On a bootstrap of the public rows shaped like the private split, the consensus was expected to beat the plain average by <b>+0.022 plus or minus 0.006</b>. The realised margin was <b>&minus;0.008</b>. That is about five paired standard deviations, so the relationship genuinely changed between the public and the private peptides.</p>
+<p>Right: the whole board. Seven entries sit at 0.95 and above, then the field drops to 0.846 and declines smoothly to 0.467. We are the circled point. The shaded band is the gap two unrelated methods would need to be told apart at 95% confidence — 0.047 — and <b>35 of 107 teams sit inside it</b>. The top third of the honest field is one large tie.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>左图:我们五份提交,每条线左端是公榜、右端是私榜。顺序几乎<b>翻转</b>了。共识那一份从公榜 0.882 掉到私榜 0.811;加了九项修正的从 0.871 到 0.810;而最朴素的四项等权平均,公榜 0.860,私榜 <b>0.819</b>——是全部里最好的。</p>
+<p>这个我们量过。在一个按私榜形状构造的公开行自助重采样上,共识对朴素平均的预期优势是 <b>+0.022 ± 0.006</b>。实际是 <b>&minus;0.008</b>。相当于约五个配对标准差,所以公开肽和私榜肽之间的关系确实变了。</p>
+<p>右图:整个榜单。七份提交在 0.95 以上,然后掉到 0.846,再平滑下降到 0.467。圈出来的是我们。阴影带是两个不相关方法要在 95% 置信度下分出高下所需的差距——0.047——而<b>107 支队伍里有 35 支落在里面</b>。诚实组的前三分之一是一个大并列。</p></div>
+<div class="howto"><b>Note on the two rank numbers / 两个名次的说明:</b> the circled point sits at position 34 on the x-axis, which counts <em>submissions</em>. "19th of 107" counts <em>teams</em>, after collapsing multi-account clusters and removing the seven label-recovery entries. Say one of them out loud, not both.<br>
+圈出的点在横轴第 34 位,那是按<em>提交</em>数的排名。"107 支队伍里第 19"是按<em>队伍</em>算的,已并掉多账号集群并移除七份查表提交。口头只说一个,不要两个都说。</div>
+</div>
+
+<div class="slide">
+<h2>10 · GLCTLVAML: the premise does not hold<span class="tag opt">recommended · 35 s</span></h2>
+<p class="zhtitle">GLCTLVAML:前提不成立</p>
+<div class="onscreen"><b>On screen:</b> the GLC score distribution, plus an orange box of text.</div>
+<div class="en"><span class="lbl">English</span>
+<p>I would rather volunteer the failure than be asked about it. On GLCTLVAML the validated and non-validated receptors sit on top of each other. Density alone reaches 0.927 on YLQPRTFLL and 0.677 here.</p>
+<p>And it is not a structural story either. Across six geometric spread measures this cohort ranks 4.3 of 6 — unexceptional — and its per-position contact footprint matches the other HLA-A*02:01 nonamers. Across roughly 150 experiments nothing recovered it. The method depends on within-cohort convergence; where there is none, there is nothing to measure.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>与其被问到,不如主动讲。在 GLCTLVAML 上,验证过和没验证过的受体完全叠在一起。单独密度在 YLQPRTFLL 上到 0.927,在这里只有 0.677。</p>
+<p>而且这也不是一个结构故事。在六个几何展度量上,这个队列平均排 4.3/6——毫不特殊——它的逐位接触足迹和其他 HLA-A*02:01 九肽一致。大约 150 个实验里没有一个救回来。这个方法依赖队列内部的趋同;哪里没有趋同,哪里就没有东西可量。</p></div>
+</div>
+
+<div class="slide">
+<h2>11 · Five independent channels, one shape<span class="tag opt">optional · 45 s</span></h2>
+<p class="zhtitle">五条独立通道,同一个形状</p>
+<div class="onscreen"><b>On screen:</b> dark slide, a five-row table, then a summary band.</div>
+<div class="en"><span class="lbl">English</span>
+<p>This is the slide I would keep for a methodological audience. Five channels, five genuinely different knowledge sources: wet-lab negatives, atomic chemistry, docking quality, general protein statistics, and a composition null.</p>
+<p>The middle column is the residual after the model is removed — that is, how much each channel still predicts once what the model already knows is taken out. The floor is 0.5098. All five land between the floor and 0.5609, and <b>none of them converts to ranking gain</b>.</p>
+<p>HERMES is the cleanest of the five on provenance: it has never seen a TCR, a pMHC, or a binding label. That it also gives exactly +0.0000 is the strongest form the result can take.</p></div>
+<div class="zh"><span class="lbl">中文</span>
+<p>这页是给方法学听众留的。五条通道,五个真正不同的知识来源:湿实验阴性、原子化学、对接质量、通用蛋白统计、组成零假设。</p>
+<p>中间那列是去掉模型之后的残差——也就是把模型已经知道的东西扣掉之后,每条通道还能预测多少。地板是 0.5098。五条全部落在地板和 0.5609 之间,而且<b>没有一条转化成排序增益</b>。</p>
+<p>HERMES 在来源上是最干净的一条:它从没见过 TCR、没见过 pMHC、没见过任何结合标签。它同时给出恰好 +0.0000,是这个结论能有的最强形式。</p></div>
+<div class="howto"><b>Caveat to state if pressed / 被追问时要说的:</b> the HERMES row was computed with the <code>hermes_bp_000</code> checkpoint (biopython preprocessing). The paper's own benchmark row uses <code>hermes_py_000</code> (pyrosetta), and on a 16-peptide panel those two configurations differ by 0.44 in Spearman. So the honest phrasing is "under the bp configuration".<br>
+HERMES 那一行用的是 <code>hermes_bp_000</code>(biopython 预处理)。论文自己的 benchmark 行用的是 <code>hermes_py_000</code>(pyrosetta),在一个 16 肽面板上两种配置的 Spearman 相差 0.44。所以严谨说法是"在 bp 配置下"。</div>
+</div>
+
+<div class="slide">
+<h2>12 · Cohort similarity map<span class="tag bak">backup only</span></h2>
+<p class="zhtitle">队列相似度图(备份页)</p>
+<div class="en"><span class="lbl">English</span><p>Answer slide, not a talking slide. It shows which public cohort each private cohort resembles. TTDPSFLGRY is the analogue — not GILGFVFTL and not GLCTLVAML. Useful if someone asks how we chose a public stand-in for the hidden peptides.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>答问页,不是讲述页。它显示每个私榜队列更像哪个公开队列。类比对象是 TTDPSFLGRY——不是 GILGFVFTL,也不是 GLCTLVAML。如果有人问我们怎么给隐藏的肽挑公开替身,用这页。</p></div>
+</div>
+
+<div class="slide">
+<h2>13 · The histograms as the original report drew them<span class="tag opt">duplicate of 3</span></h2>
+<p class="zhtitle">原报告版的直方图(第 3 页的另一种画法)</p>
+<div class="en"><span class="lbl">English</span><p>Same quantity as slide 3, in the project's own earlier styling. Keep whichever reads better on the day, and delete the other.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>和第 3 页同一个量,用项目早期的画法。当天哪个读起来更好就留哪个,另一个删掉。</p></div>
+</div>
+<h2>缩写与术语表 / Glossary</h2>
+<p>Every abbreviation that appears on a slide, in the script, or in a figure — with its full form, its Chinese name, and what it actually means here. 每一个出现在幻灯片、讲稿或图上的缩写:全称、中文名,以及它在这里的实际含义。</p>
+<h3>免疫学与分子 / Immunology and molecules</h3>
+<div class="gl"><div class="term">TCR</div><div class="full">T-cell receptor</div><div class="zhx">T 细胞受体</div><div class="note">The surface protein a T cell uses to recognise antigen, made of two chains, α and β. 由 α、β 两条链组成的表面受体,T 细胞用它识别抗原。</div></div>
+<div class="gl"><div class="term">αβ TCR / paired TCR</div><div class="full">alpha-beta T-cell receptor</div><div class="zhx">配对 αβ TCR</div><div class="note">Both chains known for the same cell. Many database entries have only one; every row here has both. 同一个细胞的两条链都已知。很多数据库条目只有一条,本竞赛每一行两条都有。</div></div>
+<div class="gl"><div class="term">pMHC</div><div class="full">peptide–major histocompatibility complex</div><div class="zhx">肽-主要组织相容性复合物</div><div class="note">The antigen as the T cell actually sees it: a short peptide held in the groove of an MHC molecule. 抗原在 T 细胞眼里的实际形态:一段短肽嵌在 MHC 分子的凹槽里。</div></div>
+<div class="gl"><div class="term">MHC</div><div class="full">major histocompatibility complex</div><div class="zhx">主要组织相容性复合物</div><div class="note">The presenting molecule. Class I presents to CD8+ T cells and is what this task uses. 呈递分子。I 类呈递给 CD8+ T 细胞,本任务用的就是 I 类。</div></div>
+<div class="gl"><div class="term">HLA</div><div class="full">human leukocyte antigen</div><div class="zhx">人类白细胞抗原</div><div class="note">The human name for MHC. Written like HLA-A*02:01 — gene A, allele group 02, protein 01. 人类的 MHC 叫法。写法如 HLA-A*02:01:A 基因、02 等位基因组、01 蛋白。</div></div>
+<div class="gl"><div class="term">β2m</div><div class="full">beta-2 microglobulin</div><div class="zhx">β2 微球蛋白</div><div class="note">The invariant small chain of every class-I MHC; chain B in the crystal structures used here. 每个 I 类 MHC 都有的不变小链;本文用到的晶体结构里是 B 链。</div></div>
+<div class="gl"><div class="term">α1 / α2 helices</div><div class="full">alpha-1 and alpha-2 helices</div><div class="zhx">α1 / α2 螺旋</div><div class="note">The two MHC helices that form the peptide groove and that the TCR docks across. Residues 57–84 and 138–176. 形成肽槽、TCR 斜跨其上的两条 MHC 螺旋。残基 57–84 与 138–176。</div></div>
+<div class="gl"><div class="term">CDR</div><div class="full">complementarity-determining region</div><div class="zhx">互补决定区</div><div class="note">The receptor variable loops. CDR1 and CDR2 come from the V gene and mostly touch MHC; CDR3 spans the V–(D)–J junction, is the most variable, and mostly touches the peptide. 受体的可变环。CDR1、CDR2 来自 V 基因、主要接触 MHC;CDR3 跨 V–(D)–J 接合处,变异最大,主要接触肽。</div></div>
+<div class="gl"><div class="term">V / D / J genes</div><div class="full">variable / diversity / joining gene segments</div><div class="zhx">可变 / 多样性 / 连接基因片段</div><div class="note">The germline segments that recombine to make a receptor chain. 重组成一条受体链的胚系片段。</div></div>
+<div class="gl"><div class="term">TRAV / TRAJ / TRBV / TRBD / TRBJ</div><div class="full">T-cell Receptor Alpha or Beta, Variable / Diversity / Joining</div><div class="zhx">TCR α、β 链的 V、D、J 基因</div><div class="note">Standard IMGT names: TRAV is the alpha V gene, TRBV the beta V gene, and so on. IMGT 标准命名。</div></div>
+<div class="gl"><div class="term">V domain</div><div class="full">variable domain</div><div class="zhx">可变结构域</div><div class="note">A chain complete variable region: all three CDRs plus the framework scaffolding between them. 一条链完整的可变区:三个 CDR 加上它们之间的框架支架。</div></div>
+<div class="gl"><div class="term">epitope</div><div class="zhx">表位</div><div class="note">Here, the peptide presented by MHC. The competition splits its data by epitope. 这里指被 MHC 呈递的那段肽。竞赛按表位切分数据。</div></div>
+<div class="gl"><div class="term">nonamer</div><div class="zhx">九肽</div><div class="note">A nine-residue peptide. Six of the eight epitopes here are HLA-A*02:01 nonamers. 九个残基的肽。这里八个表位里有六个是 HLA-A*02:01 九肽。</div></div>
+<div class="gl"><div class="term">clonotype</div><div class="zhx">克隆型</div><div class="note">One receptor sequence identity — here the paired CDR3α / CDR3β combination. 一个受体序列身份——这里是配对的 CDR3α/CDR3β 组合。</div></div>
+<div class="gl"><div class="term">repertoire</div><div class="zhx">受体库</div><div class="note">The whole population of receptors in an individual or a dataset. 一个个体或一个数据集里全部受体的集合。</div></div>
+<div class="gl"><div class="term">tetramer / multimer</div><div class="full">pMHC tetramer</div><div class="zhx">四聚体 / 多聚体</div><div class="note">A fluorescent bundle of pMHC used to fish out T cells that bind it, and a major source of the false positives this task audits. 带荧光的 pMHC 捆绑体,用来钓出能结合它的 T 细胞,也是本任务要审计的假阳性主要来源之一。</div></div>
+<div class="gl"><div class="term">CD69</div><div class="zhx">CD69</div><div class="note">An early T-cell activation marker. Sorting on it is how the reference screen decides a pair is reactive. T 细胞早期活化标志物。参考筛选按它分选来判定一对是否有反应。</div></div>
+<div class="gl"><div class="term">ORF</div><div class="full">open reading frame</div><div class="zhx">开放阅读框</div><div class="note">Here a gene annotation status: one private row carries TRBV23-1, an ORF outside the embedding model vocabulary. 这里指基因的注释状态:有一行私榜数据带 TRBV23-1,是嵌入模型词表之外的 ORF。</div></div>
+<div class="gl"><div class="term">germline</div><div class="zhx">胚系</div><div class="note">Encoded in inherited gene segments rather than created by junctional recombination. 由遗传来的基因片段编码,而非接合重组产生。</div></div>
+<h3>数据库与数据集 / Databases and datasets</h3>
+<div class="gl"><div class="term">VDJdb</div><div class="zhx">VDJdb</div><div class="note">The public database of reported TCR–pMHC pairs that this competition audits. 本竞赛所审计的、已报告 TCR–pMHC 配对的公共数据库。</div></div>
+<div class="gl"><div class="term">TCRvdb</div><div class="full">TCR validated database</div><div class="zhx">经功能验证的 TCR 数据库</div><div class="note">The functional re-test results. Request-only; its terms prohibit redistribution. 功能复测的结果。需申请获取,条款禁止再分发。</div></div>
+<div class="gl"><div class="term">IEDB</div><div class="full">Immune Epitope Database</div><div class="zhx">免疫表位数据库</div><div class="note">A second public epitope database, used by one collaborator to top up a reference pool. 另一个公共表位数据库,一位合作者用它补充参考池。</div></div>
+<div class="gl"><div class="term">IMGT</div><div class="full">ImMunoGeneTics information system</div><div class="zhx">国际免疫遗传学信息系统</div><div class="note">The naming authority for V/D/J genes and HLA alleles. V/D/J 基因与 HLA 等位基因的命名权威。</div></div>
+<div class="gl"><div class="term">PDB / mmCIF</div><div class="full">Protein Data Bank / macromolecular Crystallographic Information File</div><div class="zhx">蛋白质数据库 / 大分子晶体学信息文件</div><div class="note">The archive of experimentally solved structures, and its modern file format. 实验解析结构的档案库,以及它的现代文件格式。</div></div>
+<div class="gl"><div class="term">SRA</div><div class="full">Sequence Read Archive</div><div class="zhx">序列读段档案库</div><div class="note">The NCBI repository of raw sequencing data. NCBI 的原始测序数据仓库。</div></div>
+<div class="gl"><div class="term">BioProject / PRJNA</div><div class="zhx">生物项目编号</div><div class="note">An NCBI accession grouping one study deposits. PRJNA1464244 holds raw screens for all eight peptides. NCBI 用来归并一项研究全部沉积数据的编号。PRJNA1464244 里有全部八个肽的原始筛选数据。</div></div>
+<div class="gl"><div class="term">ONT</div><div class="full">Oxford Nanopore Technologies</div><div class="zhx">牛津纳米孔测序</div><div class="note">The long-read sequencing platform used by that deposit. 该沉积数据所用的长读长测序平台。</div></div>
+<div class="gl"><div class="term">Kaggle</div><div class="zhx">Kaggle</div><div class="note">The platform hosting the competition and the source of both leaderboards. 举办本竞赛的平台,两张榜单的来源。</div></div>
+<h3>模型与工具 / Models and tools</h3>
+<div class="gl"><div class="term">SCEPTR</div><div class="full">Simple Contrastive Embedding of the Primary sequence of T-cell Receptors</div><div class="zhx">TCR 一级序列的对比嵌入模型</div><div class="note">A self-supervised TCR language model. Takes TRAV, CDR3α, TRAJ, TRBV, CDR3β and TRBJ, returns a 64-dimensional vector, and never sees a binding label. 自监督的 TCR 语言模型。输入这六个字段,输出 64 维向量,从未见过结合标签。</div></div>
+<div class="gl"><div class="term">tcrdist3</div><div class="zhx">tcrdist3</div><div class="note">A hand-designed biochemical distance between TCRs: BLOSUM substitution costs weighted by CDR loop, plus gap penalties. 手工设计的 TCR 间生化距离:按 CDR 环加权的 BLOSUM 替换代价加 gap 惩罚。</div></div>
+<div class="gl"><div class="term">Boltz-2</div><div class="zhx">Boltz-2</div><div class="note">An open structure-prediction model in the AlphaFold family, used here to fold all 2,636 complexes. AlphaFold 同类的开源结构预测模型,这里用它折叠全部 2,636 个复合物。</div></div>
+<div class="gl"><div class="term">AF3 / AlphaFold3</div><div class="zhx">AlphaFold3</div><div class="note">DeepMind structure predictor; the organisers structural baseline used its minimum PAE. DeepMind 的结构预测器;主办方的结构基线用的是它的最小 PAE。</div></div>
+<div class="gl"><div class="term">MSA</div><div class="full">multiple sequence alignment</div><div class="zhx">多序列比对</div><div class="note">The evolutionary input most folding models use. Ours were run with EMPTY MSAs. 多数折叠模型使用的进化信息输入。我们是用空 MSA 跑的。</div></div>
+<div class="gl"><div class="term">HERMES</div><div class="zhx">HERMES</div><div class="note">A rotationally equivariant network that predicts which amino acid belongs at a masked position from its local atomic neighbourhood. Pre-trained on general protein structures, never on binding data. 旋转等变网络,从局部原子邻域预测被遮住的位置该是哪种氨基酸。在通用蛋白结构上预训练,从未见过结合数据。</div></div>
+<div class="gl"><div class="term">BLOSUM62</div><div class="full">BLOcks SUbstitution Matrix</div><div class="zhx">BLOSUM62 替换矩阵</div><div class="note">The standard amino-acid substitution score table, and our sequence baseline. 标准的氨基酸替换打分表,也是我们的序列基线。</div></div>
+<div class="gl"><div class="term">Needleman–Wunsch</div><div class="zhx">Needleman–Wunsch 算法</div><div class="note">Global sequence alignment, used for the whole-V-domain distance with BLOSUM62, gap open 11 and extend 1. 全局序列比对,用于全 V 结构域距离,配 BLOSUM62、gap open 11、extend 1。</div></div>
+<div class="gl"><div class="term">OLGA / Pgen</div><div class="full">generation probability of a receptor</div><div class="zhx">受体生成概率</div><div class="note">How likely a receptor is to arise from random V(D)J recombination. Tested and found unhelpful here. 一条受体由随机 V(D)J 重组产生的概率。测过,在这里没有帮助。</div></div>
+<div class="gl"><div class="term">reduce</div><div class="zhx">reduce</div><div class="note">The program that places hydrogen atoms on a structure. HERMES bp models take hydrogens as a trained input channel, so it is part of the method, not a formality. 给结构加氢原子的程序。HERMES 的 bp 模型把氢当作训练输入通道,所以它是方法的一部分,不是形式。</div></div>
+<div class="gl"><div class="term">biopython / PyRosetta parser</div><div class="zhx">biopython / PyRosetta 解析器</div><div class="note">The two structure-preprocessing paths HERMES ships. hermes_bp_* uses biopython, hermes_py_* uses PyRosetta, and they are SEPARATELY TRAINED weights, not one model with two front ends. HERMES 提供的两条结构预处理路径。两者是各自训练的权重,不是同一个模型的两个前端。</div></div>
+<h3>结构量 / Structural quantities</h3>
+<div class="gl"><div class="term">PAE</div><div class="full">predicted aligned error</div><div class="zhx">预测对齐误差</div><div class="note">The folding model own estimate, in ångströms, of how wrong the relative placement of two parts of the structure is. Lower is more confident; we use the minimum over TCR–peptide residue pairs. 折叠模型自己给出的估计,单位埃,表示结构两部分相对位置可能错多少。越低越自信;我们取 TCR–肽残基对上的最小值。</div></div>
+<div class="gl"><div class="term">ipTM / pTM</div><div class="full">interface predicted TM-score / predicted TM-score</div><div class="zhx">界面预测 TM 分数 / 预测 TM 分数</div><div class="note">Global confidence scores from folding models; ipTM is restricted to the interface. 折叠模型的全局置信度分数;ipTM 限定在界面上。</div></div>
+<div class="gl"><div class="term">pLDDT</div><div class="full">predicted Local Distance Difference Test</div><div class="zhx">预测的局部距离差异测试分</div><div class="note">Per-residue structural confidence. 逐残基的结构置信度。</div></div>
+<div class="gl"><div class="term">pDockQ / ipSAE</div><div class="full">predicted DockQ / interface Score of Alignment Error</div><div class="zhx">预测对接质量 / 界面比对误差分</div><div class="note">Two published scores summarising how good a predicted interface looks. Both tested here; neither converted to gain. 两个已发表的、概括预测界面质量的分数。都测过,都没有转化成增益。</div></div>
+<div class="gl"><div class="term">SASA</div><div class="full">solvent-accessible surface area</div><div class="zhx">溶剂可及表面积</div><div class="note">How exposed an atom is. One of HERMES input channels, and a quantity that legitimately changes when the TCR is deleted. 一个原子有多暴露。它是 HERMES 的输入通道之一,也是删掉 TCR 后会合理改变的量。</div></div>
+<div class="gl"><div class="term">BSA</div><div class="full">buried surface area</div><div class="zhx">埋藏表面积</div><div class="note">How much surface two partners hide from solvent by touching. 两个伙伴通过接触从溶剂中藏起来的表面积。</div></div>
+<div class="gl"><div class="term">contact fingerprint</div><div class="zhx">接触指纹</div><div class="note">A 60-value vector: 2 chains × 10 peptide positions × 3 descriptors, indexed BY PEPTIDE POSITION — which is what lets two TCRs be compared by WHERE they touch. 60 维向量:2 条链 × 10 个肽位 × 3 个描述符,按肽位索引——所以能比较两条 TCR 碰在哪里。</div></div>
+<div class="gl"><div class="term">crossing angle</div><div class="zhx">交叉角</div><div class="note">The angle at which the TCR lies across the MHC groove. TCR 斜跨 MHC 凹槽的角度。</div></div>
+<h3>统计与验证 / Statistics and validation</h3>
+<div class="gl"><div class="term">ROC</div><div class="full">receiver operating characteristic</div><div class="zhx">受试者工作特征曲线</div><div class="note">The curve of true-positive against false-positive rate as a threshold moves. 阈值移动时,真阳性率对假阳性率画出的曲线。</div></div>
+<div class="gl"><div class="term">AUC</div><div class="full">area under the ROC curve</div><div class="zhx">ROC 曲线下面积</div><div class="note">Probability that a randomly chosen positive ranks above a randomly chosen negative. 0.5 is chance, 1.0 is perfect. 随机抽一个正样本排在随机抽一个负样本之上的概率。0.5 是随机,1.0 是完美。</div></div>
+<div class="gl"><div class="term">macro-AUC</div><div class="full">macro-averaged AUC</div><div class="zhx">宏平均 AUC</div><div class="note">AUC computed separately inside each epitope, then averaged with equal weight per epitope. This is the competition metric. 在每个表位内部各算一个 AUC,再按表位等权平均。这就是竞赛指标。</div></div>
+<div class="gl"><div class="term">Spearman ρ</div><div class="full">Spearman rank correlation</div><div class="zhx">Spearman 秩相关</div><div class="note">Correlation of ranks rather than values; used for the affinity panels. 用名次而不是数值算的相关;用于亲和力面板。</div></div>
+<div class="gl"><div class="term">Kd</div><div class="full">dissociation constant</div><div class="zhx">解离常数</div><div class="note">A measured binding affinity. Lower Kd means tighter binding, so panels plot minus log10 of Kd. 实测的结合亲和力。Kd 越低结合越紧,所以面板画的是 −log10(Kd)。</div></div>
+<div class="gl"><div class="term">LOEO</div><div class="full">leave-one-epitope-out</div><div class="zhx">留一表位交叉验证</div><div class="note">Fit or tune on all epitopes but one, evaluate on the held-out epitope. The only honest split here: random splits leak, because near-identical clonotypes land on both sides. 除一个表位外全部用于拟合/调参,在留出的表位上评估。这里唯一诚实的切分方式:随机切分会泄漏,因为近乎相同的克隆型会同时落在两边。</div></div>
+<div class="gl"><div class="term">nested LOEO</div><div class="zhx">嵌套 LOEO</div><div class="note">LOEO with the configuration choice made inside the loop, so the reported number pays for the selection. 把配置选择也放进循环内部的 LOEO,报出的数字因此付了选择的代价。</div></div>
+<div class="gl"><div class="term">permutation null</div><div class="zhx">置换零假设</div><div class="note">Re-run the whole selection on shuffled labels to see how large a gain pure noise produces. Here that null has sd 0.0076 and a maximum of +0.0203. 在打乱的标签上把整套选择重跑一遍,看纯噪声能产生多大增益。这里零假设的 sd 是 0.0076,最大 +0.0203。</div></div>
+<div class="gl"><div class="term">bootstrap</div><div class="zhx">自助重采样</div><div class="note">Resample rows with replacement many times to get an interval around a statistic. 对行做有放回重采样多次,给统计量算一个区间。</div></div>
+<div class="gl"><div class="term">jackknife / leave-one-out</div><div class="zhx">刀切法 / 留一</div><div class="note">Drop each observation in turn; the spread of the result shows whether a single point drives it. 逐个删掉每个观测;结果的跨度显示是不是某一个点在驱动它。</div></div>
+<div class="gl"><div class="term">sd / CI</div><div class="full">standard deviation / confidence interval</div><div class="zhx">标准差 / 置信区间</div><div class="note">Spread, and the interval that would cover the truth in 95% of repetitions. 离散程度,以及在 95% 的重复中会覆盖真值的区间。</div></div>
+<div class="gl"><div class="term">residual-on-D</div><div class="zhx">对 D 的残差</div><div class="note">Regress a candidate feature on the model own score, then ask how well the LEFTOVER predicts. It tests new information rather than re-encoded information. The floor here is 0.5098. 把候选特征对模型自己的分数做回归,再问剩下的部分能预测多少。它检验的是新信息,不是重新编码的旧信息。这里地板是 0.5098。</div></div>
+<div class="gl"><div class="term">typicality gate</div><div class="zhx">典型性门槛</div><div class="note">A standing check that a new feature is not simply re-measuring how typical a receptor is. 一道常设检查,确认新特征不是在重新测量受体的典型程度。</div></div>
+<div class="gl"><div class="term">k-NN</div><div class="full">k-nearest neighbours</div><div class="zhx">k 近邻</div><div class="note">The k closest points to a query; our density terms use k = 8, or the nearest three. 距离查询点最近的 k 个点;我们的密度项用 k = 8 或最近三个。</div></div>
+<div class="gl"><div class="term">kernel density / bandwidth</div><div class="zhx">核密度 / 带宽</div><div class="note">A smooth measure of how crowded a neighbourhood is; the bandwidth sets what counts as near. 对邻域拥挤程度的平滑度量;带宽决定多近算近。</div></div>
+<div class="gl"><div class="term">percentile rank</div><div class="zhx">百分位名次</div><div class="note">A score position within its own epitope, from 0 to 1. Averaging ranks rather than raw scores makes incomparable quantities comparable. 一个分数在它自己表位内的位置,0 到 1。平均名次而不是原始分数,能让不可比的量变得可比。</div></div>
+<div class="gl"><div class="term">TwoNN / LID</div><div class="full">two-nearest-neighbour estimator of local intrinsic dimensionality</div><div class="zhx">局部本征维度的两近邻估计</div><div class="note">Whether a neighbourhood is a flat sheet or a thin thread — sparseness in a different sense. 一个邻域是摊开的一片还是挤成一条线——另一种意义上的稀疏。</div></div>
+<div class="gl"><div class="term">nn3</div><div class="zhx">nn3</div><div class="note">Shorthand for the mean distance to the three nearest same-epitope neighbours; the x-axis of the main figure. 到同表位最近三个邻居的平均距离的简写;主图的横轴。</div></div>
+<div class="gl"><div class="term">Levenshtein distance</div><div class="full">edit distance</div><div class="zhx">编辑距离</div><div class="note">The number of single-character insertions, deletions or substitutions between two strings. 两个字符串之间单字符插入、删除、替换的次数。</div></div>
+<h3>竞赛与项目内部简称 / Competition and in-house shorthand</h3>
+<div class="gl"><div class="term">D</div><div class="zhx">D</div><div class="note">Our submitted model: the equal-weight average of the four terms, file d_density3_m30pool_m50_struct.csv. Public 0.860, private 0.819. 我们提交的模型:四项等权平均。公榜 0.860,私榜 0.819。</div></div>
+<div class="gl"><div class="term">S4</div><div class="zhx">S4</div><div class="note">D plus nine weakly weighted refinements. Public 0.871, private 0.810. D 外加九个低权重修正项。公榜 0.871,私榜 0.810。</div></div>
+<div class="gl"><div class="term">C1</div><div class="zhx">C1</div><div class="note">The equal-weight rank consensus of S4 with a collaborator FHB30. Public 0.882, private 0.811. S4 与合作者 FHB30 的等权名次共识。公榜 0.882,私榜 0.811。</div></div>
+<div class="gl"><div class="term">S04 / S09 / FHB30</div><div class="zhx">S04 / S09 / FHB30</div><div class="note">Collaborator entries. NOTE THE CLASH: their S04 is a frozen baseline at 0.855, which is NOT our S4 at 0.871. Say the full file name if both come up. 合作者的提交。注意命名冲突:他们的 S04 是 0.855 的冻结基线,不是我们 0.871 的 S4。两者同时出现时请说全文件名。</div></div>
+<div class="gl"><div class="term">m30 / m50</div><div class="zhx">m30 / m50</div><div class="note">In-house names for the pooled-reference term and the whole-V-domain term, visible in our file names. 参考池项和全 V 结构域项的内部代号,出现在文件名里。</div></div>
+<div class="gl"><div class="term">GIL / GLC / NLV / TTD / YLQ</div><div class="full">GILGFVFTL, GLCTLVAML, NLVPMVATV, TTDPSFLGRY, YLQPRTFLL</div><div class="zhx">五个公开表位</div><div class="note">The five public peptides, abbreviated by their first three residues. 五个公开肽,用前三个残基缩写。</div></div>
+<div class="gl"><div class="term">CIN / LLW / LTD</div><div class="full">CINGVCWTV, LLWNGPMAV, LTDEMIAQY</div><div class="zhx">三个私榜表位</div><div class="note">The three private peptides: 243, 229 and 130 rows. 三个私榜肽:分别 243、229、130 行。</div></div>
+<div class="gl"><div class="term">public / private leaderboard</div><div class="zhx">公榜 / 私榜</div><div class="note">Kaggle two scoreboards. Here the public one is a lookup and carries no information; the private one decided the ranking. Kaggle 的两张榜。这里公榜只是查表、毫无信息量;私榜决定名次。</div></div>
+<div class="gl"><div class="term">E-numbers (E2, E148 …)</div><div class="zhx">实验编号</div><div class="note">Our internal experiment log entries, in reports/00_experiment_log.md. Cite them if anyone wants the record. 我们内部的实验日志编号,见 reports/00_experiment_log.md。有人要证据时引用。</div></div>
+<h2>预备问答 / Prepared answers</h2>
+
+<div class="slide">
+<h2>Q · Why not use TCR-BERT, TULIP, NetTCR or any trained binding predictor?</h2>
+<p class="zhtitle">为什么不用 TCR-BERT、TULIP、NetTCR 这类训练好的结合预测器?</p>
+<div class="en"><span class="lbl">English</span><p>Because they are trained on VDJdb, and this task <em>audits</em> VDJdb — it is circular. The strongest public candidate we tested overlaps the test set 100% and carries 872 inverted labels: pairs it was trained to call positive that the functional screen calls negative. We used none of them.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>因为它们都在 VDJdb 上训练过,而这个任务是在<em>审计</em> VDJdb——构成循环论证。我们测过最强的那个公开候选,与测试集重叠 100%,并带有 872 条反转标签:它被训练成判阳性、而功能筛选判阴性的配对。我们一个都没用。</p></div>
+</div>
+
+<div class="slide">
+<h2>Q · What rank did you get?</h2>
+<p class="zhtitle">你们排第几?</p>
+<div class="en"><span class="lbl">English</span><p>Nineteenth of 107 teams, after collapsing multi-account clusters and removing the seven label-recovery entries. But I would rather give the honest version: the top <b>35 of those 107</b> are inside one statistically indistinguishable band. Two unrelated methods need a gap of 0.047 to be told apart at 95% confidence, and the distance from the top honest score, 0.846, to ours, 0.819, is 0.027.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>并掉多账号集群、去掉七份查表提交之后,是 107 支队伍里的第 19。但我更愿意给诚实的版本:那 107 支里的前 <b>35 支</b>处在同一个统计上不可区分的带子里。两个不相关的方法要在 95% 置信度下分出高下需要 0.047 的差距,而诚实组天花板 0.846 到我们 0.819 只差 0.027。</p></div>
+</div>
+
+<div class="slide">
+<h2>Q · Does structure help at all?</h2>
+<p class="zhtitle">结构到底有没有用?</p>
+<div class="en"><span class="lbl">English</span><p>Yes, but it is the weakest of the four terms: 0.757 standalone, and only 0.629 on TTDPSFLGRY. Its value is that it is the <b>only term that does not look at neighbours</b>, so it is an independent check rather than a stronger signal.</p>
+<p>We also showed that the confidence score does not encode peptide specificity. We re-folded 300 TCRs against anchor-matched decoy peptides — 900 extra folds. Target-only confidence predicts validation at 0.63 to 0.74; subtract the decoy, which cancels everything that is a property of the TCR alone, and every margin collapses to chance: +0.0061 against a decoy-choice noise of 0.036. An interface containing no TCR at all already scores 0.647.</p>
+<p>What I would <em>not</em> claim: that structure is useless for TCR work in general. We ran one setup — Boltz-2, empty MSAs, a reduced class-I platform — and no AlphaFold3 control. IMMREP25, a genuinely different task, found structure was what distinguished the top methods. Our reading is that structure did not get weaker; neighbourhood density on a populated cohort is simply much stronger, and leaves structure only the residual.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>有,但它是四项里最弱的:单独 0.757,在 TTDPSFLGRY 上只有 0.629。它的价值在于它是<b>唯一不看邻居的一项</b>,所以提供的是独立旁证,不是更强的信号。</p>
+<p>我们还证明了置信度分数不编码肽特异性。我们把 300 条 TCR 对锚定匹配的诱饵肽重折了一遍——额外 900 次折叠。只看目标肽的置信度预测验证在 0.63 到 0.74;减掉诱饵——减掉的正是只属于这条 TCR 自身的成分——每个 margin 都塌到随机:+0.0061,而换一组诱饵的噪声就有 0.036。一个里面根本没有 TCR 的界面,已经能拿到 0.647。</p>
+<p>我<em>不会</em>声称的是:结构对 TCR 工作普遍无用。我们只跑了一个设置——Boltz-2、空 MSA、简化的 I 类平台——而且没做 AlphaFold3 对照。IMMREP25 是一个确实不同的任务,它发现结构正是区分顶尖方法的东西。我们的解读是:结构没有变弱,是populated 队列上的邻域密度实在太强,只给结构留下了残差。</p></div>
+</div>
+
+<div class="slide">
+<h2>Q · Why is there no clustering step?</h2>
+<p class="zhtitle">为什么没有聚类这一步?</p>
+<div class="en"><span class="lbl">English</span><p>We tried it, but only in the analysis layer. The validation rate declines <b>smoothly</b> with distance, with no step anywhere: largest single drop &minus;0.216 against a mean step of 0.107, a ratio of 2.0. So clustered-versus-singleton is a lossy binarisation of a continuous quantity, and the submitted model uses the continuous version.</p>
+<p>For the record, the clustering we did use for analysis is single-linkage connected components on a cosine-distance graph thresholded at 0.12 — which empirically means a neighbour whose CDR3 differs by a median of one residue, with 98% of such pairs sharing CDR3β length.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>试过,但只用在分析层。验证率随距离<b>平滑</b>下降,任何一处都没有台阶:最大单步 &minus;0.216,平均步长 0.107,比值 2.0。所以"成簇 vs 孤立"是连续量的有损二值化,提交的模型用的是连续版本。</p>
+<p>补充一句:我们用于分析的聚类是余弦距离图在 0.12 处阈值化后的单连接连通分量——经验上它的含义是,近亲的 CDR3 中位只差一个残基,而且 98% 这样的配对 CDR3β 长度相同。</p></div>
+</div>
+
+<div class="slide">
+<h2>Q · How confident are you in 0.819?</h2>
+<p class="zhtitle">0.819 这个数你们有多确定?</p>
+<div class="en"><span class="lbl">English</span><p>As an absolute number, not very: bootstrapping the rows of a private-shaped split gives any single team a standard deviation of about 0.017. But that wobble is common to everyone, since all teams are scored on the same 602 rows, so it does not reorder the board. What reorders it is the paired difference, and for two unrelated methods that has a standard deviation of 0.024.</p>
+<p>Worth adding: our pre-registered private estimate, written into the submission description on 26 October, was 0.798 to 0.802. The realised value was 0.819 — conservative by about 0.02, in the right direction.</p></div>
+<div class="zh"><span class="lbl">中文</span><p>作为一个绝对数字,不太确定:对一个私榜形状的切分做行自助重采样,任何一支队伍的标准差约 0.017。但这个抖动对所有人是共同的——大家都在同一批 602 行上评分——所以它不会打乱排名。打乱排名的是配对差,而两个不相关方法的配对差标准差是 0.024。</p>
+<p>值得补一句:我们在 10 月 26 日写进提交说明的预登记私榜估计是 0.798–0.802。实际是 0.819——保守了约 0.02,方向是对的。</p></div>
+</div>
+
+<h2>数字速查 / Numbers at a glance</h2>
+<table>
+<thead><tr><th>quantity 量</th><th class="n">value 值</th><th>where it comes from 出处</th></tr></thead>
+<tbody>
+<tr><td>Rows in <code>test.csv</code> 总行数</td><td class="n">2,636</td><td>competition file</td></tr>
+<tr><td>Public / private split 公私切分</td><td class="n">2,034 / 602</td><td>1,782 public rows are scorable</td></tr>
+<tr><td>Private cohorts 私榜队列</td><td class="n">243 / 229 / 130</td><td>CIN / LLW / LTD</td></tr>
+<tr><td>Reported pairs that fail re-test 复测不成立的比例</td><td class="n">≈ 44%</td><td>the functional screen</td></tr>
+<tr><td>Our private score 我们的私榜分</td><td class="n">0.819</td><td>submission D</td></tr>
+<tr><td>Organisers' tcrdist3 baseline 主办方基线</td><td class="n">0.768</td><td>rank 92 of 165</td></tr>
+<tr><td>Top honest score 诚实组天花板</td><td class="n">0.846</td><td>after removing 7 label-recovery entries</td></tr>
+<tr><td>Single density alone 单一密度</td><td class="n">0.8396</td><td>94.3% of D's above-chance signal</td></tr>
+<tr><td>D, four terms D 四项</td><td class="n">0.8600</td><td>0.3600 above chance</td></tr>
+<tr><td>What the other three terms buy 其余三项买到</td><td class="n">+0.0204</td><td>the ladder on slide 8</td></tr>
+<tr><td>Density alone, best epitope 单一密度最好表位</td><td class="n">0.927</td><td>YLQPRTFLL</td></tr>
+<tr><td>Density alone, worst epitope 最差表位</td><td class="n">0.677</td><td>GLCTLVAML</td></tr>
+<tr><td>Consensus expected margin 共识预期优势</td><td class="n">+0.022 ± 0.006</td><td>bootstrap of a private-shaped split</td></tr>
+<tr><td>Consensus realised margin 共识实际优势</td><td class="n">−0.008</td><td>about five paired sd away</td></tr>
+<tr><td>One team's row-sampling sd 单队行抽样标准差</td><td class="n">0.017</td><td>common to all teams</td></tr>
+<tr><td>Gap two unrelated methods need 不相关方法所需差距</td><td class="n">0.047</td><td>95% confidence</td></tr>
+<tr><td>Teams inside that band 落在带内的队伍</td><td class="n">35 of 107</td><td>the honest field's top third</td></tr>
+<tr><td>Residual-on-D floor 残差地板</td><td class="n">0.5098</td><td>the five closed channels sit 0.5070–0.5609</td></tr>
+<tr><td>Permutation null 置换零假设</td><td class="n">sd 0.0076, max +0.0203</td><td>why +0.02 was the admission bar</td></tr>
+</tbody></table>
+
+<footer>
+<p>Deck: <code>IMMREP26_5min.pptx</code>, 13 slides. Figures regenerated from the surviving SCEPTR embeddings and
+TCRvdb labels, from the project's own HTML reports, and from the Kaggle API. Full records in
+<code>reports/00_experiment_log.md</code>; the structural results are collected in
+<code>reports/structural_findings.html</code>. Functional labels from Messemaker et al.,
+<em>Immunity</em> 2026, doi:10.1016/j.immuni.2026.09.007 — request-only, not redistributed.</p>
+</footer>
+
+</div></body></html>
